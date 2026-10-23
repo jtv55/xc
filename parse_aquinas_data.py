@@ -51,6 +51,28 @@ MEET_META = {
         "host": "St. Aloysius / Harvest Home",
         "is_1m": True
     },
+    "EXTRA_RWB": {
+        "meet_id": "2026-09-12-rwb",
+        "meet_name": "24th Annual Red, White & Blue Classic (1A)",
+        "short_name": "RWB Classic",
+        "short_label": "RWB Classic (Sep 12)",
+        "date": "2026-09-12",
+        "location": "White Oak Park, White Oak, PA",
+        "program": "High School (9-12)",
+        "host": "Baldwin High School",
+        "is_1m": False
+    },
+    "EXTRA_OC": {
+        "meet_id": "2026-09-12-oakland-catholic",
+        "meet_name": "Oakland Catholic XC Invitational",
+        "short_name": "Oakland Catholic",
+        "short_label": "Oakland Catholic (Sep 12)",
+        "date": "2026-09-12",
+        "location": "Youthtowne, Clinton, PA",
+        "program": "Youth / Diocesan (K-8)",
+        "host": "Oakland Catholic High School",
+        "is_1m": False
+    },
     "RES091826": {
         "meet_id": "2026-09-18-youthtowne",
         "meet_name": "Youthtowne Clash XC Invitational",
@@ -71,6 +93,17 @@ MEET_META = {
         "location": "Allison Park, PA",
         "program": "Youth / Diocesan (K-8)",
         "host": "Aquinas Academy & Holy Cross",
+        "is_1m": False
+    },
+    "EXTRA_PIAA": {
+        "meet_id": "2026-09-26-piaa-foundation",
+        "meet_name": "20th PIAA Foundation XC Invitational (1A)",
+        "short_name": "PIAA Foundation",
+        "short_label": "PIAA Foundation (Sep 26)",
+        "date": "2026-09-26",
+        "location": "Parkview XC Course, Hershey, PA",
+        "program": "High School (9-12)",
+        "host": "PIAA Foundation",
         "is_1m": False
     },
     "RES092926": {
@@ -106,6 +139,39 @@ MEET_META = {
         "host": "Blessed Francis Seelos Academy",
         "is_1m": False
     },
+    "EXTRA_SEC4": {
+        "meet_id": "2026-10-06-wpial-sec4",
+        "meet_name": "WPIAL A/AA Section 4 XC Championships",
+        "short_name": "WPIAL Sec 4",
+        "short_label": "WPIAL Sec 4 (Oct 6)",
+        "date": "2026-10-06",
+        "location": "Chatham Univ. Eden Hall, Gibsonia, PA",
+        "program": "High School (9-12)",
+        "host": "Shady Side Academy / WPIAL",
+        "is_1m": False
+    },
+    "EXTRA_PUMPKINS": {
+        "meet_id": "2026-10-10-pumpkins",
+        "meet_name": "Run for the Pumpkins XC Invitational",
+        "short_name": "Pumpkins XC",
+        "short_label": "Pumpkins XC (Oct 10)",
+        "date": "2026-10-10",
+        "location": "Youthtowne, Clinton, PA",
+        "program": "Youth / Diocesan (K-8)",
+        "host": "Archangel Gabriel School",
+        "is_1m": False
+    },
+    "EXTRA_DIOCESAN": {
+        "meet_id": "2026-10-17-diocesan-champ",
+        "meet_name": "Pittsburgh Diocesan XC Championships",
+        "short_name": "Diocesan Champ",
+        "short_label": "Diocesan Champ (Oct 17)",
+        "date": "2026-10-17",
+        "location": "Youthtowne, Clinton, PA",
+        "program": "Youth / Diocesan (K-8)",
+        "host": "St. Louise de Marillac / Diocese of Pittsburgh",
+        "is_1m": False
+    },
     "RES102226": {
         "meet_id": "2026-10-22-tstca",
         "meet_name": "TSTCA Championship Tune-Up Invite (Class A)",
@@ -130,36 +196,74 @@ NICKNAME_MAP = {
     "Leonidas Predis": "Leo Predis",
     "Rosalie Sheehan": "Rosie Sheehan",
     "Adeline Vaskov": "Addie Vaskov",
-    "Lander Catherine": "Catherine Lander"
+    "Lander Catherine": "Catherine Lander",
+    "John Nolan IV": "Johnny Nolan",
+    "John Nolan Iv": "Johnny Nolan",
+    "Theodore Burchill": "Teddy Burchill",
+    "Alina Gonanao": "Alina Gonano"
 }
 
 TEAM_NAME_MAP = {
     "AQUINAS": "Aquinas Academy",
+    "AQUINAS ACADEMY": "Aquinas Academy",
     "AQUINAS ACADEMY PA": "Aquinas Academy",
     "BL. FRANCIS SEELOS": "Bl. Francis Seelos",
+    "BLESSED FRANCIS SEELOS ACADEMY": "Bl. Francis Seelos",
+    "KENNETH (KJ) ALSCHULER SEELOS": "Bl. Francis Seelos",
     "SEELOS": "Bl. Francis Seelos",
     "BLESSED TRINITY": "Blessed Trinity (BTA)",
+    "BLESSED TRINITY ACADEMY": "Blessed Trinity (BTA)",
     "BTA": "Blessed Trinity (BTA)",
     "ST. KILIAN": "St. Kilian",
     "ST KILIAN": "St. Kilian",
     "SAINT KILIAN": "St. Kilian",
+    "ST. KILIAN PARISH SCHOOL": "St. Kilian",
     "HOLY CROSS": "Holy Cross",
+    "HOLY CROSS ACADEMY": "Holy Cross",
     "HOLY SEPULCHER": "Holy Sepulcher",
+    "HOLY SEPULCHER CATHOLIC SCHOOL (": "Holy Sepulcher",
+    "HOLY FAMILY": "Holy Family",
+    "HOLY FAMILY MIDDLE SCHOOL": "Holy Family",
     "BUTLER CATHOLIC": "Butler Catholic",
+    "BCS": "Butler Catholic",
     "ARCHANGEL GABRIEL": "Archangel Gabriel (AGS)",
+    "ARCHANGEL GABRIEL SCHOOL": "Archangel Gabriel (AGS)",
     "AGS": "Archangel Gabriel (AGS)",
     "OUR LADY OF FATIMA": "Our Lady of Fatima",
+    "OLOF": "Our Lady of Fatima",
     "FATIMA": "Our Lady of Fatima",
     "ST. LOUISE DE MARILLAC": "St. Louise de Marillac",
+    "ST. LOUISE DE MARILLAC SCHOOL": "St. Louise de Marillac",
     "ST. LOUISE": "St. Louise de Marillac",
     "GUARDIAN ANGEL": "Guardian Angel",
+    "GUARDIAN ANGEL ACADEMY": "Guardian Angel",
+    "GAA": "Guardian Angel",
     "AVE MARIA": "Ave Maria",
     "AVE MARIA ACADEMY": "Ave Maria",
     "DIVINE MERCY": "Divine Mercy",
+    "DIVINE MERCY ACADEMY": "Divine Mercy",
     "NORTHSIDE CATHOLIC": "Northside Catholic",
+    "SOUTH HILLS CATHOLIC ACADEMY": "South Hills Catholic",
+    "SACRED HEART ELEMENTARY SCHOOL": "Sacred Heart",
     "CDTCA": "CDTCA",
     "ST. JAMES": "St. James",
+    "ST. JAMES CATHOLIC": "St. James",
+    "ST. BEDE": "St. Bede",
+    "ST. GREGORY": "St. Gregory",
+    "ST GREGORY": "St. Gregory",
+    "ST. GREGORY CATHOLIC SCHOOL": "St. Gregory",
+    "ST. BENEDICT": "St. Benedict",
+    "ST. THERESE OF LISIEUX": "St. Therese of Lisieux",
+    "THE SAINT CONSTANTINE SCHOOL - E": "St. Constantine",
+    "THE SAINT CONSTANTINE SCHOOL - M": "St. Constantine",
+    "ST CONSTANTINE": "St. Constantine",
+    "ST. CONSTANTINE": "St. Constantine",
+    "ROBINSON TOWNSHIP CHRISTIAN SCHO": "Robinson Twp. Christian",
+    "JOHN F. KENNEDY CATHOLIC SCHOOL": "JFK Catholic",
+    "JFK": "JFK Catholic",
     "SSPP": "SS. Peter & Paul",
+    "STS. PETER & PAUL": "SS. Peter & Paul",
+    "STS. PETER AND PAUL CATHOLIC SCH": "SS. Peter & Paul",
     "MOTHER OF MERCY": "Mother of Mercy",
     "HILLEL": "Hillel Academy",
     "HILLEL ACADEMY": "Hillel Academy",
@@ -174,17 +278,21 @@ TEAM_NAME_MAP = {
     "FRAZIER": "Frazier",
     "WASHINGTON": "Washington",
     "CARMICHAELS": "Carmichaels",
+    "CARMICHAELS AREA": "Carmichaels",
     "TRINITY CHRISTIAN": "Trinity Christian",
     "NEW BRIGHTON": "New Brighton",
     "ELLIS": "Ellis School",
+    "THE ELLIS SCHOOL": "Ellis School",
     "NORTHGATE": "Northgate",
     "SERRA CATHOLIC": "Serra Catholic",
     "CARLYNTON": "Carlynton",
     "MOHAWK": "Mohawk",
     "REDEEMER LUTHERAN": "Redeemer Lutheran",
     "SEWICKLEY ACADEMY": "Sewickley Academy",
+    "SHADY SIDE ACADEMY": "Shady Side Academy",
     "STEEL VALLEY": "Steel Valley",
     "BROWNSVILLE": "Brownsville",
+    "BROWNSVILLE AREA": "Brownsville",
     "WINCHESTER THURSTON": "Winchester Thurston",
     "OUR LADY OF SACRED HEART": "OLSH",
     "OLSH": "OLSH",
@@ -192,18 +300,25 @@ TEAM_NAME_MAP = {
     "FORT CHERRY": "Fort Cherry",
     "CHARTIERS HOUSTON": "Chartiers-Houston",
     "HOPEDALE CHRISTIAN": "Hopedale Christian",
-    "BEAVER COUNTY CHRISTIAN": "Beaver Co. Christian"
+    "BEAVER COUNTY CHRISTIAN": "Beaver Co. Christian",
+    "BEAVER COUNTY CHRISTIAN HS": "Beaver Co. Christian",
+    "FREEDOM AREA": "Freedom Area",
+    "FREEPORT AREA": "Freeport Area"
 }
 
 def normalize_team(t_raw):
-    t = " ".join(t_raw.split()).strip()
+    if not t_raw:
+        return "Unattached"
+    t = " ".join(str(t_raw).split()).strip()
+    # Strip trailing 2-digit PIAA district code (e.g. "Winchester Thurston 07")
+    t = re.sub(r'\s+\d{2}$', '', t)
     u = t.upper()
     if u in TEAM_NAME_MAP:
         return TEAM_NAME_MAP[u]
     return " ".join(w.capitalize() if len(w) > 3 else w.upper() for w in t.split())
 
 def normalize_name(name):
-    parts = " ".join(name.split()).split(" ")
+    parts = " ".join(str(name).split()).split(" ")
     out = []
     for p in parts:
         if p.upper() in ("II", "III", "IV", "JR", "JR.", "SR", "SR."):
@@ -224,7 +339,7 @@ def normalize_name(name):
 def parse_time_to_seconds(t_str):
     if not t_str:
         return None
-    t_str = t_str.strip()
+    t_str = str(t_str).strip()
     parts = t_str.split(":")
     try:
         if len(parts) == 2:
@@ -245,10 +360,16 @@ def fmt_seconds(sec):
 def parse_pace_to_seconds(p_str):
     if not p_str:
         return None
-    m = re.match(r'(\d+):(\d+)', p_str.strip())
+    m = re.match(r'(\d+):(\d+)', str(p_str).strip())
     if m:
         return int(m.group(1)) * 60 + int(m.group(2))
     return None
+
+def fmt_pace_from_sec(p_sec):
+    if not p_sec:
+        return None
+    p_int = int(round(p_sec))
+    return f"{p_int // 60}:{p_int % 60:02d}/M"
 
 def classify_division(title, filename, program):
     t = (title + " " + filename).lower()
@@ -316,11 +437,19 @@ for m in matches:
             runner_default_div[(cname, gend)] = div_name
             runner_default_grade[(cname, gend)] = int(grade_age)
 
+# Also seed default division/grade from Diocesan Championship (193936) and PIAA Foundation
+runner_default_div[("Max Predis", "M")] = "HS Varsity (9-12)"
+runner_default_grade[("Max Predis", "M")] = 10
+runner_default_div[("George McEvoy", "M")] = "Elementary JV (5-6)"
+runner_default_grade[("George McEvoy", "M")] = 6
+
 def compute_school_scoring_from_oa(r_list):
     """Given the overall finisher list for a race, compute official XC team scoring
     and return each school's ranking, total points, top-5 avg, and runner composition."""
     by_school = {}
     for r in r_list:
+        if r["team"] == "Unattached":
+            continue
         by_school.setdefault(r["team"], []).append(r)
     full_teams = {t for t, members in by_school.items() if len(members) >= 5}
     
@@ -330,6 +459,8 @@ def compute_school_scoring_from_oa(r_list):
     runner_scoring_map = {}
     for r in r_list:
         t = r["team"]
+        if t == "Unattached":
+            continue
         team_counts[t] = team_counts.get(t, 0) + 1
         t_idx = team_counts[t]
         if t in full_teams and t_idx <= 7:
@@ -386,7 +517,6 @@ def compute_school_scoring_from_oa(r_list):
                 "composition": comp
             })
 
-    # Sort scored teams by points asc, then 6th runner points asc, then avg_seconds asc
     scored_list = [s for s in school_summaries if s["scored"]]
     scored_list.sort(key=lambda s: (s["points"], s["sixth_runner_points"], s["avg_seconds"] or 99999))
     for pos, s in enumerate(scored_list, 1):
@@ -401,6 +531,150 @@ all_races = []
 all_aquinas_performances = []
 all_team_standings = []
 
+def register_race_from_runners(meta, div_name, gender_label, r_list, source_url, source_file, sub_slug=None, custom_short_meet=None, race_div_override=None):
+    """Helper to register a race section, compute team scoring, and append Aquinas performances."""
+    if not r_list:
+        return
+    r_list.sort(key=lambda x: x["place"])
+    total_runners = len(r_list)
+    aq_runners = [r for r in r_list if r["is_aquinas"]]
+    if not aq_runners:
+        return
+    is_comm = meta["is_1m"]
+    slug_part = sub_slug if sub_slug else re.sub(r'[^a-z0-9]+', '_', div_name.lower()).strip('_')
+    race_id = f"{meta['meet_id']}__{slug_part}__{gender_label.lower()}"
+
+    aq_sorted = sorted(aq_runners, key=lambda x: x["time_seconds"] or 999999)
+    top5 = aq_sorted[:5]
+    spread_1_5 = round(top5[-1]["time_seconds"] - top5[0]["time_seconds"], 2) if len(top5) == 5 else None
+    avg_top5_sec = round(sum(x["time_seconds"] for x in top5) / len(top5), 2) if top5 else None
+    p_vals = [x["pace_seconds"] for x in top5 if x["pace_seconds"]]
+    avg_top5_pace = round(sum(p_vals) / len(p_vals), 1) if p_vals else None
+
+    school_teams = [] if is_comm else compute_school_scoring_from_oa(r_list)
+    winning_school = next((s for s in school_teams if s["position"] == 1), None)
+    aq_school_entry = next((s for s in school_teams if s["is_aquinas"]), None)
+
+    meet_short_col = custom_short_meet if custom_short_meet else meta["short_name"]
+
+    race_obj = {
+        "race_id": race_id,
+        "meet_id": meta["meet_id"],
+        "meet_name": meta["meet_name"],
+        "short_meet_name": meta["short_label"],
+        "meet_short": meet_short_col,
+        "date": meta["date"],
+        "location": meta["location"],
+        "level": "High School" if div_name == "HS Varsity (9-12)" else "Youth (K-8)",
+        "division": "All Youth (1M)" if is_comm else div_name,
+        "sub_division": race_div_override,
+        "is_1m": is_comm,
+        "gender": gender_label,
+        "source_url": source_url,
+        "source_file": source_file,
+        "total_finishers": total_runners,
+        "aquinas_finishers_count": len(aq_runners),
+        "aquinas_top5_avg_seconds": None if is_comm else avg_top5_sec,
+        "aquinas_top5_avg_pace_seconds": avg_top5_pace,
+        "aquinas_1_to_5_spread_seconds": None if is_comm else spread_1_5,
+        "winner_time_seconds": r_list[0]["time_seconds"],
+        "winner_name": r_list[0]["name"],
+        "winner_team": r_list[0]["team"],
+        "top3_runners": [
+            {"place": r["place"], "name": r["name"], "team": r["team"], "time": r["time"], "pace": r["pace"], "is_aquinas": r["is_aquinas"]}
+            for r in r_list[:3]
+        ],
+        "winning_school": {
+            "team": winning_school["team"],
+            "points": winning_school["points"],
+            "avg_time": winning_school["avg_time"],
+            "is_aquinas": winning_school["is_aquinas"]
+        } if winning_school else None,
+        "aquinas_team_summary": {
+            "position": aq_school_entry["position"],
+            "points": aq_school_entry["points"],
+            "avg_time": aq_school_entry["avg_time"],
+            "scored_teams_count": sum(1 for s in school_teams if s["scored"])
+        } if aq_school_entry else None,
+        "school_teams": school_teams,
+        "aquinas_runners": aq_sorted,
+        "all_runners": r_list
+    }
+    all_races.append(race_obj)
+
+    for idx_team, r in enumerate(aq_sorted, 1):
+        effective_div = r["default_division"]
+        effective_level = "High School" if effective_div == "HS Varsity (9-12)" else "Youth (K-8)"
+        perf = {
+            "meet_id": meta["meet_id"],
+            "meet_name": meta["meet_name"],
+            "short_meet_name": meta["short_label"],
+            "meet_short": meet_short_col,
+            "date": meta["date"],
+            "location": meta["location"],
+            "level": effective_level,
+            "division": effective_div,
+            "race_division": "Harvest Home 1M" if is_comm else (race_div_override or div_name),
+            "is_1m": is_comm,
+            "gender": gender_label,
+            "race_id": race_id,
+            "name": r["name"],
+            "grade_or_age": r["grade_or_age"],
+            "bib": r["bib"],
+            "overall_place": r["place"],
+            "total_finishers": total_runners,
+            "percentile": round(100.0 * (total_runners - r["place"]) / max(total_runners - 1, 1), 1),
+            "team_rank": idx_team,
+            "time": r["time"],
+            "time_seconds": r["time_seconds"],
+            "pace": r["pace"],
+            "pace_seconds": r["pace_seconds"],
+            "source_url": source_url
+        }
+        all_aquinas_performances.append(perf)
+
+    return race_obj
+
+def append_team_standing_from_race(race_obj, title_str):
+    if not race_obj or not race_obj.get("school_teams"):
+        return
+    st_list = race_obj["school_teams"]
+    scored_teams = [s for s in st_list if s["scored"]]
+    aq_team = next((s for s in st_list if s["is_aquinas"]), None)
+    if not aq_team:
+        return
+    all_team_standings.append({
+        "meet_id": race_obj["meet_id"],
+        "meet_name": race_obj["meet_name"],
+        "short_meet_name": race_obj["short_meet_name"],
+        "meet_short": race_obj["meet_short"],
+        "date": race_obj["date"],
+        "level": race_obj["level"],
+        "division": race_obj["division"],
+        "gender": race_obj["gender"],
+        "matchup": None,
+        "title": title_str,
+        "source_url": race_obj["source_url"],
+        "source_file": race_obj["source_file"],
+        "scored_teams_count": len(scored_teams),
+        "aquinas_position": aq_team["position"],
+        "aquinas_points": aq_team["points"],
+        "aquinas_total_time": aq_team["total_time"],
+        "aquinas_avg_time": aq_team["avg_time"],
+        "teams": [
+            {
+                "team": s["team"],
+                "is_aquinas": s["is_aquinas"],
+                "position": s["position"],
+                "points": s["points"],
+                "total_time": s["total_time"],
+                "avg_time": s["avg_time"]
+            }
+            for s in st_list
+        ]
+    })
+
+# 1. Process the 10 Smiley Miles meets
 for m in matches:
     href = m["href"]
     fname = m["file"]
@@ -479,98 +753,11 @@ for m in matches:
             if is_comm:
                 for idx_new, r_item in enumerate(r_list, 1):
                     r_item["place"] = idx_new
-            total_runners = len(r_list)
-            aq_runners = [r for r in r_list if r["is_aquinas"]]
-            if not aq_runners:
-                continue
             gender_label = "Boys" if gend == "M" else "Girls"
-            race_div_label = "MS Varsity (7-8)" if is_comm else div_name
-            race_id = f"{meta['meet_id']}__{re.sub(r'[^a-z0-9]+', '_', div_name.lower()).strip('_')}__{gender_label.lower()}"
-            
-            aq_sorted = sorted(aq_runners, key=lambda x: x["time_seconds"] or 999999)
-            top5 = aq_sorted[:5]
-            spread_1_5 = round(top5[-1]["time_seconds"] - top5[0]["time_seconds"], 2) if len(top5) == 5 else None
-            avg_top5_sec = round(sum(x["time_seconds"] for x in top5) / len(top5), 2) if top5 else None
-            avg_top5_pace = round(sum(x["pace_seconds"] for x in top5 if x["pace_seconds"]) / len(top5), 1) if top5 else None
-            
-            school_teams = [] if is_comm else compute_school_scoring_from_oa(r_list)
-            winning_school = next((s for s in school_teams if s["position"] == 1), None)
-            aq_school_entry = next((s for s in school_teams if s["is_aquinas"]), None)
-
-            race_obj = {
-                "race_id": race_id,
-                "meet_id": meta["meet_id"],
-                "meet_name": meta["meet_name"],
-                "short_meet_name": meta["short_label"],
-                "meet_short": meta["short_name"],
-                "date": meta["date"],
-                "location": meta["location"],
-                "level": "High School" if race_div_label == "HS Varsity (9-12)" else "Youth (K-8)",
-                "division": "All Youth (1M)" if is_comm else div_name,
-                "is_1m": is_comm,
-                "gender": gender_label,
-                "source_url": "https://www.smileymiles.com/" + href,
-                "source_file": fname,
-                "total_finishers": total_runners,
-                "aquinas_finishers_count": len(aq_runners),
-                "aquinas_top5_avg_seconds": None if is_comm else avg_top5_sec,
-                "aquinas_top5_avg_pace_seconds": avg_top5_pace,
-                "aquinas_1_to_5_spread_seconds": None if is_comm else spread_1_5,
-                "winner_time_seconds": r_list[0]["time_seconds"],
-                "winner_name": r_list[0]["name"],
-                "winner_team": r_list[0]["team"],
-                "top3_runners": [
-                    {"place": r["place"], "name": r["name"], "team": r["team"], "time": r["time"], "pace": r["pace"], "is_aquinas": r["is_aquinas"]}
-                    for r in r_list[:3]
-                ],
-                "winning_school": {
-                    "team": winning_school["team"],
-                    "points": winning_school["points"],
-                    "avg_time": winning_school["avg_time"],
-                    "is_aquinas": winning_school["is_aquinas"]
-                } if winning_school else None,
-                "aquinas_team_summary": {
-                    "position": aq_school_entry["position"],
-                    "points": aq_school_entry["points"],
-                    "avg_time": aq_school_entry["avg_time"],
-                    "scored_teams_count": sum(1 for s in school_teams if s["scored"])
-                } if aq_school_entry else None,
-                "school_teams": school_teams,
-                "aquinas_runners": aq_sorted,
-                "all_runners": r_list
-            }
-            all_races.append(race_obj)
-            
-            for idx_team, r in enumerate(aq_sorted, 1):
-                effective_div = r["default_division"]
-                effective_level = "High School" if effective_div == "HS Varsity (9-12)" else "Youth (K-8)"
-                perf = {
-                    "meet_id": meta["meet_id"],
-                    "meet_name": meta["meet_name"],
-                    "short_meet_name": meta["short_label"],
-                    "meet_short": meta["short_name"],
-                    "date": meta["date"],
-                    "location": meta["location"],
-                    "level": effective_level,
-                    "division": effective_div,
-                    "race_division": "Harvest Home 1M" if is_comm else div_name,
-                    "is_1m": is_comm,
-                    "gender": gender_label,
-                    "race_id": race_id,
-                    "name": r["name"],
-                    "grade_or_age": r["grade_or_age"],
-                    "bib": r["bib"],
-                    "overall_place": r["place"],
-                    "total_finishers": total_runners,
-                    "percentile": round(100.0 * (total_runners - r["place"]) / max(total_runners - 1, 1), 1),
-                    "team_rank": idx_team,
-                    "time": r["time"],
-                    "time_seconds": r["time_seconds"],
-                    "pace": r["pace"],
-                    "pace_seconds": r["pace_seconds"],
-                    "source_url": "https://www.smileymiles.com/" + href
-                }
-                all_aquinas_performances.append(perf)
+            register_race_from_runners(
+                meta, div_name, gender_label, r_list,
+                "https://www.smileymiles.com/" + href, fname
+            )
 
     elif "AG" not in fname:
         gender_label = "Boys" if "boys" in fname.lower() else "Girls"
@@ -640,9 +827,315 @@ for m in matches:
             "teams": teams_parsed
         })
 
-all_races.sort(key=lambda x: (x["date"], x["division"], x["gender"]))
-all_aquinas_performances.sort(key=lambda x: (x["date"], x["division"], x["gender"], x["overall_place"]))
-all_team_standings.sort(key=lambda x: (x["date"], x["division"], x["gender"], x["title"]))
+# 2. Process Extra Meet 1: Red, White & Blue Classic (2026-09-12)
+with open("data/extra/milesplit_rwb_1318896.html", "r", encoding="utf-8") as f:
+    rwb_html = f.read()
+
+for sec_hdr, gend, g_lbl in [
+    ("Girls 1A 5000 Meter run (Finals)", "F", "Girls"),
+    ("Boys 1A 5000 Meters (Finals)", "M", "Boys")
+]:
+    idx = rwb_html.find(sec_hdr)
+    if idx != -1:
+        r_list = []
+        for l in rwb_html[idx:].splitlines()[1:]:
+            ls = l.strip()
+            if not ls or ls.startswith("Place\t"):
+                continue
+            if re.match(r'^\d+\t\d*\t', ls):
+                parts = ls.split("\t")
+                place = int(parts[0])
+                bib = int(parts[1]) if parts[1].isdigit() else 0
+                clean_name = normalize_name(parts[2])
+                norm_team = normalize_team(parts[3])
+                time_str = parts[4].strip()
+                secs = parse_time_to_seconds(time_str)
+                p_secs = int(round(secs / 3.10686)) if secs else None
+                pace_str = fmt_pace_from_sec(p_secs)
+                is_aq = "aquinas" in norm_team.lower()
+                def_grade = runner_default_grade.get((clean_name, gend), 10)
+                r_list.append({
+                    "place": place,
+                    "name": clean_name,
+                    "team": norm_team,
+                    "bib": bib,
+                    "grade_or_age": def_grade,
+                    "gender": gend,
+                    "time": time_str,
+                    "time_seconds": secs,
+                    "pace": pace_str,
+                    "pace_seconds": p_secs,
+                    "is_aquinas": is_aq,
+                    "default_division": "HS Varsity (9-12)"
+                })
+            else:
+                break
+        ro = register_race_from_runners(
+            MEET_META["EXTRA_RWB"], "HS Varsity (9-12)", g_lbl, r_list,
+            "https://pa.milesplit.com/meets/766811-24th-annual-red-white-and-blue-classic-2026/results/1318896/raw",
+            "milesplit_rwb_1318896.html"
+        )
+        append_team_standing_from_race(ro, f"24th Annual Red, White & Blue Classic - {g_lbl} 1A")
+
+# 3. Process Extra Meet 2: RunHigh PIAA Foundation XC Invitational (2026-09-26)
+rh_ind_re = re.compile(
+    r'^\s*(\d+)\s+(\d+)\s+(?:\d+\s+)?([A-Za-z\.\'\-\s]+?),\s*(1[0-2]|[789])\*?\s*(?:\d+:\d+\.\d+\s+)?(\d+:\d+\.\d+)\s+(\d+:\d+)\s+(.+?)\s*$'
+)
+for code, gend, g_lbl, is_jv in [
+    ("R092626DB.html", "F", "Girls", False),
+    ("R092626DE.html", "M", "Boys", False),
+    ("R092626DI.html", "M", "Boys", True)
+]:
+    with open(f"data/extra/runhigh_{code}", "r", encoding="utf-8") as f:
+        h = f.read()
+    idx = h.rfind("INDIVIDUALS")
+    r_list = []
+    for l in h[idx:].splitlines():
+        m = rh_ind_re.match(l)
+        if m:
+            bib, place, name, grade_str, time_str, pace_raw, team_raw = m.groups()
+            clean_name = normalize_name(name)
+            norm_team = normalize_team(team_raw)
+            secs = parse_time_to_seconds(time_str)
+            pace_str = pace_raw.strip() + "/M"
+            p_secs = parse_pace_to_seconds(pace_str)
+            is_aq = "aquinas" in norm_team.lower()
+            r_list.append({
+                "place": int(place),
+                "name": clean_name,
+                "team": norm_team,
+                "bib": int(bib),
+                "grade_or_age": int(grade_str),
+                "gender": gend,
+                "time": time_str,
+                "time_seconds": secs,
+                "pace": pace_str,
+                "pace_seconds": p_secs,
+                "is_aquinas": is_aq,
+                "default_division": "HS Varsity (9-12)"
+            })
+    if not is_jv:
+        ro = register_race_from_runners(
+            MEET_META["EXTRA_PIAA"], "HS Varsity (9-12)", g_lbl, r_list,
+            f"https://www.runhigh.com/2026RESULTS/{code}",
+            f"runhigh_{code}"
+        )
+        append_team_standing_from_race(ro, f"20th PIAA Foundation XC Invitational - {g_lbl} 1A")
+    else:
+        # Add JV Boys individual finishes for Peter Koble & Luke Schellhaas
+        total_jv = len(r_list)
+        aq_jv = [r for r in r_list if r["is_aquinas"]]
+        for idx_t, r in enumerate(aq_jv, 1):
+            all_aquinas_performances.append({
+                "meet_id": MEET_META["EXTRA_PIAA"]["meet_id"],
+                "meet_name": MEET_META["EXTRA_PIAA"]["meet_name"],
+                "short_meet_name": MEET_META["EXTRA_PIAA"]["short_label"],
+                "meet_short": MEET_META["EXTRA_PIAA"]["short_name"],
+                "date": MEET_META["EXTRA_PIAA"]["date"],
+                "location": MEET_META["EXTRA_PIAA"]["location"],
+                "level": "High School",
+                "division": "HS Varsity (9-12)",
+                "race_division": "HS JV (9-12)",
+                "is_1m": False,
+                "gender": "Boys",
+                "race_id": f"{MEET_META['EXTRA_PIAA']['meet_id']}__hs_varsity_9_12__boys",
+                "name": r["name"],
+                "grade_or_age": r["grade_or_age"],
+                "bib": r["bib"],
+                "overall_place": r["place"],
+                "total_finishers": total_jv,
+                "percentile": round(100.0 * (total_jv - r["place"]) / max(total_jv - 1, 1), 1),
+                "team_rank": 7 + idx_t,
+                "time": r["time"],
+                "time_seconds": r["time_seconds"],
+                "pace": r["pace"],
+                "pace_seconds": r["pace_seconds"],
+                "source_url": f"https://www.runhigh.com/2026RESULTS/{code}"
+            })
+
+# 4. Process Extra Meet 3: WPIAL A/AA Section 4 XC Championships (2026-10-06)
+with open("data/extra/firestore_782377_wpial_sec4.json", "r", encoding="utf-8") as f:
+    fs_sec4 = json.load(f)
+
+for ev_num, gend, g_lbl, is_jv in [
+    ("1", "M", "Boys", False),
+    ("2", "F", "Girls", False),
+    ("3", "M", "Boys", True)
+]:
+    ev_docs = [d for d in fs_sec4["entries"] if d.get("fields", {}).get("event", {}).get("integerValue") == ev_num]
+    r_list = []
+    for d in ev_docs:
+        flds = d["fields"]
+        res = flds.get("result", {}).get("mapValue", {}).get("fields", {})
+        place_str = res.get("place", {}).get("integerValue")
+        time_str = res.get("text", {}).get("stringValue")
+        if not place_str or not time_str:
+            continue
+        ath = flds.get("athlete", {}).get("mapValue", {}).get("fields", {})
+        tm = ath.get("team", {}).get("mapValue", {}).get("fields", {})
+        raw_name = f"{ath.get('firstName', {}).get('stringValue', '')} {ath.get('lastName', {}).get('stringValue', '')}".strip()
+        clean_name = normalize_name(raw_name)
+        norm_team = normalize_team(tm.get("name", {}).get("stringValue", ""))
+        bib_str = ath.get("compNo", {}).get("integerValue", "0")
+        secs = parse_time_to_seconds(time_str)
+        p_secs = int(round(secs / 3.10686)) if secs else None
+        pace_str = fmt_pace_from_sec(p_secs)
+        is_aq = "aquinas" in norm_team.lower()
+        def_grade = runner_default_grade.get((clean_name, gend), 10)
+        r_list.append({
+            "place": int(place_str),
+            "name": clean_name,
+            "team": norm_team,
+            "bib": int(bib_str) if str(bib_str).isdigit() else 0,
+            "grade_or_age": def_grade,
+            "gender": gend,
+            "time": time_str,
+            "time_seconds": secs,
+            "pace": pace_str,
+            "pace_seconds": p_secs,
+            "is_aquinas": is_aq,
+            "default_division": "HS Varsity (9-12)"
+        })
+    if not is_jv:
+        ro = register_race_from_runners(
+            MEET_META["EXTRA_SEC4"], "HS Varsity (9-12)", g_lbl, r_list,
+            "https://milesplit.live/meets/782377/schedule",
+            "firestore_782377_wpial_sec4.json"
+        )
+        append_team_standing_from_race(ro, f"WPIAL A/AA Section 4 XC Championships - {g_lbl} 5K")
+    else:
+        r_list.sort(key=lambda x: x["place"])
+        total_jv = len(r_list)
+        aq_jv = [r for r in r_list if r["is_aquinas"]]
+        for idx_t, r in enumerate(aq_jv, 1):
+            all_aquinas_performances.append({
+                "meet_id": MEET_META["EXTRA_SEC4"]["meet_id"],
+                "meet_name": MEET_META["EXTRA_SEC4"]["meet_name"],
+                "short_meet_name": MEET_META["EXTRA_SEC4"]["short_label"],
+                "meet_short": MEET_META["EXTRA_SEC4"]["short_name"],
+                "date": MEET_META["EXTRA_SEC4"]["date"],
+                "location": MEET_META["EXTRA_SEC4"]["location"],
+                "level": "High School",
+                "division": "HS Varsity (9-12)",
+                "race_division": "HS JV (9-12)",
+                "is_1m": False,
+                "gender": "Boys",
+                "race_id": f"{MEET_META['EXTRA_SEC4']['meet_id']}__hs_varsity_9_12__boys",
+                "name": r["name"],
+                "grade_or_age": r["grade_or_age"],
+                "bib": r["bib"],
+                "overall_place": r["place"],
+                "total_finishers": total_jv,
+                "percentile": round(100.0 * (total_jv - r["place"]) / max(total_jv - 1, 1), 1),
+                "team_rank": 7 + idx_t,
+                "time": r["time"],
+                "time_seconds": r["time_seconds"],
+                "pace": r["pace"],
+                "pace_seconds": r["pace_seconds"],
+                "source_url": "https://milesplit.live/meets/782377/schedule"
+            })
+
+# 5. Process Extra Meets 4, 5, 6: RunSignup (Oakland Catholic 191674, Run for Pumpkins 193469, Diocesan Champ 193936)
+def process_rsu_file(fname, meta_key):
+    meta = MEET_META[meta_key]
+    with open(f"data/extra/{fname}", "r", encoding="utf-8") as f:
+        d = json.load(f)
+    rid = d["race_id"]
+    for ev in d["events"]:
+        ev_name = ev["event_name"]
+        # Skip synthetic Combined Dev in 193936 so K-2 and 3-4 runners aren't duplicated
+        if "Combined" in ev_name:
+            continue
+        res = ev["results"]
+        if not res:
+            continue
+        rev_h = {v: k for k, v in ev["headers"].items()}
+        t_key = rev_h.get("Team Name")
+        y_key = rev_h.get("Year")
+        if not t_key:
+            continue
+
+        # Determine division, gender, sub_slug, custom_short_meet, race_div_override
+        ev_low = ev_name.lower()
+        gend = "M" if "boy" in ev_low else "F"
+        g_lbl = "Boys" if gend == "M" else "Girls"
+
+        sub_slug = None
+        custom_short = None
+        div_override = None
+        if "varsity" in ev_low:
+            div_name = "MS Varsity (7-8)"
+        elif "jv" in ev_low:
+            div_name = "Elementary JV (5-6)"
+        elif "k-2" in ev_low:
+            div_name = "Developmental (K-4)"
+            sub_slug = "developmental_k_2"
+            custom_short = "Diocesan K-2"
+            div_override = "Developmental (K-2)"
+        elif "3-4" in ev_low:
+            div_name = "Developmental (K-4)"
+            sub_slug = "developmental_3_4"
+            custom_short = "Diocesan 3-4"
+            div_override = "Developmental (3-4)"
+        else:
+            div_name = "Developmental (K-4)"
+
+        r_list = []
+        for r in res:
+            place_val = r.get("place")
+            time_str = (r.get("clock_time") or r.get("chip_time") or "").strip()
+            if not place_val or not time_str:
+                continue
+            raw_n = f"{r.get('first_name', '')} {r.get('last_name', '')}".strip()
+            clean_name = normalize_name(raw_n)
+            t_raw = (r.get(t_key) or "").strip()
+            norm_team = normalize_team(t_raw)
+            is_aq = "aquinas" in norm_team.lower()
+            secs = parse_time_to_seconds(time_str)
+            pace_raw = (r.get("pace") or "").strip()
+            pace_str = (pace_raw + "/M") if pace_raw and not pace_raw.endswith("/M") else pace_raw
+            p_secs = parse_pace_to_seconds(pace_str)
+            yr_val = r.get(y_key) if y_key else None
+            if yr_val and str(yr_val).isdigit():
+                grade_val = int(yr_val)
+            else:
+                grade_val = runner_default_grade.get((clean_name, gend), 7 if "Varsity" in div_name else (5 if "JV" in div_name else 3))
+
+            def_div = runner_default_div.get((clean_name, gend), div_name) if is_aq else div_name
+            if is_aq and (clean_name, gend) not in runner_default_div:
+                runner_default_div[(clean_name, gend)] = div_name
+                runner_default_grade[(clean_name, gend)] = grade_val
+
+            r_list.append({
+                "place": int(place_val),
+                "name": clean_name,
+                "team": norm_team,
+                "bib": int(r.get("bib") or 0),
+                "grade_or_age": grade_val,
+                "gender": gend,
+                "time": time_str,
+                "time_seconds": secs,
+                "pace": pace_str,
+                "pace_seconds": p_secs,
+                "is_aquinas": is_aq,
+                "default_division": def_div
+            })
+
+        src_url = f"https://runsignup.com/Race/Results/{rid}?resultSetId={ev['result_set_id']}"
+        ro = register_race_from_runners(
+            meta, div_name, g_lbl, r_list,
+            src_url, fname,
+            sub_slug=sub_slug, custom_short_meet=custom_short, race_div_override=div_override
+        )
+        append_team_standing_from_race(ro, f"{meta['meet_name']} - {ev_name}")
+
+process_rsu_file("rsu_191674_oakland_catholic.json", "EXTRA_OC")
+process_rsu_file("rsu_193469_run_for_pumpkins.json", "EXTRA_PUMPKINS")
+process_rsu_file("rsu_193936_diocesan_champ.json", "EXTRA_DIOCESAN")
+
+all_races.sort(key=lambda x: (x["date"], x["meet_id"], x["division"], x["race_id"]))
+all_aquinas_performances.sort(key=lambda x: (x["date"], x["meet_id"], x["division"], x["gender"], x["overall_place"]))
+all_team_standings.sort(key=lambda x: (x["date"], x["meet_id"], x["division"], x["gender"], x["title"]))
 
 athletes = {}
 for p in all_aquinas_performances:
@@ -677,7 +1170,7 @@ for p in all_aquinas_performances:
 
 athlete_list = []
 for key, a in athletes.items():
-    a["races"].sort(key=lambda r: r["date"])
+    a["races"].sort(key=lambda r: (r["date"], r["meet_id"]))
     xc_races = [r for r in a["races"] if not r["is_1m"]]
     ref_races = xc_races if xc_races else a["races"]
     
@@ -695,8 +1188,9 @@ for key, a in athletes.items():
     best_gain_sec = None
     if len(xc_races) >= 2:
         first_p = xc_races[0]["pace_seconds"]
-        min_later_p = min(r["pace_seconds"] for r in xc_races[1:] if r["pace_seconds"])
-        best_gain_sec = min_later_p - first_p
+        later_p = [r["pace_seconds"] for r in xc_races[1:] if r["pace_seconds"]]
+        if first_p and later_p:
+            best_gain_sec = min(later_p) - first_p
 
     a["races_count"] = len(a["races"])
     a["xc_races_count"] = len(xc_races)
@@ -718,19 +1212,21 @@ for key, a in athletes.items():
 
 athlete_list.sort(key=lambda x: (x["level"], x["division"], x["gender"], x["pr_seconds"] or 999999))
 
+meets_ordered = sorted(list(MEET_META.values()), key=lambda m: (m["date"], m["meet_id"]))
+
 full_dataset = {
     "generated_at": "2026-10-23",
     "team": "Aquinas Academy of Pittsburgh",
-    "source": "https://www.smileymiles.com/2026%20Results.html",
+    "source": "Smiley Miles, Wolf Creek / RunSignup, Runner's High & PA MileSplit",
     "summary": {
-        "total_meets": len(MEET_META),
-        "total_matched_files": len(matches),
+        "total_meets": len(meets_ordered),
+        "total_matched_files": len(matches) + 8,
         "total_race_sections": len(all_races),
         "total_aquinas_entries": len(all_aquinas_performances),
         "unique_aquinas_athletes": len(athlete_list),
         "total_team_standings": len(all_team_standings)
     },
-    "meets": list(MEET_META.values()),
+    "meets": meets_ordered,
     "team_standings": all_team_standings,
     "athletes": athlete_list,
     "performances": all_aquinas_performances,
@@ -745,5 +1241,20 @@ with open("data/data.js", "w", encoding="utf-8") as f:
     f.write("window.AQUINAS_XC_DATA = ")
     json.dump(full_dataset, f)
     f.write(";\n")
+
+# Also write CSVs
+with open("data/aquinas_2026_performances.csv", "w", newline="", encoding="utf-8") as f:
+    if all_aquinas_performances:
+        w = csv.DictWriter(f, fieldnames=list(all_aquinas_performances[0].keys()))
+        w.writeheader()
+        w.writerows(all_aquinas_performances)
+
+with open("data/aquinas_2026_team_scores.csv", "w", newline="", encoding="utf-8") as f:
+    if all_team_standings:
+        fields = [k for k in all_team_standings[0].keys() if k != "teams"]
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        for row in all_team_standings:
+            w.writerow({k: row[k] for k in fields})
 
 print("Summary:", json.dumps(full_dataset["summary"], indent=2))

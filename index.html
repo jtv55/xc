@@ -42,13 +42,13 @@
   <div id="tab-overall" class="tab-pane active">
     <div class="eyebrow">Overall · 2026 season overview &amp; race calendar · Oct 23, 2026</div>
     <h1>2026 Cross Country Season Overview &amp; Race Calendar</h1>
-    <p class="lede">All ten meets where Aquinas Academy competed in 2026 across High School WPIAL Class A (9–12) and K–8 Diocesan divisions. Explore the race calendar, winning teams and top-three podium finishers by division, course pace density ridgelines, and race S-curves.</p>
+    <p class="lede">All 16 meets where Aquinas Academy competed in 2026 across High School WPIAL Class A (9–12) and K–8 Diocesan divisions. Explore the race calendar, winning teams and top-three podium finishers by division, course pace density ridgelines, and race S-curves.</p>
 
     <div class="kpis" id="kpisOverall"></div>
 
     <section>
       <h2>2026 season race calendar &amp; winners by division</h2>
-      <p class="sub">Highlighted dates mark the ten 2026 meets on Smiley Miles. Click any highlighted calendar date (or meet pill) to filter the division tiles below, showing the winning school team and top 3 individual finishers for each division.</p>
+      <p class="sub">Highlighted dates mark all 16 meets of the 2026 season across Smiley Miles, Wolf Creek / RunSignup, Runner's High, and PA MileSplit. Click any highlighted calendar date (or meet pill) to filter the division tiles below, showing the winning school team and top 3 individual finishers for each division.</p>
       <div class="cal-months" id="calendarGrid"></div>
       <div class="ctl" id="calMeetPills"></div>
       <div id="meetDivisionTiles"></div>
@@ -59,7 +59,7 @@
       <p class="sub">Smooth kernel density waves showing where finisher mile paces cluster. Dashed vertical lines and peak labels mark each group's median pace.</p>
       <div class="ctl">
         <span class="ctl-label">Group ridges by</span>
-        <button class="pill" data-rmode="meets" aria-pressed="true">10 Meets / Courses</button>
+        <button class="pill" data-rmode="meets" aria-pressed="true">16 Meets / Courses</button>
         <button class="pill" data-rmode="divisions" aria-pressed="false">Divisions &amp; Gender</button>
       </div>
       <div class="card">
@@ -118,8 +118,8 @@
       <h2>Structured dataset downloads</h2>
       <div class="card">
         <div class="ctl" style="margin-bottom:0">
-          <a class="pill" href="data/aquinas_2026_performances.csv" download>Download performances CSV (610 rows)</a>
-          <a class="pill" href="data/aquinas_2026_team_scores.csv" download>Download team scores CSV (50 rows)</a>
+          <a class="pill" href="data/aquinas_2026_performances.csv" download>Download performances CSV (818 rows)</a>
+          <a class="pill" href="data/aquinas_2026_team_scores.csv" download>Download team scores CSV (70 rows)</a>
           <a class="pill" href="data/aquinas_2026_full.json" download>Download full JSON dataset</a>
           <a class="pill" href="https://github.com/jtv55/xc" target="_blank" rel="noopener">GitHub repository (jtv55/xc)</a>
         </div>
@@ -287,7 +287,7 @@
   <div id="tab-runners" class="tab-pane ">
     <div class="eyebrow">Runners · individual pacing, percentiles &amp; split logs · Oct 23, 2026</div>
     <h1>Aquinas Academy Individual Runner Profiles</h1>
-    <p class="lede">Search any of the 115 Aquinas Academy runners by name to inspect their meet-by-meet mile pace bar chart, field percentile trajectory, where they fall in the overall pace distribution, and complete split log.</p>
+    <p class="lede">Search any of the 116 Aquinas Academy runners by name to inspect their meet-by-meet mile pace bar chart, field percentile trajectory, where they fall in the overall pace distribution, and complete split log.</p>
 
     <div class="ctl">
       <input type="search" id="runnerSearch" class="search" placeholder="Search runner by name..." style="min-width:240px">
@@ -296,7 +296,7 @@
       <span class="ctl-label" style="margin-left:auto">Grid size</span>
       <button class="pill" data-limit="28" aria-pressed="true">Top 28</button>
       <button class="pill" data-limit="60" aria-pressed="false">Top 60</button>
-      <button class="pill" data-limit="999" aria-pressed="false">All 115</button>
+      <button class="pill" data-limit="999" aria-pressed="false">All 116</button>
     </div>
 
     <section>

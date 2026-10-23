@@ -302,8 +302,11 @@ function renderSeasonCalendar() {
   const calEl = el('calendarGrid');
   if (!calEl) return;
 
-  const meetByDate = {};
-  RAW.meets.forEach(m => { meetByDate[m.date] = m; });
+  const meetsByDate = {};
+  RAW.meets.forEach(m => {
+    if (!meetsByDate[m.date]) meetsByDate[m.date] = [];
+    meetsByDate[m.date].push(m);
+  });
 
   // 2026 calendar months: Aug 2026 (starts Sat=6), Sep 2026 (starts Tue=2), Oct 2026 (starts Thu=4)
   const months = [
@@ -318,10 +321,12 @@ function renderSeasonCalendar() {
     for (let e = 0; e < m.startDow; e++) cells += `<div class="cal-day empty">.</div>`;
     for (let d = 1; d <= m.days; d++) {
       const iso = `${m.ym}-${String(d).padStart(2, '0')}`;
-      const mt = meetByDate[iso];
-      if (mt) {
-        const isAct = state.calMeetId === mt.meet_id;
-        cells += `<div class="cal-day has-meet ${isAct ? 'active-meet' : ''}" data-meet="${mt.meet_id}" title="${esc(mt.meet_name)} (${esc(mt.location)})">${d}</div>`;
+      const mList = meetsByDate[iso];
+      if (mList && mList.length) {
+        const isAct = mList.some(mt => state.calMeetId === mt.meet_id) || state.calMeetId === `DATE:${iso}`;
+        const titleTxt = mList.map(mt => `${mt.meet_name} (${mt.location})`).join(' + ');
+        const targetId = mList.length === 1 ? mList[0].meet_id : `DATE:${iso}`;
+        cells += `<div class="cal-day has-meet ${isAct ? 'active-meet' : ''}" data-meet="${targetId}" title="${esc(titleTxt)}">${d}</div>`;
       } else {
         cells += `<div class="cal-day">${d}</div>`;
       }
@@ -332,7 +337,7 @@ function renderSeasonCalendar() {
   // Populate meet filter pills
   const pillBar = el('calMeetPills');
   if (pillBar) {
-    pillBar.innerHTML = `<button class="pill" data-cmeet="ALL" aria-pressed="${state.calMeetId === 'ALL'}">All 10 meets</button>` +
+    pillBar.innerHTML = `<button class="pill" data-cmeet="ALL" aria-pressed="${state.calMeetId === 'ALL'}">All ${RAW.meets.length} meets</button>` +
       RAW.meets.map(m => `<button class="pill" data-cmeet="${m.meet_id}" aria-pressed="${state.calMeetId === m.meet_id}">${esc(m.short_name)} (${m.date.slice(5)})</button>`).join('');
   }
 }
@@ -344,7 +349,12 @@ function renderCalendarMeetTiles() {
   let races = RAW.races.filter(r => state.scope === 'ALL' ? true : r.division === state.scope)
     .filter(r => state.gend === 'ALL' || r.gender === state.gend);
   if (state.calMeetId !== 'ALL') {
-    races = races.filter(r => r.meet_id === state.calMeetId);
+    if (state.calMeetId.startsWith('DATE:')) {
+      const targetDate = state.calMeetId.slice(5);
+      races = races.filter(r => r.date === targetDate);
+    } else {
+      races = races.filter(r => r.meet_id === state.calMeetId);
+    }
   }
 
   // Group races by meet chronologically
@@ -413,7 +423,7 @@ function renderCalendarMeetTiles() {
       return `
         <div class="div-tile">
           <div class="div-tile-head">
-            <span class="div-tile-title"><span class="dot" style="background:${col};margin-right:6px"></span>${esc(r.division)} · ${esc(r.gender)}</span>
+            <span class="div-tile-title"><span class="dot" style="background:${col};margin-right:6px"></span>${esc(r.sub_division || r.division)} · ${esc(r.gender)}</span>
             <a href="${esc(r.source_url)}" target="_blank" rel="noopener" class="mono" style="font-size:11px">${r.total_finishers} finishers &nearr;</a>
           </div>
           ${teamBannerHtml}
@@ -580,12 +590,16 @@ function renderSchoolsTab() {
   };
 
   // Column headers (Meet names & dates)
+  const colHeaderFont = x.bandwidth() < 78 ? '10px' : '11.5px';
   races.forEach(r => {
     const cx = x(r.race_id) + x.bandwidth() / 2;
+    const shortHdr = x.bandwidth() < 78
+      ? r.meet_short.replace('Invite', '').replace('Champs', 'Ch.').replace('Classic', '').replace('Foundation', 'PIAA').replace('Catholic', 'Cath.').replace('Youthtowne Clash', 'Youthtowne').replace('Aquinas Home', 'Aquinas').trim()
+      : r.meet_short;
     g.append('text')
       .attr('x', cx).attr('y', -24).attr('text-anchor', 'middle')
-      .attr('fill', P.fg).style('font-size', '11.5px').style('font-weight', '600')
-      .text(r.meet_short);
+      .attr('fill', P.fg).style('font-size', colHeaderFont).style('font-weight', '600')
+      .text(shortHdr);
     g.append('text')
       .attr('x', cx).attr('y', -9).attr('text-anchor', 'middle')
       .attr('fill', P.muted).style('font-family', 'var(--font-mono)').style('font-size', '10px')
@@ -1634,12 +1648,18 @@ function renderMoves() {
     ['Aug 29, 2026', 'At the 14-team Blessed Trinity (BTA) Invitational at Hartwood Acres, Aquinas Developmental Girls take 1st of 12 teams (50 pts) and Developmental Boys place 2nd of 14 teams.', 'BTA Invite'],
     ['Sep 4, 2026', 'St. Kilian Invitational in Mars: Developmental Girls win their third straight team title (25 pts) while JV Boys and Dev Boys both finish 2nd.', 'St. Kilian'],
     ['Sep 10, 2026', 'St. Al Twilight Harvest Home 1 Mile in Allison Park: 52 Aquinas K–8 runners test their flat-mile speed, led by 8th-graders John Austin (5:18.93) and Zach Guillen (5:45.44) for the boys and Rosa Yuo (6:27.93) and Kat Barnett (6:28.34) for the girls.', 'Harvest Home 1M'],
-    ['Sep 18, 2026', 'Youthtowne Clash: Aquinas sweeps 1st place in both 3rd–4th Grade Boys (1st of 10 teams) and Girls (1st of 6), takes 2nd of 9 in Jr High Boys (11:49 avg), and debuts High School Varsity 5K led by freshman Isaac Vangura (11th, 17:15.45) and sophomore Andrew Deem (25th, 17:49.28).', 'Youthtowne Clash'],
+    ['Sep 12, 2026', '24th Annual Red, White & Blue Classic at White Oak Park (Class 1A): Aquinas High School Boys place 3rd of 13 teams (74 pts) behind freshman Isaac Vangura (10th, 17:14.2), Max Predis (11th, 17:28.8), and Andrew Deem (13th, 17:46.7). HS Girls place 6th (164 pts) led by freshman Alexandra Robinson (27th, 23:38.8).', 'RWB Classic'],
+    ['Sep 12, 2026', 'Oakland Catholic XC Invitational at Youthtowne: Aquinas MS Varsity Girls win 1st place team (39 pts), MS Varsity Boys take 2nd (48 pts, led by John Austin #4 in 11:02.20), and Elementary JV Girls place 2nd (55 pts).', 'Oakland Catholic'],
+    ['Sep 18, 2026', 'Youthtowne Clash: Aquinas sweeps 1st place in both 3rd–4th Grade Boys (1st of 10 teams) and Girls (1st of 6), takes 2nd of 9 in Jr High Boys (11:49 avg), and races High School Varsity 5K led by Isaac Vangura (11th, 17:15.45) and Andrew Deem (25th, 17:49.28).', 'Youthtowne Clash'],
     ['Sep 24, 2026', 'Home course dominance at the Aquinas & Holy Cross Meet in Allison Park: Aquinas wins 5 of 6 team divisions (MS Varsity Boys & Girls, JV Boys, and Developmental Boys & Girls).', 'Aquinas Home'],
+    ['Sep 26, 2026', '20th PIAA Foundation XC Invitational in Hershey, PA (State Championship Course): Aquinas High School Boys finish 6th in Pennsylvania Class 1A (215 pts) led by Isaac Vangura (15th, 17:16.5), Andrew Deem (30th, 17:57.1), and Roman Spagnolo (44th, 18:28.9). Alexandra Robinson places 42nd (22:02.4) in Class 1A Girls.', 'PIAA Foundation'],
     ['Sep 29, 2026', 'WPIAL Class A Tri-Meet at Avonworth: Isaac Vangura (1st overall, 19:02.10) and Andrew Deem (2nd, 19:02.19) go 1–2 as Aquinas HS Boys defeat both Avonworth (22–34) and Neighborhood Academy (18–43). HS Girls defeat Neighborhood Academy (15–50).', 'Avonworth Tri'],
     ['Oct 2, 2026', 'North Area Diocesan XC Championships at North Park: Aquinas captures four North Area Championship banners — MS Varsity Boys (1st, 35 pts), Elementary JV Boys (1st, 43 pts), and Developmental Boys & Girls (both 1st of 8 teams).', 'North Area Champs'],
+    ['Oct 6, 2026', 'WPIAL A/AA Section 4 XC Championships at Chatham University Eden Hall: Freshman Isaac Vangura runs 16:54.07 (7th overall against 1A/2A competition) to break the 5-year-old Aquinas Academy 5K school record (17:05) and become the first Crusader under 17 minutes.', 'WPIAL Sec 4'],
     ['Oct 6, 2026', 'Seelos "Second Chance" Meet: MS Varsity Boys score 27 pts (places 2, 4, 6, 7, 8 led by John Austin 11:04.26 and Zach Guillen 11:17.78) to win the team title; MS Varsity Girls, JV Boys, and Dev Girls also take 1st.', 'Seelos #2'],
-    ['Oct 22, 2026', 'TSTCA Championship Tune-Up at White Oak Park (Class A): Freshman Isaac Vangura runs 16:41.76 (3rd overall, 5:23/M), Andrew Deem runs 17:24.98 (8th), Roman Spagnolo runs 17:35.22 (10th), and Giancarlo Josephs runs 18:31.26 (19th). Aquinas Boys tie Neshannock at 59 points (2nd of 10 teams, 1 point behind South Side\'s 58, with the fastest top-5 total time in Class A at 1:30:18.09). Aquinas Girls place 5th of 10 teams (118 pts).', 'TSTCA Class A']
+    ['Oct 10, 2026', 'Run for the Pumpkins XC Invitational at Youthtowne: Aquinas Developmental Girls capture 1st place team (36 pts, led by Cora Donahue #4 in 10:33.34 and Emily Edwards #5 in 10:42.54) while Developmental Boys place 4th of 10 teams.', 'Pumpkins XC'],
+    ['Oct 17, 2026', 'Pittsburgh Diocesan Cross Country Championships at Youthtowne: Aquinas wins three Diocesan Team Championships — Elementary JV Boys (1st, 37 pts, led by Noah Malone #2 in 10:55.62), Developmental Girls 3–4 (1st, 59 pts, led by Cora Donahue #3 in 11:07.56, and 1st in Combined Dev Girls), and Developmental Boys K–2 (1st, 45 pts, led by Individual Diocesan Champion Linus Gruber #1 in 10:26.48) — plus Diocesan Runner-Up trophies in both MS Varsity Girls (2nd, 33 pts, Kat Barnett #6) and MS Varsity Boys (2nd, 58 pts, John Austin #4 in 10:10.66).', 'Diocesan Champ'],
+    ['Oct 22, 2026', 'TSTCA Championship Tune-Up at White Oak Park (Class A): Freshman Isaac Vangura lowers his own school record to 16:41.76 (3rd overall, 5:23/M), Andrew Deem runs 17:24.98 (8th), Roman Spagnolo runs 17:35.22 (10th), and Giancarlo Josephs runs 18:31.26 (19th). Aquinas Boys tie Neshannock at 59 points (2nd of 10 teams, 1 point behind South Side\'s 58, with the fastest top-5 total time in Class A at 1:30:18.09). Aquinas Girls place 5th of 10 teams (118 pts).', 'TSTCA Class A']
   ];
   el('movesList').innerHTML = milestones.map(m =>
     `<div class="tl2"><div class="w">${esc(m[0])}</div><div>${esc(m[1])} <span class="chip">${esc(m[2])}</span></div></div>`
@@ -1874,5 +1894,5 @@ function initEvents() {
 initEvents();
 switchTab(state.tab, false);
 if (el('foot')) {
-  el('foot').innerHTML = 'Sources: 85 official timing HTML files from Miles of Smiles Timing Services (<a href="https://www.smileymiles.com/2026%20Results.html" target="_blank" rel="noopener">smileymiles.com/2026 Results.html</a>) archived on Oct 23, 2026. All St. Al Harvest Home 1 Mile student entries are mapped to each runner\'s default school XC division (HS Varsity 9–12, MS Varsity 7–8, Elementary JV 5–6, or Developmental K–4).';
+  el('foot').innerHTML = 'Sources: Official 2026 timing results across 16 meets from Miles of Smiles Timing Services (<a href="https://www.smileymiles.com/2026%20Results.html" target="_blank" rel="noopener">smileymiles.com</a>), Wolf Creek Race Management &amp; RunSignup (<a href="https://runsignup.com/Race/Results/193936" target="_blank" rel="noopener">Diocesan Championship</a>, <a href="https://runsignup.com/Race/Results/191674" target="_blank" rel="noopener">Oakland Catholic Invite</a>, <a href="https://runsignup.com/Race/Results/193469" target="_blank" rel="noopener">Run for the Pumpkins</a>), Runner\'s High (<a href="https://www.runhigh.com/2026RESULTS/R092626DE.html" target="_blank" rel="noopener">PIAA Foundation Invite</a>), and PA MileSplit (<a href="https://pa.milesplit.com" target="_blank" rel="noopener">Red, White &amp; Blue Classic &amp; WPIAL Section 4 Championships</a>).';
 }
