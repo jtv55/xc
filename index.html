@@ -1,1194 +1,855 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aquinas Academy Cross Country — 2026 Season Analytics</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0b0f17;
-      --bg-card: #131a27;
-      --bg-card-hover: #192234;
-      --bg-elevated: #1c2638;
-      --border: #26334d;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --maroon: #991b1b;
-      --maroon-bright: #ef4444;
-      --gold: #eab308;
-      --gold-soft: rgba(234, 179, 8, 0.16);
-      --maroon-soft: rgba(239, 68, 68, 0.16);
-      --blue: #38bdf8;
-      --green: #22c55e;
-      --purple: #a855f7;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-      min-height: 100vh;
-    }
-    .mono { font-family: 'JetBrains Mono', monospace; }
-    header {
-      background: linear-gradient(135deg, #1a090d 0%, #0f172a 65%, #17130a 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 1.5rem 2rem;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      backdrop-filter: blur(12px);
-    }
-    .header-inner {
-      max-width: 1440px;
-      margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .crest {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--maroon) 0%, #7f1d1d 100%);
-      border: 2px solid var(--gold);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1.25rem;
-      color: var(--gold);
-      box-shadow: 0 4px 16px rgba(153, 27, 27, 0.45);
-    }
-    .brand-title h1 {
-      font-size: 1.35rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .badge-season {
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.15rem 0.55rem;
-      border-radius: 999px;
-      background: var(--gold-soft);
-      color: var(--gold);
-      border: 1px solid rgba(234, 179, 8, 0.35);
-    }
-    .brand-title p {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-    .nav-tabs {
-      display: flex;
-      gap: 0.4rem;
-      background: var(--bg-card);
-      padding: 0.3rem;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-    .nav-tab {
-      background: transparent;
-      color: var(--text-muted);
-      border: none;
-      padding: 0.55rem 1rem;
-      border-radius: 7px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .nav-tab:hover { color: var(--text); }
-    .nav-tab.active {
-      background: var(--maroon);
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(153, 27, 27, 0.4);
-    }
-    .container {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 1.5rem 2rem 4rem;
-    }
-    .filter-bar {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .filter-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      align-items: center;
-    }
-    .filter-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
-    select, input[type="search"] {
-      background: var(--bg-elevated);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 0.5rem 0.85rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-family: inherit;
-      outline: none;
-    }
-    select:focus, input[type="search"]:focus {
-      border-color: var(--gold);
-    }
-    .pill-group {
-      display: inline-flex;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .pill-btn {
-      background: transparent;
-      color: var(--text-muted);
-      border: none;
-      padding: 0.45rem 0.85rem;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .pill-btn.active {
-      background: var(--gold);
-      color: #0b0f17;
-    }
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .kpi-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.15rem 1.25rem;
-      position: relative;
-      overflow: hidden;
-    }
-    .kpi-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--maroon-bright), var(--gold));
-    }
-    .kpi-label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .kpi-value {
-      font-size: 1.85rem;
-      font-weight: 800;
-      margin: 0.25rem 0;
-      color: var(--text);
-    }
-    .kpi-sub {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-    @media (max-width: 600px) {
-      .charts-grid { grid-template-columns: 1fr; }
-    }
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    .card-title {
-      font-size: 1.02rem;
-      font-weight: 700;
-    }
-    .card-subtitle {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-    .chart-box {
-      position: relative;
-      height: 320px;
-      width: 100%;
-    }
-    .table-wrap {
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-    th, td {
-      padding: 0.65rem 0.85rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-    th {
-      font-size: 0.74rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      background: rgba(255,255,255,0.02);
-      cursor: pointer;
-      user-select: none;
-    }
-    tr:hover td {
-      background: var(--bg-card-hover);
-    }
-    .pos-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 28px;
-      padding: 0.15rem 0.5rem;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 0.78rem;
-    }
-    .pos-1 { background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.45); }
-    .pos-2 { background: rgba(148, 163, 184, 0.2); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.4); }
-    .pos-3 { background: rgba(217, 119, 6, 0.2); color: #fdba74; border: 1px solid rgba(217, 119, 6, 0.4); }
-    .pos-other { background: var(--bg-elevated); color: var(--text-muted); }
-    .tag {
-      display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 6px;
-      font-size: 0.74rem;
-      font-weight: 600;
-    }
-    .tag-hs { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
-    .tag-youth { background: rgba(56, 189, 248, 0.16); color: #7dd3fc; }
-    .tag-comm { background: rgba(168, 85, 247, 0.16); color: #d8b4fe; }
-    .tag-boys { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
-    .tag-girls { background: rgba(244, 114, 182, 0.15); color: #f9a8d4; }
-    .link-ext {
-      color: var(--gold);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 0.8rem;
-    }
-    .link-ext:hover { text-decoration: underline; }
-    .view-section { display: none; }
-    .view-section.active { display: block; }
-    .athlete-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-bottom: 0.85rem;
-    }
-    .athlete-chip {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.3rem 0.65rem;
-      border-radius: 999px;
-      font-size: 0.78rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .athlete-chip.selected {
-      background: var(--maroon);
-      border-color: var(--gold);
-      color: #fff;
-    }
-    .download-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .dl-card {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.15rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 0.75rem;
-    }
-    .btn-dl {
-      display: inline-block;
-      background: var(--maroon);
-      color: #fff;
-      text-decoration: none;
-      padding: 0.55rem 1rem;
-      border-radius: 8px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      text-align: center;
-      border: 1px solid rgba(234, 179, 8, 0.3);
-    }
-    .btn-dl:hover { background: #b91c1c; }
-    .pct-bar {
-      width: 72px;
-      height: 7px;
-      background: var(--bg-elevated);
-      border-radius: 999px;
-      overflow: hidden;
-      display: inline-block;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-    .pct-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--maroon-bright), var(--gold));
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Aquinas Academy XC · 2026 Season Analytics</title>
+<style>
+:root {
+  --bg: #fcfcfb; --surface: #ffffff; --fg: #141413; --fg2: #52514e; --muted: #7a7973;
+  --line: #e4e3de; --soft: #f4f3ef; --accent: #2a78d6; --up: #0b7a43; --down: #c03a2b; --warn: #a86b00;
+  --r-fuel: #b8541f; --r-gen: #2a78d6; --r-wire: #0e8a62; --r-equip: #6250d6; --r-load: #b0447a;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --k1: #2a78d6; --k2: #eb6834; --k3: #1baf7a; --k4: #eda100;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413; --surface: #1a1a19; --fg: #f0efec; --fg2: #c3c2b7; --muted: #9a998f;
+    --line: #2c2c2a; --soft: #222220; --accent: #3987e5; --up: #3fbf7f; --down: #ef7566; --warn: #e0a43a;
+    --r-fuel: #e98a54; --r-gen: #3987e5; --r-wire: #2fbf93; --r-equip: #9085e9; --r-load: #e07fae;
+    --k1: #3987e5; --k2: #d95926; --k3: #199e70; --k4: #c98500;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413; --surface: #1a1a19; --fg: #f0efec; --fg2: #c3c2b7; --muted: #9a998f;
+  --line: #2c2c2a; --soft: #222220; --accent: #3987e5; --up: #3fbf7f; --down: #ef7566; --warn: #e0a43a;
+  --r-fuel: #e98a54; --r-gen: #3987e5; --r-wire: #2fbf93; --r-equip: #9085e9; --r-load: #e07fae;
+  --k1: #3987e5; --k2: #d95926; --k3: #199e70; --k4: #c98500;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 52px; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.sitenav::-webkit-scrollbar { display: none; }
+.wrap {
+  max-width: 1080px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: 28px; line-height: 1.2; margin: 6px 0 8px; font-weight: 600; text-wrap: balance; }
+h2 { font-size: 18px; margin: 0 0 4px; font-weight: 600; }
+h3 { font-size: 15px; margin: 0 0 4px; font-weight: 600; }
+.lede { color: var(--fg2); max-width: 68ch; margin: 0 0 22px; }
+.sub { color: var(--fg2); font-size: 13px; margin: 0 0 12px; max-width: 74ch; }
+section { margin-bottom: 34px; }
+p { margin: 0 0 10px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; min-width: 0; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi { border-top: 2px solid var(--line); padding-top: 8px; min-width: 0; }
+.kpi .v { font-family: var(--font-mono); font-size: 24px; font-variant-numeric: tabular-nums; }
+.kpi .l { color: var(--fg2); font-size: 13px; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); } .warn { color: var(--warn); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; }
+th {
+  text-align: left; font-weight: 600; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
+  padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+th.num, td.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr.hl td { background: var(--soft); }
+.pill {
+  font: inherit; font-size: 13px; color: var(--fg2); background: none;
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; cursor: pointer;
+}
+.pill[aria-pressed="true"] { color: var(--fg); border-color: var(--fg2); background: var(--soft); font-weight: 600; }
+input.search, select.sel {
+  font: inherit; font-size: 13px; color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px;
+}
+button:focus-visible, input:focus-visible, select:focus-visible, th:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ctl { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 12px; align-items: center; }
+.ctl-label { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-right: 2px; }
+.note { background: var(--soft); border-radius: 6px; padding: 10px 12px; font-size: 14px; max-width: 80ch; margin: 0 0 18px; }
+.foot { color: var(--muted); font-size: 12px; max-width: 82ch; border-top: 1px solid var(--line); padding-top: 14px; }
+.chart text { fill: var(--fg2); font-family: var(--font-body); font-size: 12px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 820px) { .two { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { h1 { font-size: 24px; } }
+@media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpi .v { font-size: 20px; } }
+.so { font-size: 13px; color: var(--fg2); margin: 8px 0 0; max-width: 80ch; }
+.so b { color: var(--fg); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--fg2); margin-top: 6px; }
+.legend button { font: inherit; font-size: 12px; color: var(--fg2); background: none; border: 0; cursor: pointer; padding: 0; display: inline-flex; gap: 6px; align-items: center; }
+.legend button[aria-pressed="false"] { opacity: .4; }
+.legend svg { width: 12px; height: 12px; }
+.grid4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.fc {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 10px;
+  display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center;
+  cursor: pointer; text-align: left; font: inherit; color: inherit;
+}
+.fc:hover, .fc[aria-pressed="true"] { border-color: var(--fg2); background: var(--soft); }
+.mono-b {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  color: #fff; font-family: var(--font-mono); font-weight: 600; font-size: 14px;
+}
+.fc b { font-size: 14px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fc span { font-size: 11px; color: var(--muted); display: block; }
+.prof { display: grid; grid-template-columns: 76px 1fr; gap: 16px; }
+@media (max-width: 600px) { .prof { grid-template-columns: 1fr; } }
+.prof .mono-b { width: 76px; height: 76px; font-size: 24px; }
+.prof h3 { font-size: 20px; margin: 0; }
+.prof .meta { color: var(--muted); font-size: 12px; font-family: var(--font-mono); margin: 2px 0 8px; }
+.prof ul { margin: 6px 0; padding-left: 18px; color: var(--fg2); font-size: 14px; }
+.prof li { margin-bottom: 3px; }
+.srcs { font-size: 12px; color: var(--muted); }
+.srcs a { color: var(--accent); }
+.chip { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; color: var(--muted); white-space: nowrap; }
+table.t td, table.t th { padding: 6px 10px; font-size: 13px; }
+.tl2 { display: grid; grid-template-columns: 92px 1fr; gap: 4px 14px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.tl2:first-child { border-top: 0; }
+.tl2 .w { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body>
-  <header>
-    <div class="header-inner">
-      <div class="brand">
-        <div class="crest">AA</div>
-        <div class="brand-title">
-          <h1>Aquinas Academy XC <span class="badge-season">2026 Season Analytics</span></h1>
-          <p>Complete Smiley Miles Race Results, Pack Analytics &amp; Athlete Progression</p>
-        </div>
-      </div>
-      <nav class="nav-tabs">
-        <button class="nav-tab active" data-view="overview">Season &amp; Teams</button>
-        <button class="nav-tab" data-view="athletes">Athletes &amp; PRs</button>
-        <button class="nav-tab" data-view="meets">Race Explorer</button>
-        <button class="nav-tab" data-view="downloads">Data &amp; Raw Files</button>
-      </nav>
+
+<nav class="sitenav" style="position:sticky;top:0;z-index:1000;background:var(--bg,Canvas);font:13px/1.4 system-ui,sans-serif;display:flex;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px 18px;padding:10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid #8884;align-items:center">
+  <a href="#top" style="color:inherit;font-weight:600">Aquinas XC</a>
+  <a href="#landscape" style="color:inherit">Runner landscape</a>
+  <a href="#roster" style="color:inherit">Who is who</a>
+  <a href="#teams" style="color:inherit">Team scoring &amp; pack</a>
+  <a href="#moves" style="color:inherit">What moved</a>
+  <a href="#explorer" style="color:inherit">Race explorer</a>
+  <a href="#standings" style="color:inherit">Team ledger</a>
+  <a href="#data" style="color:inherit">Raw files</a>
+  <span style="margin-left:auto;display:inline-flex;gap:8px;align-items:center">
+    <button id="themeBtn" class="pill" style="font-size:11px;padding:1px 8px">Theme: auto</button>
+  </span>
+</nav>
+
+<div class="wrap" id="top">
+  <div class="eyebrow">Aquinas Academy of Pittsburgh · cross country analytics · <span id="asof">Oct 23, 2026</span></div>
+  <h1>How Aquinas Academy ran the 2026 cross country season</h1>
+  <p class="lede">High school WPIAL Class A and K–8 Diocesan runners across all ten meets recorded by Miles of Smiles Timing Services. Where each runner sits on field placement versus race volume, how tight the top-five scoring pack ran, and what moved from August to October.</p>
+
+  <div class="ctl" id="globalFilters">
+    <span class="ctl-label">Scope</span>
+    <button class="pill" data-scope="ALL" aria-pressed="true">All programs (10 meets)</button>
+    <button class="pill" data-scope="HS Varsity (9-12)" aria-pressed="false">High School 9–12</button>
+    <button class="pill" data-scope="MS Varsity (7-8)" aria-pressed="false">MS Varsity 7–8</button>
+    <button class="pill" data-scope="Elementary JV (5-6)" aria-pressed="false">Elementary JV 5–6</button>
+    <button class="pill" data-scope="Developmental (K-4)" aria-pressed="false">Developmental K–4</button>
+    <span class="ctl-label" style="margin-left:8px">Gender</span>
+    <button class="pill" data-gend="ALL" aria-pressed="true">Both</button>
+    <button class="pill" data-gend="Boys" aria-pressed="false">Boys</button>
+    <button class="pill" data-gend="Girls" aria-pressed="false">Girls</button>
+  </div>
+
+  <div class="note"><b>How to read this.</b> Every figure is parsed directly from the 85 official HTML result sheets on <a href="https://www.smileymiles.com/2026%20Results.html" target="_blank" rel="noopener">smileymiles.com</a>. Because High School runs 5K (~3.1 miles), Middle School Varsity and JV run ~1.8 miles, and Developmental (K–4) runs ~1.2 miles, cross-division charts compare runners by <b>field percentile</b> (100% = race winner, 50% = median finisher in that race) while division-specific views use exact clock time and mile pace.</div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section id="landscape">
+    <h2>The runner landscape</h2>
+    <p class="sub">Every Aquinas runner positioned by average field percentile (horizontal) and personal-best pace in min/mile (vertical, faster at top). Area reflects number of races run in 2026; shape and color denote division.</p>
+    <div class="card">
+      <div id="map"></div>
+      <div class="legend" id="leg"></div>
+      <p class="so" id="map-so"></p>
     </div>
-  </header>
+  </section>
 
-  <main class="container">
-    <!-- Global Filter Bar -->
-    <div class="filter-bar">
-      <div class="filter-group">
-        <span class="filter-label">Program:</span>
-        <div class="pill-group" id="levelFilterGroup">
-          <button class="pill-btn active" data-level="ALL">AllXC &amp; Road</button>
-          <button class="pill-btn" data-level="High School">High School (9–12)</button>
-          <button class="pill-btn" data-level="Youth (K-8)">Diocesan / Youth (K–8)</button>
-          <button class="pill-btn" data-level="Community">Community 5K/1M</button>
-        </div>
+  <section id="roster">
+    <h2>Who is who</h2>
+    <div class="ctl">
+      <input type="search" id="runnerSearch" class="search" placeholder="Filter runner by name..." style="min-width:210px">
+      <span class="ctl-label">Show</span>
+      <button class="pill" data-limit="24" aria-pressed="true">Top 24</button>
+      <button class="pill" data-limit="60" aria-pressed="false">Top 60</button>
+      <button class="pill" data-limit="999" aria-pressed="false">All runners</button>
+    </div>
+    <div class="grid4" id="cards"></div>
+    <div class="card" style="margin-top:12px" id="prof"></div>
+  </section>
+
+  <section id="teams">
+    <h2>How the packs scored, and how times moved</h2>
+    <div class="two">
+      <div class="card">
+        <h3>Top-5 scoring average by meet &amp; division (minutes)</h3>
+        <div id="size"></div>
+        <p class="so" id="size-so"></p>
       </div>
-      <div class="filter-group">
-        <span class="filter-label">Division:</span>
-        <select id="divisionSelect">
-          <option value="ALL">All Divisions</option>
-        </select>
-        <span class="filter-label">Gender:</span>
-        <div class="pill-group" id="genderFilterGroup">
-          <button class="pill-btn active" data-gender="ALL">Both</button>
-          <button class="pill-btn" data-gender="Boys">Boys</button>
-          <button class="pill-btn" data-gender="Girls">Girls</button>
+      <div class="card">
+        <h3>1-to-5 scoring pack spread (seconds between #1 and #5 runner)</h3>
+        <div id="chg"></div>
+        <p class="so" id="chg-so"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="moves">
+    <h2>What moved in 2026</h2>
+    <div class="card" id="movesList"></div>
+  </section>
+
+  <section id="explorer">
+    <h2>Race explorer: where Aquinas finished in the field</h2>
+    <p class="sub">Select any of the 52 race sections from 2026. Solid colored markers are Aquinas Academy finishers; muted grey circles are every other competitor in that race.</p>
+    <div class="ctl">
+      <select id="raceSelect" class="sel" style="max-width:100%"></select>
+      <button class="pill" id="onlyAqBtn" aria-pressed="true">Table: Aquinas only</button>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div id="raceChart"></div>
+      <p class="so" id="race-so"></p>
+    </div>
+    <div class="tablewrap">
+      <table class="t">
+        <thead>
+          <tr>
+            <th class="num">Place</th>
+            <th class="num">Team #</th>
+            <th>Runner</th>
+            <th>Team</th>
+            <th class="num">Grade/Age</th>
+            <th class="num">Bib</th>
+            <th class="num">Time</th>
+            <th class="num">Pace</th>
+            <th class="num">Back</th>
+            <th class="num">Field %</th>
+          </tr>
+        </thead>
+        <tbody id="raceTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="standings">
+    <h2>Who beat whom: official 2026 team scorecards</h2>
+    <p class="sub">Cross country team scoring sums the places of each school's top 5 finishers (lowest score wins; runners #6 and #7 displace opponents and break ties).</p>
+    <div class="tablewrap">
+      <table class="t">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Meet</th>
+            <th>Division</th>
+            <th>Gender</th>
+            <th class="num">Aquinas Finish</th>
+            <th class="num">Points</th>
+            <th class="num">Top-5 Total</th>
+            <th class="num">Top-5 Avg</th>
+            <th>Field &amp; Opponents (Top 4)</th>
+            <th>Sheet</th>
+          </tr>
+        </thead>
+        <tbody id="standingsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="data">
+    <h2>Where this dataset comes from &amp; raw downloads</h2>
+    <div class="card">
+      <p class="so" style="margin:0 0 10px;font-size:14px">
+        All 85 HTML result files mentioning Aquinas Academy on <a href="https://www.smileymiles.com/2026%20Results.html" target="_blank" rel="noopener">Smiley Miles 2026 Results</a> were archived locally and parsed into normalized tables. You can pull the structured files directly below for spreadsheets, R, or Python:
+      </p>
+      <div class="ctl" style="margin-bottom:0">
+        <a class="pill" href="data/aquinas_2026_performances.csv" download>Download performances CSV (623 rows)</a>
+        <a class="pill" href="data/aquinas_2026_team_scores.csv" download>Download team scores CSV (50 rows)</a>
+        <a class="pill" href="data/aquinas_2026_full.json" download>Download full JSON dataset</a>
+        <a class="pill" href="https://github.com/jtv55/xc" target="_blank" rel="noopener">GitHub repository (jtv55/xc)</a>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<script src="data/data.js"></script>
+<script>
+/* Shared chart helpers (d3 v7 is loaded by the page). Colors come from the page's CSS variables so dark mode works. */
+const VZ = (() => {
+  const cs = () => getComputedStyle(document.documentElement);
+  const css = (v, fb) => (cs().getPropertyValue(v) || fb || '#888').trim();
+  const pal = () => ({
+    fg: css('--fg'), fg2: css('--fg2'), muted: css('--muted'), line: css('--line'), soft: css('--soft'), bg: css('--bg'), surface: css('--surface'),
+    up: css('--up'), down: css('--down'), warn: css('--warn'), accent: css('--accent'),
+    gen: css('--r-gen'), fuel: css('--r-fuel'), wire: css('--r-wire'), equip: css('--r-equip'), load: css('--r-load')
+  });
+  let tipEl;
+  function tip() {
+    if (!tipEl) {
+      tipEl = document.createElement('div');
+      tipEl.style.cssText = 'position:fixed;pointer-events:none;z-index:50;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:12px;line-height:1.35;max-width:270px;box-shadow:0 2px 10px rgba(0,0,0,.15);display:none';
+      document.body.appendChild(tipEl);
+    }
+    return {
+      show(html, ev) {
+        tipEl.innerHTML = html; tipEl.style.display = 'block';
+        const x = Math.min(ev.clientX + 14, innerWidth - 280), y = Math.min(ev.clientY + 14, innerHeight - 90);
+        tipEl.style.left = x + 'px'; tipEl.style.top = y + 'px';
+      },
+      hide() { tipEl.style.display = 'none'; }
+    };
+  }
+  function svg(el, w, h, m = { t: 12, r: 12, b: 28, l: 40 }) {
+    const root = d3.select(el); root.selectAll('*').remove();
+    const s = root.append('svg').attr('viewBox', `0 0 ${w} ${h}`).attr('class', 'chart').style('width', '100%').style('height', 'auto').attr('role', 'img');
+    const g = s.append('g').attr('transform', `translate(${m.l},${m.t})`);
+    return { svg: s, g, w, h, iw: w - m.l - m.r, ih: h - m.t - m.b, m };
+  }
+  function axisStyle(sel) {
+    const p = pal();
+    sel.selectAll('text').attr('fill', p.fg2).style('font-size', '11px');
+    sel.selectAll('path,line').attr('stroke', p.line);
+    return sel;
+  }
+  return { pal, tip, svg, axisStyle, css };
+})();
+
+const RAW = window.AQUINAS_XC_DATA;
+const el = id => document.getElementById(id);
+const tip = VZ.tip();
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const CATS = ['HS Varsity (9-12)', 'MS Varsity (7-8)', 'Elementary JV (5-6)', 'Developmental (K-4)', 'Community 5K'];
+const cvar = ['--k1', '--k2', '--k3', '--k4', '--r-equip'];
+const SYM = [d3.symbolCircle, d3.symbolSquare, d3.symbolDiamond, d3.symbolTriangle, d3.symbolCross];
+const cc = c => {
+  const idx = CATS.indexOf(c);
+  return getComputedStyle(document.documentElement).getPropertyValue(cvar[idx >= 0 ? idx : 0]).trim();
+};
+
+function fmtSec(sec) {
+  if (sec == null || isNaN(sec)) return '—';
+  const m = Math.floor(sec / 60);
+  const s = (sec - m * 60).toFixed(2).padStart(5, '0');
+  return `${m}:${s}`;
+}
+
+function parsePaceSec(paceStr) {
+  if (!paceStr) return null;
+  const m = paceStr.match(/(\d+):(\d+)/);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+
+function initials(name) {
+  const parts = String(name).trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// Enrich athletes with id, monogram, pace_min
+const ATHLETES = RAW.athletes.map((a, idx) => {
+  const pSec = parsePaceSec(a.pr_pace) || 450;
+  return {
+    ...a,
+    id: `ath_${idx}`,
+    ab: initials(a.name),
+    cat: a.division,
+    pace_min: +(pSec / 60).toFixed(2)
+  };
+});
+
+let state = {
+  scope: 'ALL',
+  gend: 'ALL',
+  selAth: (ATHLETES.find(a => a.name === 'Isaac Vangura') || ATHLETES[0]).id,
+  offCats: new Set(),
+  search: '',
+  cardLimit: 24,
+  raceId: null,
+  onlyAq: true
+};
+
+function matchFilter(item) {
+  if (state.scope !== 'ALL' && item.division !== state.scope) return false;
+  if (state.gend !== 'ALL' && item.gender !== state.gend) return false;
+  return true;
+}
+
+function renderKPIs() {
+  const perfs = RAW.performances.filter(matchFilter);
+  const races = RAW.races.filter(matchFilter);
+  const teams = RAW.team_standings.filter(matchFilter);
+  const meetsCount = new Set(races.map(r => r.meet_id)).size;
+  const athletesCount = new Set(perfs.map(p => p.name)).size;
+  const teamWins = teams.filter(t => t.aquinas_position === 1).length;
+  const teamPodiums = teams.filter(t => typeof t.aquinas_position === 'number' && t.aquinas_position <= 3).length;
+  const top10s = perfs.filter(p => p.overall_place <= 10).length;
+  const indivWins = perfs.filter(p => p.overall_place === 1).length;
+  const avgPct = perfs.length ? (d3.mean(perfs, d => d.percentile)).toFixed(1) + '%' : '—';
+
+  el('kpis').innerHTML = `
+    <div class="kpi"><div class="v">${meetsCount} <span style="font-size:14px;color:var(--muted)">/ ${races.length}</span></div><div class="l">Meets / race sections</div></div>
+    <div class="kpi"><div class="v">${perfs.length}</div><div class="l">Aquinas race finishes</div></div>
+    <div class="kpi"><div class="v">${athletesCount}</div><div class="l">Unique Aquinas runners</div></div>
+    <div class="kpi"><div class="v up">${teamWins} <span style="font-size:14px;color:var(--muted)">(${teamPodiums} top-3)</span></div><div class="l">Team 1st-place trophies</div></div>
+    <div class="kpi"><div class="v">${top10s} <span style="font-size:14px;color:var(--muted)">(${indivWins} wins)</span></div><div class="l">Individual top-10 finishes</div></div>
+    <div class="kpi"><div class="v">${avgPct}</div><div class="l">Mean field percentile</div></div>
+  `;
+}
+
+function renderMap() {
+  const P = VZ.pal();
+  const o = VZ.svg(el('map'), 900, 480, { t: 18, r: 36, b: 44, l: 64 }), g = o.g;
+  const pool = ATHLETES.filter(matchFilter).filter(a => !state.offCats.has(a.cat) && a.pace_min >= 4.5 && a.pace_min <= 13.5);
+
+  const x = d3.scaleLinear().domain([0, 102]).range([0, o.iw]);
+  const yMin = d3.min(pool, d => d.pace_min) || 5.0;
+  const yMax = d3.max(pool, d => d.pace_min) || 11.0;
+  // Faster pace (smaller min/mile) at the top
+  const y = d3.scaleLinear().domain([Math.min(12.0, yMax + 0.4), Math.max(4.8, yMin - 0.35)]).range([o.ih, 0]);
+
+  g.append('line').attr('x1', x(50)).attr('x2', x(50)).attr('y1', 0).attr('y2', o.ih).attr('stroke', P.line);
+  const midPace = (y.domain()[0] + y.domain()[1]) / 2;
+  g.append('line').attr('x1', 0).attr('x2', o.iw).attr('y1', y(midPace)).attr('y2', y(midPace)).attr('stroke', P.line);
+
+  [
+    ['Fast pace, mid-pack field', 8, 14, 'start'],
+    ['Front-pack & fast pace', o.iw - 8, 14, 'end'],
+    ['Developing pace & pack', 8, o.ih - 8, 'start'],
+    ['High placement, tactical course', o.iw - 8, o.ih - 8, 'end']
+  ].forEach(([t, a, b, an]) =>
+    g.append('text').attr('x', a).attr('y', b).attr('text-anchor', an).attr('fill', P.muted).style('font-size', '11.5px').style('letter-spacing', '.03em').text(t.toUpperCase())
+  );
+
+  VZ.axisStyle(g.append('g').attr('transform', `translate(0,${o.ih})`).call(d3.axisBottom(x).ticks(6).tickFormat(d => d + '%').tickSize(3)));
+  VZ.axisStyle(g.append('g').call(d3.axisLeft(y).ticks(6).tickFormat(d => {
+    const m = Math.floor(d), s = Math.round((d - m) * 60);
+    return `${m}:${String(s).padStart(2, '0')}/M`;
+  }).tickSize(3)));
+
+  g.append('text').attr('x', o.iw / 2).attr('y', o.ih + 36).attr('text-anchor', 'middle').attr('fill', P.fg2).style('font-size', '12px').text('Average field percentile across 2026 races (100% = top of field)');
+  g.append('text').attr('transform', 'rotate(-90)').attr('x', -o.ih / 2).attr('y', -48).attr('text-anchor', 'middle').attr('fill', P.fg2).style('font-size', '12px').text('Season-best pace (minutes per mile, faster at top)');
+
+  const rs = d3.scaleSqrt().domain([1, 7]).range([5.5, 14]);
+
+  // Label top notable runners without clutter
+  const topLabelSet = new Set(
+    pool.slice().sort((a, b) => (b.avg_percentile * 1.2 + b.races_count * 5) - (a.avg_percentile * 1.2 + a.races_count * 5)).slice(0, 18).map(d => d.id)
+  );
+  topLabelSet.add(state.selAth);
+
+  pool.slice().sort((a, b) => b.races_count - a.races_count).forEach(a => {
+    const px = x(a.avg_percentile), py = y(a.pace_min), r = rs(a.races_count);
+    const ci = Math.max(0, CATS.indexOf(a.cat)), col = cc(a.cat);
+    const gg = g.append('g').attr('transform', `translate(${px},${py})`).style('cursor', 'pointer')
+      .on('click', () => { state.selAth = a.id; renderAll(); el('prof').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); })
+      .on('mousemove', e => tip.show(`<b>${esc(a.name)}</b> · ${esc(a.gender)} Gr/Age ${a.grade_or_age}<br>${esc(a.division)}<br>PR: <b>${esc(a.pr_time)}</b> (${esc(a.pr_pace)}) at ${esc(a.pr_meet)}<br>Avg field pct: <b>${a.avg_percentile}%</b> · ${a.races_count} race${a.races_count > 1 ? 's' : ''}`, e))
+      .on('mouseleave', tip.hide);
+
+    const sz = Math.PI * r * r;
+    gg.append('path')
+      .attr('d', d3.symbol().type(SYM[ci % SYM.length]).size(sz)())
+      .attr('fill', col)
+      .attr('fill-opacity', a.races_count >= 2 ? 0.76 : 0.45)
+      .attr('stroke', P.surface)
+      .attr('stroke-width', 1.5);
+
+    if (a.id === state.selAth) {
+      gg.append('path')
+        .attr('d', d3.symbol().type(SYM[ci % SYM.length]).size(sz * 1.85 + 150)())
+        .attr('fill', 'none').attr('stroke', P.fg).attr('stroke-width', 1.8);
+    }
+    if (topLabelSet.has(a.id)) {
+      gg.append('text')
+        .attr('y', r + 11)
+        .attr('text-anchor', 'middle')
+        .attr('fill', a.id === state.selAth ? P.fg : P.fg2)
+        .style('font-size', '10.5px')
+        .style('font-weight', a.id === state.selAth ? '600' : '400')
+        .text(a.name.split(' ').slice(-1)[0]);
+    }
+  });
+
+  const fastest = pool.slice().sort((a, b) => a.pace_min - b.pace_min)[0];
+  const topPct = pool.filter(a => a.races_count >= 3).sort((a, b) => b.avg_percentile - a.avg_percentile)[0] || fastest;
+  el('map-so').innerHTML = fastest
+    ? `<b>${esc(fastest.name)}</b> (${esc(fastest.division)}, ${esc(fastest.pr_pace)} pace, ${esc(fastest.pr_time)} PR) posted the fastest mile pace in this view, while <b>${esc(topPct.name)}</b> averaged in the top <b>${(100 - topPct.avg_percentile).toFixed(1)}%</b> of the field (${topPct.avg_percentile}th percentile across ${topPct.races_count} races). Marker size scales with races completed in 2026; click any point to inspect that runner's full split log below.`
+    : `No runners match the current filter combination.`;
+
+  const activeCats = CATS.filter(c => ATHLETES.some(a => a.cat === c));
+  el('leg').innerHTML = activeCats.map((c, i) =>
+    `<button data-c="${c}" aria-pressed="${!state.offCats.has(c)}"><svg viewBox="-8 -8 16 16"><path d="${d3.symbol().type(SYM[i % SYM.length]).size(120)()}" fill="${cc(c)}"/></svg>${c} (${ATHLETES.filter(a => a.cat === c && matchFilter(a)).length})</button>`
+  ).join('') + '<span>Click a division to hide or show it.</span>';
+
+  el('leg').onclick = e => {
+    const b = e.target.closest('[data-c]');
+    if (b) {
+      state.offCats.has(b.dataset.c) ? state.offCats.delete(b.dataset.c) : state.offCats.add(b.dataset.c);
+      renderMap();
+    }
+  };
+}
+
+function renderCardsAndProf() {
+  let list = ATHLETES.filter(matchFilter);
+  if (state.search) {
+    list = list.filter(a => a.name.toLowerCase().includes(state.search) || a.division.toLowerCase().includes(state.search));
+  }
+  // Sort by races_count * percentile so key contributors appear first
+  list = list.slice().sort((a, b) => (b.avg_percentile + b.races_count * 6) - (a.avg_percentile + a.races_count * 6));
+
+  if (!list.some(a => a.id === state.selAth) && list.length) {
+    state.selAth = list[0].id;
+  }
+
+  const shown = list.slice(0, state.cardLimit);
+  el('cards').innerHTML = shown.map(a => `
+    <button class="fc" data-id="${a.id}" aria-pressed="${a.id === state.selAth}">
+      <span class="mono-b" style="background:${cc(a.cat)}">${esc(a.ab)}</span>
+      <span style="min-width:0">
+        <b>${esc(a.name)}</b>
+        <span>${esc(a.division)} · ${a.gender === 'Boys' ? 'Boys' : 'Girls'} (${a.grade_or_age})</span>
+        <span class="mono">${esc(a.pr_time)} PR · ${a.avg_percentile}% pct (${a.races_count}r)</span>
+      </span>
+    </button>
+  `).join('');
+
+  el('cards').onclick = e => {
+    const b = e.target.closest('[data-id]');
+    if (b) {
+      state.selAth = b.dataset.id;
+      renderAll();
+      el('prof').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  };
+
+  const f = ATHLETES.find(x => x.id === state.selAth) || ATHLETES[0];
+  if (!f) {
+    el('prof').innerHTML = '<div class="sub">No runner selected.</div>';
+    return;
+  }
+
+  const firstRace = f.races[0], lastRace = f.races[f.races.length - 1];
+  const deltaSec = (f.races.length > 1 && firstRace.time_seconds && lastRace.time_seconds)
+    ? +(lastRace.time_seconds - firstRace.time_seconds).toFixed(2)
+    : null;
+
+  const facts = [
+    `Season personal best of ${f.pr_time} (${f.pr_pace} pace) set at ${f.pr_meet}.`,
+    `Competed in ${f.races_count} race${f.races_count > 1 ? 's' : ''} during the 2026 season, finishing as high as #${f.best_place} overall (${f.top_10_finishes} top-10 finish${f.top_10_finishes === 1 ? '' : 'es'}).`,
+    `Averaged in the ${f.avg_percentile}th percentile of all finishers across entered races.`
+  ];
+  if (deltaSec != null) {
+    facts.push(`From first race (${firstRace.short_meet_name}, ${firstRace.time}) to final appearance (${lastRace.short_meet_name}, ${lastRace.time}), net time change was ${deltaSec <= 0 ? '' : '+'}${deltaSec}s.`);
+  }
+
+  const rowsHtml = f.races.map(r => `
+    <tr>
+      <td class="mono">${esc(r.date)}</td>
+      <td><b>${esc(r.short_meet_name)}</b></td>
+      <td>${esc(r.division)}</td>
+      <td class="num">#${r.overall_place} <span style="color:var(--muted)">/ ${r.total_finishers}</span></td>
+      <td class="num">#${r.team_rank}</td>
+      <td class="num"><b>${esc(r.time)}</b></td>
+      <td class="num">${esc(r.pace)}</td>
+      <td class="num">${r.percentile}%</td>
+      <td><a href="${esc(r.source_url)}" target="_blank" rel="noopener">HTML</a></td>
+    </tr>
+  `).join('');
+
+  el('prof').innerHTML = `
+    <div class="prof">
+      <span class="mono-b" style="background:${cc(f.cat)}">${esc(f.ab)}</span>
+      <div style="min-width:0">
+        <h3>${esc(f.name)}</h3>
+        <div class="meta">${esc(f.division)} · ${esc(f.gender)} · Grade/Age ${f.grade_or_age} · ${f.races_count} races · PR ${esc(f.pr_time)} (${esc(f.pr_pace)})</div>
+        <ul>${facts.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+        <div class="tablewrap" style="margin-top:10px">
+          <table class="t">
+            <thead>
+              <tr><th>Date</th><th>Meet</th><th>Division</th><th class="num">Overall</th><th class="num">Aquinas #</th><th class="num">Time</th><th class="num">Pace</th><th class="num">Field %</th><th>Sheet</th></tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
         </div>
       </div>
     </div>
+  `;
+}
 
-    <!-- KPI Row -->
-    <div class="kpi-grid" id="kpiGrid"></div>
+function renderTeamCharts() {
+  const P = VZ.pal();
+  const races = RAW.races.filter(matchFilter).filter(r => r.aquinas_top5_avg_seconds != null && r.level !== 'Community');
+  const D = races.slice().sort((a, b) => a.aquinas_top5_avg_seconds - b.aquinas_top5_avg_seconds).slice(0, 16);
 
-    <!-- VIEW 1: SEASON & TEAMS -->
-    <section id="view-overview" class="view-section active">
-      <div class="charts-grid">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Top-5 Team Average Time Progression</div>
-              <div class="card-subtitle">Average finish time (minutes) of Aquinas Academy's top-5 scorers by meet</div>
-            </div>
-          </div>
-          <div class="chart-box">
-            <canvas id="teamProgressionChart"></canvas>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Pack Compression (1-to-5 Runner Spread)</div>
-              <div class="card-subtitle">Time gap in seconds between Aquinas #1 and #5 scorer (lower = tighter pack)</div>
-            </div>
-          </div>
-          <div class="chart-box">
-            <canvas id="packSpreadChart"></canvas>
-          </div>
-        </div>
-      </div>
+  // Left chart: Top-5 average time
+  const h1 = Math.max(260, D.length * 22 + 34);
+  const o1 = VZ.svg(el('size'), 520, h1, { t: 6, r: 58, b: 24, l: 175 }), g1 = o1.g;
+  const labelOf = d => `${d.short_meet_name.replace(/ \(.*\)/, '')} · ${d.division.replace(' (9-12)', '').replace(' (7-8)', '').replace(' (5-6)', '').replace(' (K-4)', '').replace('Elementary ', '').replace('Developmental', 'Dev')} ${d.gender[0]}`;
+  const y1 = d3.scaleBand().domain(D.map(labelOf)).range([0, o1.ih]).padding(0.28);
+  const x1 = d3.scaleLinear().domain([0, d3.max(D, d => d.aquinas_top5_avg_seconds / 60) || 25]).nice().range([0, o1.iw]);
 
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Official Team Standings &amp; Matchup Scores</div>
-            <div class="card-subtitle">All 2026 invitational, championship, and dual/tri-meet team results</div>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table id="teamStandingsTable">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Meet</th>
-                <th>Division</th>
-                <th>Gender</th>
-                <th>Aquinas Finish</th>
-                <th>Team Points</th>
-                <th>Top-5 Total Time</th>
-                <th>Top-5 Avg</th>
-                <th>Opponent Standings</th>
-                <th>Source</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+  D.forEach(d => {
+    const lbl = labelOf(d);
+    const mins = d.aquinas_top5_avg_seconds / 60;
+    g1.append('rect')
+      .attr('y', y1(lbl)).attr('height', y1.bandwidth())
+      .attr('width', x1(mins)).attr('fill', cc(d.division)).attr('rx', 3).attr('opacity', 0.85)
+      .on('mousemove', e => tip.show(`<b>${esc(d.short_meet_name)}</b><br>${esc(d.division)} ${esc(d.gender)}<br>Top-5 Avg: <b>${fmtSec(d.aquinas_top5_avg_seconds)}</b><br>Aquinas finishers: ${d.aquinas_finishers_count}`, e))
+      .on('mouseleave', tip.hide);
+    g1.append('text')
+      .attr('x', x1(mins) + 5).attr('y', y1(lbl) + y1.bandwidth() / 2 + 4)
+      .attr('fill', P.fg2).style('font-size', '11px').style('font-family', 'var(--font-mono)')
+      .text(fmtSec(d.aquinas_top5_avg_seconds));
+  });
+  VZ.axisStyle(g1.append('g').call(d3.axisLeft(y1).tickSize(0)));
+  VZ.axisStyle(g1.append('g').attr('transform', `translate(0,${o1.ih})`).call(d3.axisBottom(x1).ticks(5).tickFormat(d => d + 'm')));
 
-    <!-- VIEW 2: ATHLETES & PRS -->
-    <section id="view-athletes" class="view-section">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Athlete Season Trajectory Comparison</div>
-            <div class="card-subtitle">Click athletes below (or in the table) to compare race times &amp; field percentiles across the 2026 season</div>
-          </div>
-          <div class="pill-group" id="metricToggle">
-            <button class="pill-btn active" data-metric="time">Finish Time (min)</button>
-            <button class="pill-btn" data-metric="percentile">Field Percentile (%)</button>
-          </div>
-        </div>
-        <div class="athlete-chips" id="athleteChips"></div>
-        <div class="chart-box">
-          <canvas id="athleteComparisonChart"></canvas>
-        </div>
-      </div>
+  const fastest5 = D[0];
+  el('size-so').innerHTML = fastest5
+    ? `Sorted from fastest top-five average to slowest across filtered races. Fastest pack average in this view: <b>${esc(fastest5.short_meet_name)} (${esc(fastest5.division)} ${esc(fastest5.gender)})</b> at <b>${fmtSec(fastest5.aquinas_top5_avg_seconds)}</b>. High SchoolBoys dropped their top-5 average from <b>18:56.32</b> at Youthtowne Clash to <b>18:03.62</b> at the TSTCA Championship Tune-Up.`
+    : `No races with 5+ Aquinas finishers in current filter.`;
 
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Aquinas Academy Roster &amp; Season PR Leaderboard</div>
-            <div class="card-subtitle">Click any athlete row to toggle them on the progression chart above</div>
-          </div>
-          <input type="search" id="athleteSearch" placeholder="Search athlete name..." />
-        </div>
-        <div class="table-wrap">
-          <table id="athletesTable">
-            <thead>
-              <tr>
-                <th>Athlete</th>
-                <th>Gender</th>
-                <th>Grade / Age</th>
-                <th>Primary Division</th>
-                <th>Races</th>
-                <th>Season PR</th>
-                <th>PR Pace</th>
-                <th>PR Meet</th>
-                <th>Best Place</th>
-                <th>Top-10s</th>
-                <th>Avg Field Pct</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+  // Right chart: 1-to-5 Pack Spread (seconds)
+  const S = races.filter(r => r.aquinas_1_to_5_spread_seconds != null).sort((a, b) => a.aquinas_1_to_5_spread_seconds - b.aquinas_1_to_5_spread_seconds).slice(0, 16);
+  const h2 = Math.max(260, S.length * 22 + 34);
+  const o2 = VZ.svg(el('chg'), 520, h2, { t: 6, r: 58, b: 24, l: 175 }), g2 = o2.g;
+  const y2 = d3.scaleBand().domain(S.map(labelOf)).range([0, o2.ih]).padding(0.28);
+  const x2 = d3.scaleLinear().domain([0, d3.max(S, d => d.aquinas_1_to_5_spread_seconds) || 180]).nice().range([0, o2.iw]);
 
-    <!-- VIEW 3: RACE EXPLORER -->
-    <section id="view-meets" class="view-section">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Race Field Distribution &amp; Aquinas Pack Placement</div>
-            <div class="card-subtitle">Every finisher in the selected race — Aquinas Academy runners highlighted in Gold/Maroon vs. full field</div>
-          </div>
-          <select id="raceSelector" style="min-width: 320px;"></select>
-        </div>
-        <div class="chart-box">
-          <canvas id="raceFieldChart"></canvas>
-        </div>
-      </div>
+  S.forEach(d => {
+    const lbl = labelOf(d);
+    const sp = d.aquinas_1_to_5_spread_seconds;
+    g2.append('rect')
+      .attr('y', y2(lbl)).attr('height', y2.bandwidth())
+      .attr('width', x2(sp)).attr('fill', cc(d.division)).attr('rx', 3).attr('opacity', 0.85)
+      .on('mousemove', e => tip.show(`<b>${esc(d.short_meet_name)}</b><br>${esc(d.division)} ${esc(d.gender)}<br>1-to-5 Pack Spread: <b>${fmtSec(sp)}</b> (${sp.toFixed(1)}s)<br>#1: ${esc(d.aquinas_runners[0].name)} (${d.aquinas_runners[0].time})<br>#5: ${esc(d.aquinas_runners[4].name)} (${d.aquinas_runners[4].time})`, e))
+      .on('mouseleave', tip.hide);
+    g2.append('text')
+      .attr('x', x2(sp) + 5).attr('y', y2(lbl) + y2.bandwidth() / 2 + 4)
+      .attr('fill', P.fg2).style('font-size', '11px').style('font-family', 'var(--font-mono)')
+      .text(sp.toFixed(1) + 's');
+  });
+  VZ.axisStyle(g2.append('g').call(d3.axisLeft(y2).tickSize(0)));
+  VZ.axisStyle(g2.append('g').attr('transform', `translate(0,${o2.ih})`).call(d3.axisBottom(x2).ticks(5).tickFormat(d => d + 's')));
 
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title" id="raceTableTitle">Race Results</div>
-            <div class="card-subtitle" id="raceTableSubtitle"></div>
-          </div>
-          <div class="pill-group" id="raceScopeToggle">
-            <button class="pill-btn active" data-scope="aquinas">Aquinas Runners Only</button>
-            <button class="pill-btn" data-scope="all">Entire Race Field</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table id="raceResultsTable">
-            <thead>
-              <tr>
-                <th>Overall Place</th>
-                <th>Team Rank</th>
-                <th>Runner</th>
-                <th>Team</th>
-                <th>Grade/Age</th>
-                <th>Bib</th>
-                <th>Time</th>
-                <th>Pace</th>
-                <th>Gap to Winner</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+  const tightest = S[0];
+  el('chg-so').innerHTML = tightest
+    ? `In cross country, a tight 1-to-5 spread prevents opponents from wedging finishers between your scorers. Tightest 5-runner pack in this view: <b>${esc(tightest.short_meet_name)} (${esc(tightest.division)} ${esc(tightest.gender)})</b> at just <b>${tightest.aquinas_1_to_5_spread_seconds.toFixed(1)}s</b> between #1 (${esc(tightest.aquinas_runners[0].name)}) and #5 (${esc(tightest.aquinas_runners[4].name)}).`
+    : `Requires at least 5 finishers to compute a 1-to-5 pack spread.`;
+}
 
-    <!-- VIEW 4: DOWNLOADS & RAW FILES -->
-    <section id="view-downloads" class="view-section">
-      <div class="download-grid">
-        <div class="dl-card">
-          <div>
-            <div class="card-title">Individual Performances CSV</div>
-            <div class="card-subtitle" style="margin-top:0.35rem;">All 623 Aquinas Academy race finishes with split times, paces, overall places, team ranks, and percentiles.</div>
-          </div>
-          <a class="btn-dl" href="data/aquinas_2026_performances.csv" download>Download CSV (623 rows)</a>
-        </div>
-        <div class="dl-card">
-          <div>
-            <div class="card-title">Official Team Standings CSV</div>
-            <div class="card-subtitle" style="margin-top:0.35rem;">All 50 team scorecards across High School WPIAL/TSTCA and Youth Diocesan meets.</div>
-          </div>
-          <a class="btn-dl" href="data/aquinas_2026_team_scores.csv" download>Download Team Scores CSV</a>
-        </div>
-        <div class="dl-card">
-          <div>
-            <div class="card-title">Complete JSON Dataset</div>
-            <div class="card-subtitle" style="margin-top:0.35rem;">Full structured JSON including all meets, athlete profiles, team standings, and complete opponent field data.</div>
-          </div>
-          <a class="btn-dl" href="data/aquinas_2026_full.json" download>Download Full JSON</a>
-        </div>
-      </div>
+function renderMoves() {
+  const milestones = [
+    ['Aug 25, 2026', 'Aquinas opens the Diocesan season at Seelos Pine Park with 1st-place team wins in Developmental Girls (47 pts) and MS Varsity Girls (15 pts), plus 2nd in MS Varsity Boys and Dev Boys.', 'Seelos #1'],
+    ['Aug 29, 2026', 'At the 14-team Blessed Trinity (BTA) Invitational at Hartwood Acres, Aquinas Developmental Girls take 1st of 12 teams (50 pts) and Developmental Boys place 2nd of 14 teams.', 'BTA Invite'],
+    ['Sep 4, 2026', 'St. Kilian Invitational in Mars: Developmental Girls win their third straight team title (25 pts) while JV Boys and Dev Boys both finish 2nd.', 'St. Kilian'],
+    ['Sep 18, 2026', 'Youthtowne Clash: Aquinas sweeps 1st place in both 3rd–4th Grade Boys (1st of 10 teams) and Girls (1st of 6), takes 2nd of 9 in Jr High Boys (11:49 avg), and debuts High School Varsity 5K led by freshman Isaac Vangura (11th, 17:15.45) and sophomore Andrew Deem (25th, 17:49.28).', 'Youthtowne Clash'],
+    ['Sep 24, 2026', 'Home course dominance at the Aquinas & Holy Cross Meet in Allison Park: Aquinas wins 5 of 6 team divisions (MS Varsity Boys & Girls, JV Boys, and Developmental Boys & Girls).', 'Aquinas Home Meet'],
+    ['Sep 29, 2026', 'WPIAL Class A Tri-Meet at Avonworth: Isaac Vangura (1st overall, 19:02.10) and Andrew Deem (2nd, 19:02.19) go 1–2 as Aquinas HS Boys defeat both Avonworth (22–34) and Neighborhood Academy (18–43). HS Girls defeat Neighborhood Academy (15–50).', 'Avonworth Tri-Meet'],
+    ['Oct 2, 2026', 'North Area Diocesan XC Championships at North Park: Aquinas captures three North Area Championship banners — MS Varsity Boys (1st, 35 pts, 5 runners in the top 12), Elementary JV Boys (1st, 43 pts), and Developmental Boys & Girls (both 1st of 8 teams).', 'North Area Champs'],
+    ['Oct 6, 2026', 'Seelos "Second Chance" Meet: MS Varsity Boys score 27 pts (places 2, 4, 6, 7, 8 led by John Austin 11:04.26 and Zach Guillen 11:17.78) to win the team title; MS Varsity Girls, JV Boys, and Dev Girls also take 1st.', 'Seelos #2'],
+    ['Oct 22, 2026', 'TSTCA Championship Tune-Up at White Oak Park (Class A): Freshman Isaac Vangura runs 16:41.76 (3rd overall), Andrew Deem runs 17:24.98 (8th), Roman Spagnolo runs 17:35.22 (10th), and Giancarlo Josephs runs 18:31.26 (19th). Aquinas Boys tie Neshannock at 59 points (winning the tiebreaker for 2nd of 10 teams, just 1 point behind South Side\'s 58, while posting the fastest top-5 total time in Class A at 1:30:18.09). Aquinas Girls place 5th of 10 teams (118 pts).', 'TSTCA Class A']
+  ];
+  el('movesList').innerHTML = milestones.map(m =>
+    `<div class="tl2"><div class="w">${esc(m[0])}</div><div>${esc(m[1])} <span class="chip">${esc(m[2])}</span></div></div>`
+  ).join('');
+}
 
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">2026 Meet Directory &amp; Smiley Miles Source Links</div>
-            <div class="card-subtitle">All 10 events where Aquinas Academy competed in 2026</div>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table id="meetsSummaryTable">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Meet Name</th>
-                <th>Location</th>
-                <th>Program</th>
-                <th>Host</th>
-                <th>Race Sections</th>
-                <th>Aquinas Finishes</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </main>
+function renderRaceExplorer() {
+  const races = RAW.races.filter(matchFilter);
+  const sel = el('raceSelect');
+  if (!races.length) {
+    sel.innerHTML = '<option>No races match filter</option>';
+    return;
+  }
+  if (!state.raceId || !races.some(r => r.race_id === state.raceId)) {
+    // Default to TSTCA Class A Boys if available, else last race
+    const tstca = races.find(r => r.race_id.includes('tstca') && r.gender === 'Boys');
+    state.raceId = (tstca || races[races.length - 1]).race_id;
+  }
 
-  <script src="data/data.js"></script>
-  <script>
-    const DATA = window.AQUINAS_XC_DATA;
-    let state = {
-      view: 'overview',
-      level: 'ALL',
-      division: 'ALL',
-      gender: 'ALL',
-      athleteMetric: 'time',
-      selectedAthletes: [],
-       athleteSearch: '',
-      selectedRaceId: null,
-      raceScope: 'aquinas'
-    };
+  sel.innerHTML = races.map(r => `
+    <option value="${esc(r.race_id)}" ${r.race_id === state.raceId ? 'selected' : ''}>
+      ${esc(r.date)} · ${esc(r.short_meet_name)} — ${esc(r.division)} ${esc(r.gender)} (${r.aquinas_finishers_count} Aquinas / ${r.total_finishers} total)
+    </option>
+  `).join('');
 
-    let charts = {
-      teamProg: null,
-      packSpread: null,
-      athleteComp: null,
-      raceField: null
-    };
+  const race = races.find(r => r.race_id === state.raceId) || races[0];
+  const P = VZ.pal();
+  const o = VZ.svg(el('raceChart'), 900, 290, { t: 16, r: 28, b: 38, l: 58 }), g = o.g;
 
-    function fmtSeconds(sec) {
-      if (sec == null || isNaN(sec)) return '—';
-      const m = Math.floor(sec / 60);
-      const s = (sec - m * 60).toFixed(2).padStart(5, '0');
-      return `${m}:${s}`;
+  const x = d3.scaleLinear().domain([1, Math.max(race.total_finishers, 5)]).range([0, o.iw]);
+  const minT = (d3.min(race.all_runners, d => d.time_seconds) || 600) / 60;
+  const maxT = (d3.max(race.all_runners, d => d.time_seconds) || 1500) / 60;
+  const y = d3.scaleLinear().domain([maxT * 1.02, minT * 0.97]).range([o.ih, 0]);
+
+  VZ.axisStyle(g.append('g').attr('transform', `translate(0,${o.ih})`).call(d3.axisBottom(x).ticks(8).tickFormat(d => '#' + d).tickSize(3)));
+  VZ.axisStyle(g.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(d => fmtSec(d * 60)).tickSize(3)));
+
+  g.append('text').attr('x', o.iw / 2).attr('y', o.ih + 32).attr('text-anchor', 'middle').attr('fill', P.fg2).style('font-size', '12px').text('Overall finish place in race (left = 1st place)');
+  g.append('text').attr('transform', 'rotate(-90)').attr('x', -o.ih / 2).attr('y', -44).attr('text-anchor', 'middle').attr('fill', P.fg2).style('font-size', '12px').text('Finish time (faster at top)');
+
+  const col = cc(race.division);
+  // Draw non-Aquinas first
+  race.all_runners.filter(r => !r.is_aquinas).forEach(r => {
+    g.append('circle')
+      .attr('cx', x(r.place)).attr('cy', y(r.time_seconds / 60)).attr('r', 3.5)
+      .attr('fill', P.muted).attr('fill-opacity', 0.35)
+      .on('mousemove', e => tip.show(`<b>#${r.place} ${esc(r.name)}</b><br>${esc(r.team)} · Gr/Age ${r.grade_or_age}<br>Time: <b>${esc(r.time)}</b> (${esc(r.pace)})`, e))
+      .on('mouseleave', tip.hide);
+  });
+
+  // Draw Aquinas runners on top
+  race.all_runners.filter(r => r.is_aquinas).forEach((r, idx) => {
+    const gg = g.append('g').attr('transform', `translate(${x(r.place)},${y(r.time_seconds / 60)})`).style('cursor', 'pointer')
+      .on('mousemove', e => tip.show(`<b>#${r.place} ${esc(r.name)}</b> (Aquinas #${idx + 1})<br>Time: <b>${esc(r.time)}</b> (${esc(r.pace)})<br>Bib ${r.bib} · Gr/Age ${r.grade_or_age}`, e))
+      .on('mouseleave', tip.hide);
+    gg.append('circle').attr('r', 6.5).attr('fill', col).attr('stroke', P.surface).attr('stroke-width', 1.8);
+    if (idx < 7) {
+      gg.append('text').attr('y', -10).attr('text-anchor', 'middle').attr('fill', P.fg).style('font-size', '10.5px').style('font-weight', '600').text(r.name.split(' ').slice(-1)[0]);
     }
+  });
 
-    function initControls() {
-      // Populate division dropdown
-      const divs = Array.from(new Set(DATA.races.map(r => r.division)));
-      const divSel = document.getElementById('divisionSelect');
-      divs.forEach(d => {
-        const opt = document.createElement('option');
-        opt.value = d;
-        opt.textContent = d;
-        divSel.appendChild(opt);
-      });
+  const topAq = race.aquinas_runners[0];
+  el('race-so').innerHTML = topAq
+    ? `<b>${esc(race.meet_name)} — ${esc(race.division)} ${esc(race.gender)}</b> (${esc(race.date)}, ${esc(race.location)}). Race winner: ${esc(race.winner_name)} (${esc(race.winner_team)}, ${fmtSec(race.winner_time_seconds)}). Top Aquinas finisher: <b>#${topAq.place} ${esc(topAq.name)}</b> in <b>${esc(topAq.time)}</b> (${esc(topAq.pace)}). ${race.aquinas_top5_avg_seconds ? 'Aquinas top-5 average: <b>' + fmtSec(race.aquinas_top5_avg_seconds) + '</b> (1–5 spread: ' + fmtSec(race.aquinas_1_to_5_spread_seconds) + ').' : ''} <a href="${esc(race.source_url)}" target="_blank" rel="noopener">Original Smiley Miles sheet &nearr;</a>`
+    : '';
 
-      // Default selected athletes for comparison chart
-      const defaultNames = ['Isaac Vangura', 'Andrew Deem', 'Roman Spagnolo', 'John Austin', 'Zach Guillen', 'Kat Barnett'];
-      state.selectedAthletes = DATA.athletes
-        .filter(a => defaultNames.includes(a.name))
-        .slice(0, 5)
-        .map(a => `${a.name}|${a.level}`);
+  const rows = state.onlyAq ? race.aquinas_runners : race.all_runners;
+  let aqRank = 0;
+  el('raceTableBody').innerHTML = rows.map(r => {
+    if (r.is_aquinas) aqRank++;
+    const back = r.place === 1 ? '0:00.00' : '+' + fmtSec(r.time_seconds - race.winner_time_seconds);
+    const pct = (100 * (race.total_finishers - r.place) / Math.max(1, race.total_finishers - 1)).toFixed(1);
+    return `
+      <tr class="${r.is_aquinas && !state.onlyAq ? 'hl' : ''}">
+        <td class="num">#${r.place}</td>
+        <td class="num">${r.is_aquinas ? '#' + aqRank : '—'}</td>
+        <td><b>${esc(r.name)}</b></td>
+        <td>${esc(r.team)}</td>
+        <td class="num">${r.grade_or_age}</td>
+        <td class="num">${r.bib}</td>
+        <td class="num"><b>${esc(r.time)}</b></td>
+        <td class="num">${esc(r.pace)}</td>
+        <td class="num" style="color:var(--muted)">${back}</td>
+        <td class="num">${pct}%</td>
+      </tr>
+    `;
+  }).join('');
+}
 
-      // Nav tabs
-      document.querySelectorAll('.nav-tab').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          state.view = btn.dataset.view;
-          document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-          document.getElementById(`view-${state.view}`).classList.add('active');
-          renderAll();
-        });
-      });
+function renderStandings() {
+  const list = RAW.team_standings.filter(matchFilter);
+  el('standingsBody').innerHTML = list.map(s => {
+    const pos = s.aquinas_position;
+    const posCls = pos === 1 ? 'up' : (typeof pos === 'number' && pos <= 3 ? 'warn' : '');
+    const posTxt = typeof pos === 'number' ? `#${pos} / ${s.scored_teams_count}` : (pos || 'Inc.');
+    const opps = s.teams.filter(t => typeof t.position === 'number').slice(0, 4).map(t =>
+      t.is_aquinas ? `<b>${t.position}. ${esc(t.team)} (${t.points})</b>` : `${t.position}. ${esc(t.team)} (${t.points})`
+    ).join(' · ');
+    const sub = s.matchup ? ` <span class="chip">${esc(s.matchup)}</span>` : '';
+    return `
+      <tr>
+        <td class="mono">${esc(s.date)}</td>
+        <td><b>${esc(s.short_meet_name)}</b>${sub}</td>
+        <td>${esc(s.division)}</td>
+        <td>${esc(s.gender)}</td>
+        <td class="num ${posCls}"><b>${posTxt}</b></td>
+        <td class="num">${s.aquinas_points != null ? s.aquinas_points : '—'}</td>
+        <td class="num">${esc(s.aquinas_total_time || '—')}</td>
+        <td class="num">${esc(s.aquinas_avg_time || '—')}</td>
+        <td style="color:var(--fg2)">${opps || 'Less than 5 finishers'}</td>
+        <td><a href="${esc(s.source_url)}" target="_blank" rel="noopener">HTML</a></td>
+      </tr>
+    `;
+  }).join('');
+}
 
-      // Level filter
-      document.querySelectorAll('#levelFilterGroup .pill-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('#levelFilterGroup .pill-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          state.level = btn.dataset.level;
-          renderAll();
-        });
-      });
-
-      // Division filter
-      divSel.addEventListener('change', () => {
-        state.division = divSel.value;
-        renderAll();
-      });
-
-      // Gender filter
-      document.querySelectorAll('#genderFilterGroup .pill-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('#genderFilterGroup .pill-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          state.gender = btn.dataset.gender;
-          renderAll();
-        });
-      });
-
-      // Metric toggle
-      document.querySelectorAll('#metricToggle .pill-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('#metricToggle .pill-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          state.athleteMetric = btn.dataset.metric;
-          renderAthletesView();
-        });
-      });
-
-      // Search
-      document.getElementById('athleteSearch').addEventListener('input', e => {
-        state.athleteSearch = e.target.value.toLowerCase();
-        renderAthletesView();
-      });
-
-      // Race selector
-      document.getElementById('raceSelector').addEventListener('change', e => {
-        state.selectedRaceId = e.target.value;
-        renderMeetsView();
-      });
-
-      // Race scope toggle
-      document.querySelectorAll('#raceScopeToggle .pill-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('#raceScopeToggle .pill-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          state.raceScope = btn.dataset.scope;
-          renderMeetsView();
-        });
-      });
+function initEvents() {
+  // Scope & gender pills
+  el('globalFilters').addEventListener('click', e => {
+    const sc = e.target.closest('[data-scope]');
+    if (sc) {
+      el('globalFilters').querySelectorAll('[data-scope]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      sc.setAttribute('aria-pressed', 'true');
+      state.scope = sc.dataset.scope;
+      renderAll();
     }
-
-    function filterItem(item) {
-      if (state.level !== 'ALL' && item.level !== state.level) return false;
-      if (state.division !== 'ALL' && item.division !== state.division) return false;
-      if (state.gender !== 'ALL' && item.gender !== state.gender) return false;
-      return true;
+    const gd = e.target.closest('[data-gend]');
+    if (gd) {
+      el('globalFilters').querySelectorAll('[data-gend]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      gd.setAttribute('aria-pressed', 'true');
+      state.gend = gd.dataset.gend;
+      renderAll();
     }
+  });
 
-    function renderKPIs() {
-      const perfs = DATA.performances.filter(filterItem);
-      const races = DATA.races.filter(filterItem);
-      const standings = DATA.team_standings.filter(filterItem);
-      const uniqueMeets = new Set(races.map(r => r.meet_id)).size;
-      const uniqueRunners = new Set(perfs.map(p => p.name)).size;
-      const teamWins = standings.filter(s => s.aquinas_position === 1).length;
-      const teamPodiums = standings.filter(s => typeof s.aquinas_position === 'number' && s.aquinas_position <= 3).length;
-      const top10s = perfs.filter(p => p.overall_place <= 10).length;
-      const individualWins = perfs.filter(p => p.overall_place === 1).length;
+  // Search & limit
+  el('runnerSearch').addEventListener('input', e => {
+    state.search = e.target.value.trim().toLowerCase();
+    renderCardsAndProf();
+  });
 
-      const kpiHtml = `
-        <div class="kpi-card">
-          <div class="kpi-label">Meets &amp; Race Divisions</div>
-          <div class="kpi-value">${uniqueMeets} <span style="font-size:1rem;color:var(--text-muted);font-weight:600;">meets (${races.length} races)</span></div>
-          <div class="kpi-sub">100% of 2026 Smiley Miles results</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Aquinas Finishes</div>
-          <div class="kpi-value">${perfs.length}</div>
-          <div class="kpi-sub">${uniqueRunners} unique Aquinas Academy runners</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Team 1st Place Wins</div>
-          <div class="kpi-value" style="color:var(--gold)">${teamWins} <span style="font-size:1rem;color:var(--text-muted);font-weight:600;">(${teamPodiums} podiums)</span></div>
-          <div class="kpi-sub">Out of ${standings.length} scored team divisions</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Individual Top-10s</div>
-          <div class="kpi-value" style="color:var(--green)">${top10s}</div>
-          <div class="kpi-sub">${individualWins} overall individual 1st-place wins</div>
-        </div>
-      `;
-      document.getElementById('kpiGrid').innerHTML = kpiHtml;
-    }
+  document.querySelectorAll('[data-limit]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-limit]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      state.cardLimit = parseInt(btn.dataset.limit, 10);
+      renderCardsAndProf();
+    });
+  });
 
-    function renderOverview() {
-      const races = DATA.races.filter(filterItem).filter(r => r.aquinas_top5_avg_seconds != null);
-      const palette = {
-        'HS Varsity (9-12) Boys': '#ef4444',
-        'HS Varsity (9-12) Girls': '#f97316',
-        'MS Varsity (7-8) Boys': '#eab308',
-        'MS Varsity (7-8) Girls': '#22c55e',
-        'Elementary JV (5-6) Boys': '#38bdf8',
-        'Elementary JV (5-6) Girls': '#a855f7',
-        'Developmental (K-4) Boys': '#14b8a6',
-        'Developmental (K-4) Girls': '#ec4899'
-      };
+  // Race select & toggle
+  el('raceSelect').addEventListener('change', e => {
+    state.raceId = e.target.value;
+    renderRaceExplorer();
+  });
 
-      // Group races by series (division + gender)
-      const groups = {};
-      races.forEach(r => {
-        const key = `${r.division} ${r.gender}`;
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(r);
-      });
+  el('onlyAqBtn').addEventListener('click', () => {
+    state.onlyAq = !state.onlyAq;
+    el('onlyAqBtn').setAttribute('aria-pressed', String(state.onlyAq));
+    el('onlyAqBtn').textContent = state.onlyAq ? 'Table: Aquinas only' : 'Table: Full race field';
+    renderRaceExplorer();
+  });
 
-      const allMeetLabels = Array.from(new Set(races.map(r => r.short_meet_name)));
-      const datasetsAvg = Object.entries(groups).map(([label, list]) => {
-        const color = palette[label] || '#60a5fa';
-        return {
-          label,
-          data: allMeetLabels.map(m => {
-            const found = list.find(x => x.short_meet_name === m);
-            return found ? +(found.aquinas_top5_avg_seconds / 60).toFixed(2) : null;
-          }),
-          borderColor: color,
-          backgroundColor: color,
-          spanGaps: true,
-          tension: 0.25,
-          pointRadius: 5
-        };
-      });
-
-      if (charts.teamProg) charts.teamProg.destroy();
-      charts.teamProg = new Chart(document.getElementById('teamProgressionChart'), {
-        type: 'line',
-        data: { labels: allMeetLabels, datasets: datasetsAvg },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 11 } } },
-            tooltip: {
-              callbacks: {
-                label: ctx => `${ctx.dataset.label}: ${fmtSeconds(ctx.raw * 60)} avg`
-              }
-            }
-          },
-          scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: {
-              ticks: { color: '#94a3b8', callback: v => `${v}m` },
-              grid: { color: 'rgba(255,255,255,0.05)' },
-              title: { display: true, text: 'Top-5 Avg Time (Minutes)', color: '#94a3b8' }
-            }
-          }
-        }
-      });
-
-      // Pack spread chart
-      const spreadRaces = races.filter(r => r.aquinas_1_to_5_spread_seconds != null);
-      const datasetsSpread = Object.entries(groups).map(([label, list]) => {
-        const color = palette[label] || '#60a5fa';
-        return {
-          label,
-          data: allMeetLabels.map(m => {
-            const found = list.find(x => x.short_meet_name === m);
-            return found && found.aquinas_1_to_5_spread_seconds != null ? found.aquinas_1_to_5_spread_seconds : null;
-          }),
-          backgroundColor: color,
-          borderRadius: 4
-        };
-      });
-
-      if (charts.packSpread) charts.packSpread.destroy();
-      charts.packSpread = new Chart(document.getElementById('packSpreadChart'), {
-        type: 'bar',
-        data: { labels: allMeetLabels, datasets: datasetsSpread },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 11 } } },
-            tooltip: {
-              callbacks: {
-                label: ctx => `${ctx.dataset.label}: ${fmtSeconds(ctx.raw)} (1–5 spread)`
-              }
-            }
-          },
-          scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: {
-              ticks: { color: '#94a3b8', callback: v => `${v}s` },
-              grid: { color: 'rgba(255,255,255,0.05)' },
-              title: { display: true, text: '1-to-5 Pack Spread (Seconds)', color: '#94a3b8' }
-            }
-          }
-        }
-      });
-
-      // Render Team Standings Table
-      const standings = DATA.team_standings.filter(filterItem);
-      const tbody = document.querySelector('#teamStandingsTable tbody');
-      tbody.innerHTML = standings.map(s => {
-        const pos = s.aquinas_position;
-        const posClass = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : 'pos-other';
-        const posLabel = typeof pos === 'number' ? `#${pos} of ${s.scored_teams_count}` : (pos || 'Inc.');
-        const oppSummary = s.teams
-          .filter(t => typeof t.position === 'number')
-          .slice(0, 4)
-          .map(t => `<span style="${t.is_aquinas ? 'color:var(--gold);font-weight:700;' : ''}">${t.position}. ${t.team} (${t.points})</span>`)
-          .join(' &middot; ');
-        const matchupBadge = s.matchup ? `<div style="font-size:0.74rem;color:var(--gold);">${s.matchup}</div>` : '';
-        return `
-          <tr>
-            <td class="mono">${s.date}</td>
-            <td><strong>${s.short_meet_name}</strong>${matchupBadge}</td>
-            <td>${s.division}</td>
-            <td><span class="tag ${s.gender === 'Boys' ? 'tag-boys' : 'tag-girls'}">${s.gender}</span></td>
-            <td><span class="pos-badge ${posClass}">${posLabel}</span></td>
-            <td class="mono">${s.aquinas_points != null ? s.aquinas_points + ' pts' : '—'}</td>
-            <td class="mono">${s.aquinas_total_time || '—'}</td>
-            <td class="mono">${s.aquinas_avg_time || '—'}</td>
-            <td style="font-size:0.78rem;color:var(--text-muted);">${oppSummary || 'Incomplete team (<5)'}</td>
-            <td><a class="link-ext" href="${s.source_url}" target="_blank" rel="noopener">Smiley Miles &nearr;</a></td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderAthletesView() {
-      const athletes = DATA.athletes.filter(filterItem).filter(a => {
-        if (!state.athleteSearch) return true;
-        return a.name.toLowerCase().includes(state.athleteSearch) || a.division.toLowerCase().includes(state.athleteSearch);
-      });
-
-      // Render chips for selected or top athletes
-      const chipContainer = document.getElementById('athleteChips');
-      const topOrSelected = DATA.athletes.filter(filterItem).slice(0, 18);
-      chipContainer.innerHTML = topOrSelected.map(a => {
-        const key = `${a.name}|${a.level}`;
-        const isSel = state.selectedAthletes.includes(key);
-        return `<button class="athlete-chip ${isSel ? 'selected' : ''}" data-key="${key}">
-          ${a.name} <span style="opacity:0.7;font-size:0.72rem;">(${a.pr_time})</span>
-        </button>`;
-      }).join('');
-
-      chipContainer.querySelectorAll('.athlete-chip').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const k = btn.dataset.key;
-          if (state.selectedAthletes.includes(k)) {
-            state.selectedAthletes = state.selectedAthletes.filter(x => x !== k);
-          } else {
-            state.selectedAthletes.push(k);
-          }
-          renderAthletesView();
-        });
-      });
-
-      // Comparison Chart
-      const selectedObjs = DATA.athletes.filter(a => state.selectedAthletes.includes(`${a.name}|${a.level}`));
-      const meetDates = Array.from(new Set(selectedObjs.flatMap(a => a.races.map(r => r.short_meet_name))));
-      const colors = ['#eab308', '#ef4444', '#38bdf8', '#22c55e', '#a855f7', '#f97316', '#14b8a6'];
-
-      const datasets = selectedObjs.map((a, idx) => {
-        const c = colors[idx % colors.length];
-        return {
-          label: `${a.name} (${a.division})`,
-          data: meetDates.map(m => {
-            const r = a.races.find(x => x.short_meet_name === m);
-            if (!r) return null;
-            return state.athleteMetric === 'time' ? +(r.time_seconds / 60).toFixed(2) : r.percentile;
-          }),
-          borderColor: c,
-          backgroundColor: c,
-          spanGaps: true,
-          tension: 0.25,
-          pointRadius: 5
-        };
-      });
-
-      if (charts.athleteComp) charts.athleteComp.destroy();
-      charts.athleteComp = new Chart(document.getElementById('athleteComparisonChart'), {
-        type: 'line',
-        data: { labels: meetDates, datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#cbd5e1' } },
-            tooltip: {
-              callbacks: {
-                label: ctx => state.athleteMetric === 'time'
-                  ? `${ctx.dataset.label}: ${fmtSeconds(ctx.raw * 60)}`
-                  : `${ctx.dataset.label}: ${ctx.raw}% percentile`
-              }
-            }
-          },
-          scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: {
-              ticks: {
-                color: '#94a3b8',
-                callback: v => state.athleteMetric === 'time' ? `${v}m` : `${v}%`
-              },
-              grid: { color: 'rgba(255,255,255,0.05)' }
-            }
-          }
-        }
-      });
-
-      // Athletes Table
-      const tbody = document.querySelector('#athletesTable tbody');
-      tbody.innerHTML = athletes.map(a => {
-        const key = `${a.name}|${a.level}`;
-        const isSel = state.selectedAthletes.includes(key);
-        return `
-          <tr data-key="${key}" style="cursor:pointer;${isSel ? 'background:rgba(234,179,8,0.08);' : ''}">
-            <td><strong>${a.name}</strong> ${isSel ? '<span style="color:var(--gold);font-size:0.75rem;">&#9733; Charted</span>' : ''}</td>
-            <td><span class="tag ${a.gender === 'Boys' ? 'tag-boys' : 'tag-girls'}">${a.gender}</span></td>
-            <td class="mono">${a.grade_or_age}</td>
-            <td>${a.division}</td>
-            <td class="mono">${a.races_count}</td>
-            <td class="mono" style="color:var(--gold);font-weight:700;">${a.pr_time}</td>
-            <td class="mono">${a.pr_pace}</td>
-            <td>${a.pr_meet}</td>
-            <td><span class="pos-badge ${a.best_place <= 3 ? 'pos-' + a.best_place : 'pos-other'}">#${a.best_place}</span></td>
-            <td class="mono">${a.top_10_finishes}</td>
-            <td class="mono">
-              <div class="pct-bar"><div class="pct-fill" style="width:${a.avg_percentile}%"></div></div>
-              ${a.avg_percentile}%
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      tbody.querySelectorAll('tr').forEach(row => {
-        row.addEventListener('click', () => {
-          const k = row.dataset.key;
-          if (state.selectedAthletes.includes(k)) {
-            state.selectedAthletes = state.selectedAthletes.filter(x => x !== k);
-          } else {
-            state.selectedAthletes.push(k);
-          }
-          renderAthletesView();
-        });
-      });
-    }
-
-    function renderMeetsView() {
-      const filteredRaces = DATA.races.filter(filterItem);
-      const sel = document.getElementById('raceSelector');
-      if (!filteredRaces.length) {
-        sel.innerHTML = '<option>No races match filter</option>';
-        return;
-      }
-      if (!state.selectedRaceId || !filteredRaces.some(r => r.race_id === state.selectedRaceId)) {
-        state.selectedRaceId = filteredRaces[filteredRaces.length - 1].race_id;
-      }
-      sel.innerHTML = filteredRaces.map(r => `
-        <option value="${r.race_id}" ${r.race_id === state.selectedRaceId ? 'selected' : ''}>
-          ${r.date} — ${r.short_meet_name} | ${r.division} ${r.gender} (${r.aquinas_finishers_count} Aquinas / ${r.total_finishers} total)
-        </option>
-      `).join('');
-
-      const race = filteredRaces.find(r => r.race_id === state.selectedRaceId);
-      if (!race) return;
-
-      document.getElementById('raceTableTitle').textContent = `${race.meet_name} — ${race.division} ${race.gender}`;
-      document.getElementById('raceTableSubtitle').innerHTML = `
-        ${race.date} &bull; ${race.location} &bull; ${race.aquinas_finishers_count} Aquinas runners out of ${race.total_finishers} total finishers
-        &bull; <a class="link-ext" href="${race.source_url}" target="_blank" rel="noopener">View Original Smiley Miles HTML &nearr;</a>
-      `;
-
-      // Scatter chart of all runners in the field
-      const aqPoints = [];
-      const otherPoints = [];
-      race.all_runners.forEach(r => {
-        const pt = { x: r.place, y: +(r.time_seconds / 60).toFixed(2), name: r.name, team: r.team, time: r.time, pace: r.pace };
-        if (r.is_aquinas) aqPoints.push(pt);
-        else otherPoints.push(pt);
-      });
-
-      if (charts.raceField) charts.raceField.destroy();
-      charts.raceField = new Chart(document.getElementById('raceFieldChart'), {
-        type: 'scatter',
-        data: {
-          datasets: [
-            {
-              label: 'Aquinas Academy Runners',
-              data: aqPoints,
-              backgroundColor: '#eab308',
-              borderColor: '#991b1b',
-              borderWidth: 2,
-              pointRadius: 7,
-              pointHoverRadius: 9
-            },
-            {
-              label: 'Other Competitors',
-              data: otherPoints,
-              backgroundColor: 'rgba(148, 163, 184, 0.35)',
-              pointRadius: 4
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: ctx => {
-                  const p = ctx.raw;
-                  return `#${p.x} ${p.name} (${p.team}) — ${p.time} (${p.pace})`;
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              title: { display: true, text: 'Overall Finish Place', color: '#94a3b8' },
-              ticks: { color: '#94a3b8' },
-              grid: { color: 'rgba(255,255,255,0.05)' }
-            },
-            y: {
-              title: { display: true, text: 'Finish Time (Minutes)', color: '#94a3b8' },
-              ticks: { color: '#94a3b8', callback: v => `${v}m` },
-              grid: { color: 'rgba(255,255,255,0.05)' }
-            }
-          }
-        }
-      });
-
-      // Race table
-      const rows = state.raceScope === 'aquinas' ? race.aquinas_runners : race.all_runners;
-      let aqCounter = 0;
-      const tbody = document.querySelector('#raceResultsTable tbody');
-      tbody.innerHTML = rows.map(r => {
-        if (r.is_aquinas) aqCounter++;
-        const gap = r.time_seconds && race.winner_time_seconds ? `+${fmtSeconds(r.time_seconds - race.winner_time_seconds)}` : 'Winner';
-        return `
-          <tr style="${r.is_aquinas ? 'background:rgba(234,179,8,0.07);' : ''}">
-            <td><span class="pos-badge ${r.place <= 3 ? 'pos-' + r.place : 'pos-other'}">#${r.place}</span></td>
-            <td class="mono">${r.is_aquinas ? '#' + aqCounter : '—'}</td>
-            <td><strong style="${r.is_aquinas ? 'color:var(--gold);' : ''}">${r.name}</strong></td>
-            <td>${r.team}</td>
-            <td class="mono">${r.grade_or_age}</td>
-            <td class="mono">${r.bib}</td>
-            <td class="mono" style="font-weight:600;">${r.time}</td>
-            <td class="mono">${r.pace}</td>
-            <td class="mono" style="color:var(--text-muted);">${r.place === 1 ? '0:00.00' : gap}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderDownloadsView() {
-      const tbody = document.querySelector('#meetsSummaryTable tbody');
-      tbody.innerHTML = DATA.meets.map(m => {
-        const mRaces = DATA.races.filter(r => r.meet_id === m.meet_id);
-        const mFinishes = mRaces.reduce((acc, r) => acc + r.aquinas_finishers_count, 0);
-        return `
-          <tr>
-            <td class="mono">${m.date}</td>
-            <td><strong>${m.meet_name}</strong></td>
-            <td>${m.location}</td>
-            <td>${m.program}</td>
-            <td>${m.host}</td>
-            <td class="mono">${mRaces.length} races</td>
-            <td class="mono" style="color:var(--gold);font-weight:700;">${mFinishes} finishes</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderAll() {
-      renderKPIs();
-      if (state.view === 'overview') renderOverview();
-      if (state.view === 'athletes') renderAthletesView();
-      if (state.view === 'meets') renderMeetsView();
-      if (state.view === 'downloads') renderDownloadsView();
-    }
-
-    initControls();
+  // Theme toggle (auto -> dark -> light)
+  const modes = ['auto', 'dark', 'light'];
+  let mIdx = 0;
+  el('themeBtn').addEventListener('click', () => {
+    mIdx = (mIdx + 1) % modes.length;
+    const m = modes[mIdx];
+    if (m === 'auto') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', m);
+    el('themeBtn').textContent = `Theme: ${m}`;
     renderAll();
-  </script>
+  });
+
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renderAll());
+}
+
+function renderAll() {
+  renderKPIs();
+  renderMap();
+  renderCardsAndProf();
+  renderTeamCharts();
+  renderRaceExplorer();
+  renderStandings();
+}
+
+initEvents();
+renderMoves();
+renderAll();
+el('foot').innerHTML = 'Sources: 85 official timing HTML files from Miles of Smiles Timing Services (<a href="https://www.smileymiles.com/2026%20Results.html" target="_blank" rel="noopener">smileymiles.com/2026 Results.html</a>) archived on Oct 23, 2026. Monogram badges replace school or personal imagery. Note: Smiley Miles internal header on BTA Varsity OA listed "September 29, 2026" by typo; corrected to August 29, 2026 per file code RES082926 and meet index.';
+</script>
 </body>
 </html>
