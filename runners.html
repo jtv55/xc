@@ -6,14 +6,14 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Aquinas Academy XC · Runners · Individual Profiles & Pace Charts</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20261023-4">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body>
 
 <nav class="sitenav" style="position:sticky;top:0;z-index:1000;background:var(--bg,Canvas);font:13px/1.4 system-ui,sans-serif;display:flex;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px 14px;padding:10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid #8884;align-items:center">
-  <a href="index.html" data-tab="overall" >Overall</a>
-  <a href="schools.html" data-tab="schools" >Schools</a>
+  <a href="index.html" data-tab="overall" >2026 XC Season</a>
+  <a href="schools.html" data-tab="schools" >League</a>
   <a href="team.html" data-tab="team" >Aquinas Team</a>
   <a href="runners.html" data-tab="runners" aria-current="page">Runners</a>
   <span style="margin-left:auto;display:inline-flex;gap:8px;align-items:center">
@@ -22,7 +22,7 @@
 </nav>
 
 <div class="wrap">
-  <!-- Shared Global Division/Gender Filter Bar (used on Overall, Aquinas Team, Runners) -->
+  <!-- Shared Global Division/Gender Filter Bar (used on 2026 XC Season, Aquinas Team, Runners) -->
   <div class="ctl" id="globalFilters" style="margin-bottom:18px">
     <span class="ctl-label">Division</span>
     <button class="pill" data-scope="ALL" aria-pressed="true">All 4 divisions</button>
@@ -37,11 +37,11 @@
   </div>
 
   <!-- ======================================================================
-       TAB 1: OVERALL
+       TAB 1: 2026 XC SEASON
        ====================================================================== -->
   <div id="tab-overall" class="tab-pane ">
-    <div class="eyebrow">Overall · 2026 season overview &amp; race calendar · Oct 23, 2026</div>
-    <h1>2026 Cross Country Season Overview &amp; Race Calendar</h1>
+    <div class="eyebrow">2026 XC Season · season overview &amp; race calendar · Oct 23, 2026</div>
+    <h1>2026 XC Season</h1>
     <p class="lede">All 16 meets where Aquinas Academy competed in 2026 across High School WPIAL Class A (9–12) and K–8 Diocesan divisions. Explore the race calendar, winning teams and top-three podium finishers by division, course pace density ridgelines, and race S-curves.</p>
 
     <div class="kpis" id="kpisOverall"></div>
@@ -70,8 +70,21 @@
 
     <section>
       <h2>Race rank vs. finish time S-curve &amp; passing leverage</h2>
-      <p class="sub">Every finisher in the selected race plotted by Rank (horizontal) versus Finish Time (vertical). Flat plateaus reveal dense packs where shaving 15 seconds gains the most places.</p>
+      <p class="sub">Every finisher in the selected race plotted by Rank (horizontal) versus Finish Time (vertical). Flat plateaus reveal dense packs where shaving 15 seconds gains the most places. Filter by division and gender below, then choose a race from the dropdown.</p>
+      <div class="ctl" id="scurveFilters" style="margin-bottom:8px">
+        <span class="ctl-label">Division</span>
+        <button class="pill" data-scdiv="ALL" aria-pressed="true">All 4 divisions</button>
+        <button class="pill" data-scdiv="HS Varsity (9-12)" aria-pressed="false">HS Varsity (9–12)</button>
+        <button class="pill" data-scdiv="MS Varsity (7-8)" aria-pressed="false">MS Varsity (7–8)</button>
+        <button class="pill" data-scdiv="Elementary JV (5-6)" aria-pressed="false">Elementary JV (5–6)</button>
+        <button class="pill" data-scdiv="Developmental (K-4)" aria-pressed="false">Developmental (K–4)</button>
+        <span class="ctl-label" style="margin-left:8px">Gender</span>
+        <button class="pill" data-scgend="ALL" aria-pressed="true">Both</button>
+        <button class="pill" data-scgend="Boys" aria-pressed="false">Boys</button>
+        <button class="pill" data-scgend="Girls" aria-pressed="false">Girls</button>
+      </div>
       <div class="ctl">
+        <span class="ctl-label">Race</span>
         <select id="raceSelect" class="sel" style="max-width:100%"></select>
         <button class="pill" id="onlyAqBtn" aria-pressed="true">Table below: Aquinas only</button>
       </div>
@@ -118,8 +131,8 @@
       <h2>Structured dataset downloads</h2>
       <div class="card">
         <div class="ctl" style="margin-bottom:0">
-          <a class="pill" href="data/aquinas_2026_performances.csv" download>Download performances CSV (818 rows)</a>
-          <a class="pill" href="data/aquinas_2026_team_scores.csv" download>Download team scores CSV (70 rows)</a>
+          <a class="pill" href="data/aquinas_2026_performances.csv" download>Download performances CSV (840 rows)</a>
+          <a class="pill" href="data/aquinas_2026_team_scores.csv" download>Download team scores CSV (74 rows)</a>
           <a class="pill" href="data/aquinas_2026_full.json" download>Download full JSON dataset</a>
           <a class="pill" href="https://github.com/jtv55/xc" target="_blank" rel="noopener">GitHub repository (jtv55/xc)</a>
         </div>
@@ -128,12 +141,12 @@
   </div>
 
   <!-- ======================================================================
-       TAB 2: SCHOOLS
+       TAB 2: LEAGUE
        ====================================================================== -->
   <div id="tab-schools" class="tab-pane ">
-    <div class="eyebrow">Schools · head-to-head matrix &amp; scoring composition · Oct 23, 2026</div>
-    <h1>School Team Rankings Heatmap &amp; Scoring Runner Composition</h1>
-    <p class="lede">Every school that competed in Aquinas Academy's races across the 2026 season. Filter by division and gender to compare team finish rankings across every meet, and click any cell to inspect the exact five runners whose points made up that school's team score.</p>
+    <div class="eyebrow">League · head-to-head matrix, team ridgelines &amp; scoring composition · Oct 23, 2026</div>
+    <h1>League</h1>
+    <p class="lede">Every school that competed in Aquinas Academy's races across the 2026 season. Filter by division and gender to compare team finish rankings across every meet, inspect each school's mile-pace density ridgeline, and click any cell to examine the five runners whose points made up that school's team score.</p>
 
     <div class="ctl">
       <span class="ctl-label">Division</span>
@@ -153,6 +166,20 @@
       <div class="card">
         <div id="schoolsHeatmap"></div>
         <p class="so" id="schoolsHeatmapSo"></p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Pace density ridgelines across the 2026 season by school team</h2>
+      <p class="sub">Smooth kernel density waves showing where each competing school team's finisher mile paces cluster across the 2026 season for the selected division and gender. Dashed vertical lines and peak labels mark each school team's median pace.</p>
+      <div class="ctl">
+        <span class="ctl-label">Schools shown</span>
+        <button class="pill" data-lrmode="scored" aria-pressed="true">Scored / Regular Teams (&ge;5 finishes)</button>
+        <button class="pill" data-lrmode="all" aria-pressed="false">All Competing Schools (&ge;3 finishes)</button>
+      </div>
+      <div class="card">
+        <div id="leagueRidgeChart"></div>
+        <p class="so" id="leagueRidgeSo"></p>
       </div>
     </section>
 
@@ -340,7 +367,7 @@
 </div>
 
 <script>window.DEFAULT_TAB = 'runners';</script>
-<script src="data/data.js"></script>
-<script src="app.js"></script>
+<script src="data/data.js?v=20261023-4"></script>
+<script src="app.js?v=20261023-4"></script>
 </body>
 </html>

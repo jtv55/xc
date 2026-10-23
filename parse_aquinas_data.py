@@ -1036,6 +1036,33 @@ for ev_num, gend, g_lbl, is_jv in [
             })
 
 # 5. Process Extra Meets 4, 5, 6: RunSignup (Oakland Catholic 191674, Run for Pumpkins 193469, Diocesan Champ 193936)
+pumpkins_team_lookup = {}
+if os.path.exists("data/extra/rsu_193469_team_results.json"):
+    with open("data/extra/rsu_193469_team_results.json", "r", encoding="utf-8") as f:
+        ptr = json.load(f)
+    for tr_id, tr_obj in ptr.items():
+        lbl = tr_obj["label"]
+        tdata = tr_obj["data"]
+        tid_to_name = {}
+        for row in tdata.get("results", []):
+            if len(row) >= 2:
+                tid_to_name[row[0]] = row[1]
+        for mrow in tdata.get("member_results", []):
+            # [team_id, team_place, overall_place, member_score, name, gender, bib, clock_time, chip_time, dist]
+            tid = mrow[0]
+            tname = tid_to_name.get(tid, "")
+            if not tname:
+                continue
+            m_place = int(mrow[2]) if str(mrow[2]).isdigit() else None
+            m_name = normalize_name(mrow[4])
+            m_bib = int(mrow[6]) if str(mrow[6]).isdigit() else None
+            if m_bib is not None:
+                pumpkins_team_lookup[(lbl, "bib", m_bib)] = tname
+            if m_place is not None:
+                pumpkins_team_lookup[(lbl, "place", m_place)] = tname
+            if m_name:
+                pumpkins_team_lookup[(lbl, "name", m_name)] = tname
+
 def process_rsu_file(fname, meta_key):
     meta = MEET_META[meta_key]
     with open(f"data/extra/{fname}", "r", encoding="utf-8") as f:
@@ -1052,16 +1079,15 @@ def process_rsu_file(fname, meta_key):
         rev_h = {v: k for k, v in ev["headers"].items()}
         t_key = rev_h.get("Team Name")
         y_key = rev_h.get("Year")
-        if not t_key:
+        if not t_key and str(rid) != "193469":
             continue
 
-        # Determine division, gender, sub_slug, custom_short_meet, race_div_override
+        # Determine division, gender, sub_slug, race_div_override
         ev_low = ev_name.lower()
         gend = "M" if "boy" in ev_low else "F"
         g_lbl = "Boys" if gend == "M" else "Girls"
 
         sub_slug = None
-        custom_short = None
         div_override = None
         if "varsity" in ev_low:
             div_name = "MS Varsity (7-8)"
@@ -1070,12 +1096,10 @@ def process_rsu_file(fname, meta_key):
         elif "k-2" in ev_low:
             div_name = "Developmental (K-4)"
             sub_slug = "developmental_k_2"
-            custom_short = "Diocesan K-2"
             div_override = "Developmental (K-2)"
         elif "3-4" in ev_low:
             div_name = "Developmental (K-4)"
             sub_slug = "developmental_3_4"
-            custom_short = "Diocesan 3-4"
             div_override = "Developmental (3-4)"
         else:
             div_name = "Developmental (K-4)"
@@ -1084,17 +1108,33 @@ def process_rsu_file(fname, meta_key):
         for r in res:
             place_val = r.get("place")
             time_str = (r.get("clock_time") or r.get("chip_time") or "").strip()
-            if not place_val or not time_str:
+            if not place_val or not str(place_val).isdigit() or not time_str:
+                continue
+            secs = parse_time_to_seconds(time_str)
+            if secs is None:
                 continue
             raw_n = f"{r.get('first_name', '')} {r.get('last_name', '')}".strip()
             clean_name = normalize_name(raw_n)
-            t_raw = (r.get(t_key) or "").strip()
+            bib_num = int(r.get("bib") or 0) if str(r.get("bib") or "").isdigit() else 0
+            p_num = int(place_val)
+            if t_key:
+                t_raw = (r.get(t_key) or "").strip()
+            else:
+                t_raw = (
+                    pumpkins_team_lookup.get((ev_name, "bib", bib_num))
+                    or pumpkins_team_lookup.get((ev_name, "place", p_num))
+                    or pumpkins_team_lookup.get((ev_name, "name", clean_name))
+                    or ""
+                )
             norm_team = normalize_team(t_raw)
             is_aq = "aquinas" in norm_team.lower()
-            secs = parse_time_to_seconds(time_str)
             pace_raw = (r.get("pace") or "").strip()
             pace_str = (pace_raw + "/M") if pace_raw and not pace_raw.endswith("/M") else pace_raw
             p_secs = parse_pace_to_seconds(pace_str)
+            if p_secs is None and secs:
+                dist_miles = 1.2427 if "Developmental" in div_name else 1.8641
+                p_secs = int(round(secs / dist_miles))
+                pace_str = fmt_pace_from_sec(p_secs)
             yr_val = r.get(y_key) if y_key else None
             if yr_val and str(yr_val).isdigit():
                 grade_val = int(yr_val)
@@ -1107,10 +1147,10 @@ def process_rsu_file(fname, meta_key):
                 runner_default_grade[(clean_name, gend)] = grade_val
 
             r_list.append({
-                "place": int(place_val),
+                "place": p_num,
                 "name": clean_name,
                 "team": norm_team,
-                "bib": int(r.get("bib") or 0),
+                "bib": bib_num,
                 "grade_or_age": grade_val,
                 "gender": gend,
                 "time": time_str,
@@ -1125,7 +1165,7 @@ def process_rsu_file(fname, meta_key):
         ro = register_race_from_runners(
             meta, div_name, g_lbl, r_list,
             src_url, fname,
-            sub_slug=sub_slug, custom_short_meet=custom_short, race_div_override=div_override
+            sub_slug=sub_slug, custom_short_meet=None, race_div_override=div_override
         )
         append_team_standing_from_race(ro, f"{meta['meet_name']} - {ev_name}")
 

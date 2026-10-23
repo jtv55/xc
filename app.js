@@ -99,6 +99,9 @@ let state = {
   calMeetId: 'ALL',
   ridgeMode: 'meets',
   teamRidgeMode: 'divisions',
+  leagueRidgeMode: 'scored',
+  scurveDiv: 'ALL',
+  scurveGend: 'ALL',
   schoolDiv: 'MS Varsity (7-8)',
   schoolGend: 'Boys',
   selectedSchoolCell: null, // { race_id, team }
@@ -302,8 +305,14 @@ function renderSeasonCalendar() {
   const calEl = el('calendarGrid');
   if (!calEl) return;
 
+  const matchingRaces = RAW.races
+    .filter(r => state.scope === 'ALL' ? true : (r.division === state.scope || (r.is_1m && state.scope !== 'HS Varsity (9-12)')))
+    .filter(r => state.gend === 'ALL' || r.gender === state.gend);
+  const activeMeetIds = new Set(matchingRaces.map(r => r.meet_id));
+  const activeMeets = RAW.meets.filter(m => activeMeetIds.has(m.meet_id));
+
   const meetsByDate = {};
-  RAW.meets.forEach(m => {
+  activeMeets.forEach(m => {
     if (!meetsByDate[m.date]) meetsByDate[m.date] = [];
     meetsByDate[m.date].push(m);
   });
@@ -337,8 +346,8 @@ function renderSeasonCalendar() {
   // Populate meet filter pills
   const pillBar = el('calMeetPills');
   if (pillBar) {
-    pillBar.innerHTML = `<button class="pill" data-cmeet="ALL" aria-pressed="${state.calMeetId === 'ALL'}">All ${RAW.meets.length} meets</button>` +
-      RAW.meets.map(m => `<button class="pill" data-cmeet="${m.meet_id}" aria-pressed="${state.calMeetId === m.meet_id}">${esc(m.short_name)} (${m.date.slice(5)})</button>`).join('');
+    pillBar.innerHTML = `<button class="pill" data-cmeet="ALL" aria-pressed="${state.calMeetId === 'ALL'}">All ${activeMeets.length} meets</button>` +
+      activeMeets.map(m => `<button class="pill" data-cmeet="${m.meet_id}" aria-pressed="${state.calMeetId === m.meet_id}">${esc(m.short_name)} (${m.date.slice(5)})</button>`).join('');
   }
 }
 
@@ -593,9 +602,10 @@ function renderSchoolsTab() {
   const colHeaderFont = x.bandwidth() < 78 ? '10px' : '11.5px';
   races.forEach(r => {
     const cx = x(r.race_id) + x.bandwidth() / 2;
+    const baseName = r.sub_division ? (r.sub_division.includes('K-2') ? 'Diocesan K-2' : 'Diocesan 3-4') : r.meet_short;
     const shortHdr = x.bandwidth() < 78
-      ? r.meet_short.replace('Invite', '').replace('Champs', 'Ch.').replace('Classic', '').replace('Foundation', 'PIAA').replace('Catholic', 'Cath.').replace('Youthtowne Clash', 'Youthtowne').replace('Aquinas Home', 'Aquinas').trim()
-      : r.meet_short;
+      ? baseName.replace('Invite', '').replace('Champs', 'Ch.').replace('Champ', 'Ch.').replace('Classic', '').replace('Foundation', 'PIAA').replace('Catholic', 'Cath.').replace('Youthtowne Clash', 'Youthtowne').replace('Aquinas Home', 'Aquinas').trim()
+      : baseName;
     g.append('text')
       .attr('x', cx).attr('y', -24).attr('text-anchor', 'middle')
       .attr('fill', P.fg).style('font-size', colHeaderFont).style('font-weight', '600')
@@ -691,8 +701,74 @@ function renderSchoolsTab() {
       : '';
   }
 
+  // Render League Ridgelines by School Team for the selected division & gender
+  renderLeagueRidgeline(races, schoolStats);
+
   // Render the Runner Point Composition Stacked Bar Chart & Detail Table for the selected race & school!
   renderSchoolCompositionPanel(races);
+}
+
+function renderLeagueRidgeline(races, schoolStats) {
+  const ridgeEl = el('leagueRidgeChart');
+  if (!ridgeEl) return;
+
+  const ridgePalette = [
+    '#1588e8', '#f03e6b', '#333b48', '#146cb8', '#2eb85c',
+    '#e8cf4d', '#555d69', '#cb333b', '#8d929c', '#7c52cc'
+  ];
+
+  const byTeam = {};
+  races.forEach(r => {
+    (r.all_runners || []).forEach(ru => {
+      if (!ru.team || ru.team === 'Unattached') return;
+      const p = (ru.pace_seconds || parsePaceSec(ru.pace)) / 60;
+      if (p && p >= 4.8 && p <= 12.5) {
+        if (!byTeam[ru.team]) byTeam[ru.team] = [];
+        byTeam[ru.team].push(p);
+      }
+    });
+  });
+
+  const minFinishes = state.leagueRidgeMode === 'scored' ? 5 : 3;
+  const series = Object.entries(byTeam)
+    .filter(([tName, vals]) => {
+      if (vals.length < minFinishes) return false;
+      if (state.leagueRidgeMode === 'scored') {
+        const st = schoolStats && schoolStats[tName];
+        return (st && st.scored_races > 0) || vals.length >= 6 || tName.toLowerCase().includes('aquinas');
+      }
+      return true;
+    })
+    .map(([tName, vals]) => {
+      const isAq = tName.toLowerCase().includes('aquinas');
+      return {
+        label: isAq ? `★ ${tName}` : tName,
+        team: tName,
+        isAq,
+        values: vals,
+        med: d3.median(vals) || 99
+      };
+    })
+    .sort((a, b) => a.med - b.med);
+
+  series.forEach((s, i) => {
+    s.color = s.isAq ? '#12b886' : ridgePalette[i % ridgePalette.length];
+  });
+
+  const allVals = series.flatMap(s => s.values);
+  const minDom = Math.max(4.8, Math.floor(((d3.min(allVals) || 5.2) - 0.35) * 2) / 2);
+  const maxDom = Math.min(12.2, Math.ceil(((d3.max(allVals) || 10.5) + 0.35) * 2) / 2);
+
+  const aqEntry = series.find(s => s.isAq);
+  const fastestEntry = series[0];
+  drawRidgelineChart(
+    ridgeEl,
+    series,
+    [minDom, maxDom],
+    `${state.schoolDiv} · ${state.schoolGend} Mile Pace by School Team (min/mile, faster on left)`,
+    el('leagueRidgeSo'),
+    `Stacked kernel density ridgelines by school team across all ${races.length} races in <b>${esc(state.schoolDiv)} ${esc(state.schoolGend)}</b>, ordered from fastest median pace at the top (<b>${fastestEntry ? esc(fastestEntry.team) + ' at ' + fmtPaceSec(fastestEntry.med * 60) : '—'}</b>) to developing squads below.${aqEntry ? ' <b>Aquinas Academy</b> median pace: <b>' + fmtPaceSec(aqEntry.med * 60) + '</b> (' + aqEntry.values.length + ' finishes).' : ''}`
+  );
 }
 
 function renderSchoolCompositionPanel(races) {
@@ -1276,7 +1352,9 @@ function renderSeasonProgression() {
 
   const o2 = VZ.svg(el('seasonTrendChart'), 520, h1, { t: 16, r: 24, b: 54, l: 52 }), g2 = o2.g;
   const xcPerfs = RAW.performances.filter(matchFilter).filter(p => !p.is_1m && p.pace_seconds != null);
-  const meetOrder = Array.from(new Set(xcPerfs.map(p => p.meet_short)));
+  const meetOrder = d3.groups(xcPerfs, p => p.meet_short)
+    .sort((a, b) => a[1][0].date.localeCompare(b[1][0].date))
+    .map(d => d[0]);
   const x2 = d3.scalePoint().domain(meetOrder).range([12, o2.iw - 12]);
   const minY = Math.max(5.0, (d3.min(xcPerfs, p => p.pace_seconds / 60) || 5.5) - 0.2);
   const maxY = Math.min(11.5, (d3.max(xcPerfs, p => p.pace_seconds / 60) || 9.5) + 0.2);
@@ -1312,14 +1390,17 @@ function renderSeasonProgression() {
   VZ.axisStyle(g2.append('g').call(d3.axisLeft(y2).ticks(6).tickFormat(d => fmtPaceSec(d * 60))));
 
   if (el('seasontrend-so')) {
-    el('seasontrend-so').innerHTML = `Upward movement means faster mile pace. Every Aquinas division peaked in October: <b>HS Varsity</b> reached <b>6:04/M</b> at the TSTCA Championship Tune-Up; <b>MS Varsity (7–8)</b> improved from 6:50/M at Seelos #1 to <b>6:29/M</b> at Seelos #2.`;
+    el('seasontrend-so').innerHTML = `Upward movement means faster mile pace. Every Aquinas division peaked in October: <b>HS Varsity</b> reached <b>5:49/M</b> (Boys) at the TSTCA Class A Tune-Up; <b>MS Varsity (7–8)</b> improved from 6:50/M at Seelos #1 to <b>5:56/M</b> at the Pittsburgh Diocesan Championships.`;
   }
 }
 
 function renderSCurveAndLeverage() {
   if (!el('raceChart')) return;
-  const races = RAW.races.filter(r => state.scope === 'ALL' ? true : r.division === state.scope)
-    .filter(r => state.gend === 'ALL' || r.gender === state.gend);
+  const effDiv = state.scurveDiv || 'ALL';
+  const effGend = state.scurveGend || 'ALL';
+  const races = RAW.races
+    .filter(r => effDiv === 'ALL' ? true : (r.division === effDiv || (r.is_1m && effDiv !== 'HS Varsity (9-12)')))
+    .filter(r => effGend === 'ALL' || r.gender === effGend);
   const sel = el('raceSelect');
   if (!races.length) {
     sel.innerHTML = '<option>No races match filter</option>';
@@ -1327,18 +1408,22 @@ function renderSCurveAndLeverage() {
   }
   if (!state.raceId || !races.some(r => r.race_id === state.raceId)) {
     const tstcaBoys = races.find(r => r.race_id.includes('tstca') && r.gender === 'Boys');
-    state.raceId = (tstcaBoys || races[races.length - 1]).race_id;
+    const diocesanBoys = races.find(r => r.race_id.includes('diocesan') && r.gender === 'Boys');
+    state.raceId = (tstcaBoys || diocesanBoys || races[races.length - 1]).race_id;
   }
 
-  sel.innerHTML = races.map(r => `
-    <option value="${esc(r.race_id)}" ${r.race_id === state.raceId ? 'selected' : ''}>
-      ${esc(r.date)} · ${esc(r.short_meet_name)} — ${esc(r.division)} ${esc(r.gender)} (${r.aquinas_finishers_count} Aquinas / ${r.total_finishers} total)
-    </option>
-  `).join('');
+  const singleDivAndGend = effDiv !== 'ALL' && effGend !== 'ALL';
+  sel.innerHTML = races.map(r => {
+    const divLabel = r.sub_division || r.division;
+    const labelText = singleDivAndGend
+      ? `${r.date} · ${r.short_meet_name}${r.sub_division ? ' — ' + r.sub_division : ''} (${r.aquinas_finishers_count} Aquinas / ${r.total_finishers} finishers)`
+      : `${r.date} · ${r.short_meet_name} — ${divLabel} ${r.gender} (${r.aquinas_finishers_count} Aquinas / ${r.total_finishers} total)`;
+    return `<option value="${esc(r.race_id)}" ${r.race_id === state.raceId ? 'selected' : ''}>${esc(labelText)}</option>`;
+  }).join('');
 
   const race = races.find(r => r.race_id === state.raceId) || races[0];
   if (el('scurveTitle')) {
-    el('scurveTitle').textContent = `${race.short_meet_name} — ${race.division} ${race.gender} (Rank vs. Time)`;
+    el('scurveTitle').textContent = `${race.short_meet_name} — ${race.sub_division || race.division} ${race.gender} (Rank vs. Time)`;
   }
 
   const P = VZ.pal();
@@ -1461,11 +1546,22 @@ function renderPackLadderAndTeamCharts() {
     .filter(r => state.gend === 'ALL' || r.gender === state.gend)
     .filter(r => !r.is_1m && r.aquinas_runners.length >= 5);
 
-  const labelOf = d => `${d.meet_short} · ${d.division.replace(' (9-12)', '').replace(' (7-8)', '').replace(' (5-6)', '').replace(' (K-4)', '').replace('Elementary ', '').replace('Developmental', 'Dev')} ${d.gender[0]}`;
+  const labelOf = d => {
+    const divShort = (d.sub_division || d.division)
+      .replace(' (9-12)', '')
+      .replace(' (7-8)', '')
+      .replace(' (5-6)', '')
+      .replace(' (K-4)', '')
+      .replace(' (K-2)', ' K-2')
+      .replace(' (3-4)', ' 3-4')
+      .replace('Elementary ', '')
+      .replace('Developmental', 'Dev');
+    return `${d.meet_short} · ${divShort} ${d.gender[0]}`;
+  };
 
-  const L = races.slice().sort((a, b) => a.date.localeCompare(b.date) || a.division.localeCompare(b.division));
+  const L = races.slice().sort((a, b) => a.date.localeCompare(b.date) || a.division.localeCompare(b.division) || a.race_id.localeCompare(b.race_id));
   const hLad = Math.max(260, L.length * 24 + 40);
-  const oL = VZ.svg(el('ladderChart'), 900, hLad, { t: 12, r: 40, b: 32, l: 185 }), gL = oL.g;
+  const oL = VZ.svg(el('ladderChart'), 900, hLad, { t: 12, r: 40, b: 32, l: 195 }), gL = oL.g;
   const yL = d3.scaleBand().domain(L.map(labelOf)).range([0, oL.ih]).padding(0.34);
 
   const allTop7Paces = L.flatMap(r => r.aquinas_runners.slice(0, 7).map(x => (x.pace_seconds || parsePaceSec(x.pace)) / 60)).filter(Boolean);
@@ -1496,7 +1592,7 @@ function renderPackLadderAndTeamCharts() {
         .attr('x', xL(p1)).attr('y', yL(lbl))
         .attr('width', Math.max(4, xL(p5) - xL(p1))).attr('height', yL.bandwidth())
         .attr('rx', yL.bandwidth() / 2).attr('fill', col).attr('fill-opacity', 0.28).attr('stroke', col).attr('stroke-width', 1.5)
-        .on('mousemove', e => tip.show(`<b>${esc(r.short_meet_name)} · ${esc(r.division)} ${esc(r.gender)}</b><br>1–5 Spread: <b>${fmtSec(r.aquinas_1_to_5_spread_seconds)}</b><br>#1: ${esc(top7[0].name)} (${top7[0].pace})<br>#5: ${esc(top7[4].name)} (${top7[4].pace})`, e))
+        .on('mousemove', e => tip.show(`<b>${esc(r.short_meet_name)} · ${esc(r.sub_division || r.division)} ${esc(r.gender)}</b><br>1–5 Spread: <b>${fmtSec(r.aquinas_1_to_5_spread_seconds)}</b><br>#1: ${esc(top7[0].name)} (${top7[0].pace})<br>#5: ${esc(top7[4].name)} (${top7[4].pace})`, e))
         .on('mouseleave', tip.hide);
 
       top7.forEach(runner => {
@@ -1512,9 +1608,9 @@ function renderPackLadderAndTeamCharts() {
   VZ.axisStyle(gL.append('g').call(d3.axisLeft(yL).tickSize(0)));
   VZ.axisStyle(gL.append('g').attr('transform', `translate(0,${oL.ih})`).call(d3.axisBottom(xL).ticks(7).tickFormat(d => fmtPaceSec(d * 60))));
 
-  const D = races.slice().sort((a, b) => a.aquinas_top5_avg_seconds - b.aquinas_top5_avg_seconds).slice(0, 16);
+  const D = races.slice().sort((a, b) => (a.aquinas_top5_avg_pace_seconds || 999) - (b.aquinas_top5_avg_pace_seconds || 999));
   const h1 = Math.max(260, D.length * 22 + 34);
-  const o1 = VZ.svg(el('size'), 520, h1, { t: 6, r: 58, b: 24, l: 175 }), g1 = o1.g;
+  const o1 = VZ.svg(el('size'), 520, h1, { t: 6, r: 58, b: 24, l: 185 }), g1 = o1.g;
   const y1 = d3.scaleBand().domain(D.map(labelOf)).range([0, o1.ih]).padding(0.28);
   const x1 = d3.scaleLinear().domain([0, d3.max(D, d => d.aquinas_top5_avg_seconds / 60) || 25]).nice().range([0, o1.iw]);
 
@@ -1524,7 +1620,7 @@ function renderPackLadderAndTeamCharts() {
     g1.append('rect')
       .attr('y', y1(lbl)).attr('height', y1.bandwidth())
       .attr('width', x1(mins)).attr('fill', cc(d.division)).attr('rx', 3).attr('opacity', 0.85)
-      .on('mousemove', e => tip.show(`<b>${esc(d.short_meet_name)}</b><br>${esc(d.division)} ${esc(d.gender)}<br>Top-5 Avg: <b>${fmtSec(d.aquinas_top5_avg_seconds)}</b>`, e))
+      .on('mousemove', e => tip.show(`<b>${esc(d.short_meet_name)}</b><br>${esc(d.sub_division || d.division)} ${esc(d.gender)}<br>Top-5 Avg Time: <b>${fmtSec(d.aquinas_top5_avg_seconds)}</b> (${fmtPaceSec(d.aquinas_top5_avg_pace_seconds)} avg pace)`, e))
       .on('mouseleave', tip.hide);
     g1.append('text')
       .attr('x', x1(mins) + 5).attr('y', y1(lbl) + y1.bandwidth() / 2 + 4)
@@ -1534,9 +1630,9 @@ function renderPackLadderAndTeamCharts() {
   VZ.axisStyle(g1.append('g').call(d3.axisLeft(y1).tickSize(0)));
   VZ.axisStyle(g1.append('g').attr('transform', `translate(0,${o1.ih})`).call(d3.axisBottom(x1).ticks(5).tickFormat(d => d + 'm')));
 
-  const S = races.filter(r => r.aquinas_1_to_5_spread_seconds != null).sort((a, b) => a.aquinas_1_to_5_spread_seconds - b.aquinas_1_to_5_spread_seconds).slice(0, 16);
+  const S = races.filter(r => r.aquinas_1_to_5_spread_seconds != null).sort((a, b) => a.aquinas_1_to_5_spread_seconds - b.aquinas_1_to_5_spread_seconds);
   const h2 = Math.max(260, S.length * 22 + 34);
-  const o2 = VZ.svg(el('chg'), 520, h2, { t: 6, r: 58, b: 24, l: 175 }), g2 = o2.g;
+  const o2 = VZ.svg(el('chg'), 520, h2, { t: 6, r: 58, b: 24, l: 185 }), g2 = o2.g;
   const y2 = d3.scaleBand().domain(S.map(labelOf)).range([0, o2.ih]).padding(0.28);
   const x2 = d3.scaleLinear().domain([0, d3.max(S, d => d.aquinas_1_to_5_spread_seconds) || 180]).nice().range([0, o2.iw]);
 
@@ -1546,7 +1642,7 @@ function renderPackLadderAndTeamCharts() {
     g2.append('rect')
       .attr('y', y2(lbl)).attr('height', y2.bandwidth())
       .attr('width', x2(sp)).attr('fill', cc(d.division)).attr('rx', 3).attr('opacity', 0.85)
-      .on('mousemove', e => tip.show(`<b>${esc(d.short_meet_name)}</b><br>${esc(d.division)} ${esc(d.gender)}<br>1-to-5 Pack Spread: <b>${fmtSec(sp)}</b> (${sp.toFixed(1)}s)<br>#1: ${esc(d.aquinas_runners[0].name)} (${d.aquinas_runners[0].time})<br>#5: ${esc(d.aquinas_runners[4].name)} (${d.aquinas_runners[4].time})`, e))
+      .on('mousemove', e => tip.show(`<b>${esc(d.short_meet_name)}</b><br>${esc(d.sub_division || d.division)} ${esc(d.gender)}<br>1-to-5 Pack Spread: <b>${fmtSec(sp)}</b> (${sp.toFixed(1)}s)<br>#1: ${esc(d.aquinas_runners[0].name)} (${d.aquinas_runners[0].time})<br>#5: ${esc(d.aquinas_runners[4].name)} (${d.aquinas_runners[4].time})`, e))
       .on('mouseleave', tip.hide);
     g2.append('text')
       .attr('x', x2(sp) + 5).attr('y', y2(lbl) + y2.bandwidth() / 2 + 4)
@@ -1657,7 +1753,7 @@ function renderMoves() {
     ['Oct 2, 2026', 'North Area Diocesan XC Championships at North Park: Aquinas captures four North Area Championship banners — MS Varsity Boys (1st, 35 pts), Elementary JV Boys (1st, 43 pts), and Developmental Boys & Girls (both 1st of 8 teams).', 'North Area Champs'],
     ['Oct 6, 2026', 'WPIAL A/AA Section 4 XC Championships at Chatham University Eden Hall: Freshman Isaac Vangura runs 16:54.07 (7th overall against 1A/2A competition) to break the 5-year-old Aquinas Academy 5K school record (17:05) and become the first Crusader under 17 minutes.', 'WPIAL Sec 4'],
     ['Oct 6, 2026', 'Seelos "Second Chance" Meet: MS Varsity Boys score 27 pts (places 2, 4, 6, 7, 8 led by John Austin 11:04.26 and Zach Guillen 11:17.78) to win the team title; MS Varsity Girls, JV Boys, and Dev Girls also take 1st.', 'Seelos #2'],
-    ['Oct 10, 2026', 'Run for the Pumpkins XC Invitational at Youthtowne: Aquinas Developmental Girls capture 1st place team (36 pts, led by Cora Donahue #4 in 10:33.34 and Emily Edwards #5 in 10:42.54) while Developmental Boys place 4th of 10 teams.', 'Pumpkins XC'],
+    ['Oct 10, 2026', 'Run for the Pumpkins XC Invitational at Youthtowne: Aquinas Developmental Girls capture 1st place team (36 pts, led by Cora Donahue #4 in 10:33.34 and Emily Edwards #5 in 10:42.54), while MS Varsity Boys (2nd, 35 pts, led by John Austin #2 in 10:30.00), MS Varsity Girls (2nd, 38 pts, led by Kat Barnett #2 and Ciara McBride #3), and Elementary JV Boys (2nd, 34 pts, led by Noah Malone #3) all earn runner-up team trophies.', 'Pumpkins XC'],
     ['Oct 17, 2026', 'Pittsburgh Diocesan Cross Country Championships at Youthtowne: Aquinas wins three Diocesan Team Championships — Elementary JV Boys (1st, 37 pts, led by Noah Malone #2 in 10:55.62), Developmental Girls 3–4 (1st, 59 pts, led by Cora Donahue #3 in 11:07.56, and 1st in Combined Dev Girls), and Developmental Boys K–2 (1st, 45 pts, led by Individual Diocesan Champion Linus Gruber #1 in 10:26.48) — plus Diocesan Runner-Up trophies in both MS Varsity Girls (2nd, 33 pts, Kat Barnett #6) and MS Varsity Boys (2nd, 58 pts, John Austin #4 in 10:10.66).', 'Diocesan Champ'],
     ['Oct 22, 2026', 'TSTCA Championship Tune-Up at White Oak Park (Class A): Freshman Isaac Vangura lowers his own school record to 16:41.76 (3rd overall, 5:23/M), Andrew Deem runs 17:24.98 (8th), Roman Spagnolo runs 17:35.22 (10th), and Giancarlo Josephs runs 18:31.26 (19th). Aquinas Boys tie Neshannock at 59 points (2nd of 10 teams, 1 point behind South Side\'s 58, with the fastest top-5 total time in Class A at 1:30:18.09). Aquinas Girls place 5th of 10 teams (118 pts).', 'TSTCA Class A']
   ];
@@ -1745,6 +1841,8 @@ function initEvents() {
         el('globalFilters').querySelectorAll('[data-scope]').forEach(b => b.setAttribute('aria-pressed', 'false'));
         sc.setAttribute('aria-pressed', 'true');
         state.scope = sc.dataset.scope;
+        state.scurveDiv = sc.dataset.scope;
+        document.querySelectorAll('[data-scdiv]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.scdiv === state.scurveDiv)));
         renderActiveTab();
       }
       const gd = e.target.closest('[data-gend]');
@@ -1752,6 +1850,8 @@ function initEvents() {
         el('globalFilters').querySelectorAll('[data-gend]').forEach(b => b.setAttribute('aria-pressed', 'false'));
         gd.setAttribute('aria-pressed', 'true');
         state.gend = gd.dataset.gend;
+        state.scurveGend = gd.dataset.gend;
+        document.querySelectorAll('[data-scgend]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.scgend === state.scurveGend)));
         renderActiveTab();
       }
     });
@@ -1785,6 +1885,27 @@ function initEvents() {
       trMode.setAttribute('aria-pressed', 'true');
       state.teamRidgeMode = trMode.dataset.trmode;
       renderTeamTab();
+    }
+    const lrMode = e.target.closest('[data-lrmode]');
+    if (lrMode) {
+      document.querySelectorAll('[data-lrmode]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      lrMode.setAttribute('aria-pressed', 'true');
+      state.leagueRidgeMode = lrMode.dataset.lrmode;
+      renderSchoolsTab();
+    }
+    const scDiv = e.target.closest('[data-scdiv]');
+    if (scDiv) {
+      document.querySelectorAll('[data-scdiv]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      scDiv.setAttribute('aria-pressed', 'true');
+      state.scurveDiv = scDiv.dataset.scdiv;
+      renderSCurveAndLeverage();
+    }
+    const scGend = e.target.closest('[data-scgend]');
+    if (scGend) {
+      document.querySelectorAll('[data-scgend]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      scGend.setAttribute('aria-pressed', 'true');
+      state.scurveGend = scGend.dataset.scgend;
+      renderSCurveAndLeverage();
     }
     const sDiv = e.target.closest('[data-sdiv]');
     if (sDiv) {
