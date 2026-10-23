@@ -14,7 +14,8 @@ MEET_META = {
         "date": "2026-08-25",
         "location": "Pine Community Park, Wexford, PA",
         "program": "Youth / Diocesan (K-8)",
-        "host": "Blessed Francis Seelos Academy"
+        "host": "Blessed Francis Seelos Academy",
+        "is_1m": False
     },
     "RES082926": {
         "meet_id": "2026-08-29-bta",
@@ -23,7 +24,8 @@ MEET_META = {
         "date": "2026-08-29",
         "location": "Hartwood Acres, Glenshaw, PA",
         "program": "Youth / Diocesan (K-8)",
-        "host": "Blessed Trinity Academy"
+        "host": "Blessed Trinity Academy",
+        "is_1m": False
     },
     "RES090426": {
         "meet_id": "2026-09-04-st-kilian",
@@ -32,16 +34,18 @@ MEET_META = {
         "date": "2026-09-04",
         "location": "Mars, PA",
         "program": "Youth / Diocesan (K-8)",
-        "host": "St. Kilian Parish School"
+        "host": "St. Kilian Parish School",
+        "is_1m": False
     },
     "RES090926": {
         "meet_id": "2026-09-10-harvest-home",
-        "meet_name": "St. Al Twilight Harvest Home 5K & 1M",
-        "short_name": "Harvest Home (Sep 10)",
+        "meet_name": "St. Al Twilight Harvest Home 1M",
+        "short_name": "Harvest Home 1M (Sep 10)",
         "date": "2026-09-10",
         "location": "Allison Park, PA",
-        "program": "Community Race",
-        "host": "St. Aloysius / Harvest Home"
+        "program": "Youth / Diocesan (K-8)",
+        "host": "St. Aloysius / Harvest Home",
+        "is_1m": True
     },
     "RES091826": {
         "meet_id": "2026-09-18-youthtowne",
@@ -50,7 +54,8 @@ MEET_META = {
         "date": "2026-09-18",
         "location": "Youthtowne, Clinton, PA",
         "program": "Both (HS & Youth)",
-        "host": "Youthtowne"
+        "host": "Youthtowne",
+        "is_1m": False
     },
     "RES092426": {
         "meet_id": "2026-09-24-aquinas",
@@ -59,7 +64,8 @@ MEET_META = {
         "date": "2026-09-24",
         "location": "Allison Park, PA",
         "program": "Youth / Diocesan (K-8)",
-        "host": "Aquinas Academy & Holy Cross"
+        "host": "Aquinas Academy & Holy Cross",
+        "is_1m": False
     },
     "RES092926": {
         "meet_id": "2026-09-29-avonworth",
@@ -68,7 +74,8 @@ MEET_META = {
         "date": "2026-09-29",
         "location": "Sewickley, PA",
         "program": "High School (9-12)",
-        "host": "Avonworth High School"
+        "host": "Avonworth High School",
+        "is_1m": False
     },
     "RES100226": {
         "meet_id": "2026-10-02-north-area",
@@ -77,7 +84,8 @@ MEET_META = {
         "date": "2026-10-02",
         "location": "North Park, PA",
         "program": "Youth / Diocesan (K-8)",
-        "host": "North Area Diocesan League"
+        "host": "North Area Diocesan League",
+        "is_1m": False
     },
     "RES100626": {
         "meet_id": "2026-10-06-seelos-2",
@@ -86,7 +94,8 @@ MEET_META = {
         "date": "2026-10-06",
         "location": "Pine Community Park, Wexford, PA",
         "program": "Youth / Diocesan (K-8)",
-        "host": "Blessed Francis Seelos Academy"
+        "host": "Blessed Francis Seelos Academy",
+        "is_1m": False
     },
     "RES102226": {
         "meet_id": "2026-10-22-tstca",
@@ -95,8 +104,23 @@ MEET_META = {
         "date": "2026-10-22",
         "location": "White Oak Park, White Oak, PA",
         "program": "High School (9-12)",
-        "host": "Tri-State Track Coaches Association"
+        "host": "Tri-State Track Coaches Association",
+        "is_1m": False
     }
+}
+
+NICKNAME_MAP = {
+    "Katalina Barnett": "Kat Barnett",
+    "Mary Clare Austin": "Mary Austin",
+    "William Campbell": "Will Campbell",
+    "Nicholas Crawford": "Nick Crawford",
+    "Zachary Guillen": "Zach Guillen",
+    "Samuel Martello": "Sam Martello",
+    "Emilia Mullican": "Emi Mullican",
+    "Leonidas Predis": "Leo Predis",
+    "Rosalie Sheehan": "Rosie Sheehan",
+    "Adeline Vaskov": "Addie Vaskov",
+    "Lander Catherine": "Catherine Lander"
 }
 
 def normalize_name(name):
@@ -115,7 +139,8 @@ def normalize_name(name):
             out.append("-".join(x.capitalize() for x in p.split("-")))
         else:
             out.append(p.capitalize())
-    return " ".join(out)
+    res = " ".join(out)
+    return NICKNAME_MAP.get(res, res)
 
 def parse_time_to_seconds(t_str):
     if not t_str:
@@ -131,12 +156,20 @@ def parse_time_to_seconds(t_str):
         return None
     return None
 
+def parse_pace_to_seconds(p_str):
+    if not p_str:
+        return None
+    m = re.match(r'(\d+):(\d+)', p_str.strip())
+    if m:
+        return int(m.group(1)) * 60 + int(m.group(2))
+    return None
+
 def classify_division(title, filename, program):
     t = (title + " " + filename).lower()
     if "5k" in t:
         return "Community 5K", "Community"
     if "1 mile" in t or "1m" in t:
-        return "Community 1 Mile", "Community"
+        return "Community 1 Mile", "Youth (K-8)"
     if program == "High School (9-12)" or ("youthtowne" in t and "varsity" in t):
         return "HS Varsity (9-12)", "High School"
     if "jr high" in t or "jr hi" in t or ("varsity" in t and program != "High School (9-12)"):
@@ -147,6 +180,16 @@ def classify_division(title, filename, program):
         return "Developmental (K-4)", "Youth (K-8)"
     return "Other", program
 
+def infer_division_from_age(age):
+    if age <= 10:
+        return "Developmental (K-4)", max(0, age - 5)
+    elif age <= 12:
+        return "Elementary JV (5-6)", age - 5
+    elif age <= 14:
+        return "MS Varsity (7-8)", min(8, age - 5)
+    else:
+        return "HS Varsity (9-12)", min(12, age - 5)
+
 row_xc_re = re.compile(
     r'^\s*(\d+)\s+([A-Za-z0-9\.\'\-\s]+?)\s{2,}([A-Za-z0-9\.\'\-\s&\(\)/]+?)\s+(\d+)\s+(\d+)\s+([MF])\s+(\d+:\d+\.\d+)\s+(\d+:\d+/[A-Za-z]+)',
     re.MULTILINE
@@ -156,7 +199,6 @@ row_comm_re = re.compile(
     re.MULTILINE
 )
 
-# Parse Team files
 detail_team_header_re = re.compile(
     r'<b>([A-Za-z0-9\.\'\-\s&\(\)/]+?)\s+Finish Position -\s+([0-9]+|Inc\.)</b>.*?'
     r'<b>\s*Team Score \(places\):\s*([0-9]+|Inc\.)\s+Team Score \(times\):\s*([0-9:\.]*)\s*(?:Average Time:\s*([0-9:\.]*))?</b>',
@@ -167,6 +209,26 @@ summary_team_row_re = re.compile(
     r'<b>\s*(\d+|Inc\.)\s+([A-Za-z0-9\.\'\-\s&\(\)/]+?)\s+(\d+|\d+\s+finishers)\s+(?:(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)(?:\s+(\d+))?(?:\s+(\d+))?)?\s*</b>\s*(?:Top\s+5\s+Times:\s*([0-9:\.]*))?',
     re.IGNORECASE
 )
+
+# Pass 1: Determine every Aquinas runner's default school XC division and grade
+runner_default_div = {}
+runner_default_grade = {}
+
+for m in matches:
+    fname = m["file"]
+    if "OA" not in fname or "RES090926" in fname:
+        continue
+    m_code = re.search(r'(RES\d{6})', m["href"]).group(1)
+    meta = MEET_META[m_code]
+    div_name, level = classify_division(m["title"], fname, meta["program"])
+    with open(os.path.join("data/raw", fname), "r", encoding="utf-8", errors="ignore") as f:
+        content = f.read()
+    for match in row_xc_re.finditer(content):
+        place, name, team, bib, grade_age, gend, time_str, pace = match.groups()
+        if "aquinas" in team.lower():
+            cname = normalize_name(name)
+            runner_default_div[(cname, gend)] = div_name
+            runner_default_grade[(cname, gend)] = int(grade_age)
 
 all_races = []
 all_aquinas_performances = []
@@ -180,12 +242,16 @@ for m in matches:
     meta = MEET_META[m_code]
     div_name, level = classify_division(title, fname, meta["program"])
     
+    # Skip Community 5K (adult race)
+    if div_name == "Community 5K":
+        continue
+
     fpath = os.path.join("data/raw", fname)
     with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
         content = f.read()
 
     if "OA" in fname:
-        is_comm = (meta["program"] == "Community Race")
+        is_comm = (m_code == "RES090926")
         runners_by_gender = {"M": [], "F": []}
         
         if not is_comm:
@@ -194,6 +260,7 @@ for m in matches:
                 clean_name = normalize_name(name)
                 team = " ".join(team.split())
                 secs = parse_time_to_seconds(time_str)
+                p_secs = parse_pace_to_seconds(pace)
                 is_aq = "aquinas" in team.lower()
                 runner = {
                     "place": int(place),
@@ -205,43 +272,63 @@ for m in matches:
                     "time": time_str,
                     "time_seconds": secs,
                     "pace": pace.strip(),
-                    "is_aquinas": is_aq
+                    "pace_seconds": p_secs,
+                    "is_aquinas": is_aq,
+                    "default_division": runner_default_div.get((clean_name, gend), div_name) if is_aq else div_name
                 }
                 runners_by_gender[gend].append(runner)
         else:
+            # Harvest Home 1 Mile: overwrite Community 1 Mile with each runner's default XC division,
+            # and skip adult parents (age >= 19) for Aquinas student stats
             for match in row_comm_re.finditer(content):
-                place, name, team, bib, age, gend, ag, time_str, pace = match.groups()
+                place, name, team, bib, age_str, gend, ag, time_str, pace = match.groups()
+                age = int(age_str)
+                if age >= 19:
+                    continue
                 clean_name = normalize_name(name)
                 team = " ".join(team.split())
                 secs = parse_time_to_seconds(time_str)
+                p_secs = parse_pace_to_seconds(pace)
                 is_aq = "aquinas" in team.lower()
+                inferred_div, inferred_grade = infer_division_from_age(age)
+                def_div = runner_default_div.get((clean_name, gend), inferred_div) if is_aq else inferred_div
+                def_grade = runner_default_grade.get((clean_name, gend), inferred_grade) if is_aq else inferred_grade
                 runner = {
                     "place": int(place),
                     "name": clean_name,
                     "team": team,
                     "bib": int(bib),
-                    "grade_or_age": int(age),
+                    "grade_or_age": def_grade,
                     "gender": gend,
-                    "age_group": " ".join(ag.split()),
                     "time": time_str,
                     "time_seconds": secs,
                     "pace": pace.strip(),
-                    "is_aquinas": is_aq
+                    "pace_seconds": p_secs,
+                    "is_aquinas": is_aq,
+                    "default_division": def_div
                 }
                 runners_by_gender[gend].append(runner)
 
         for gend, r_list in runners_by_gender.items():
             if not r_list:
                 continue
+            # Re-index youth places if adult finishers were filtered in 1M
+            if is_comm:
+                for idx_new, r_item in enumerate(r_list, 1):
+                    r_item["place"] = idx_new
             total_runners = len(r_list)
             aq_runners = [r for r in r_list if r["is_aquinas"]]
+            if not aq_runners:
+                continue
             gender_label = "Boys" if gend == "M" else "Girls"
+            race_div_label = "MS Varsity (7-8)" if is_comm else div_name
             race_id = f"{meta['meet_id']}__{re.sub(r'[^a-z0-9]+', '_', div_name.lower()).strip('_')}__{gender_label.lower()}"
             
             aq_sorted = sorted(aq_runners, key=lambda x: x["time_seconds"] or 999999)
             top5 = aq_sorted[:5]
             spread_1_5 = round(top5[-1]["time_seconds"] - top5[0]["time_seconds"], 2) if len(top5) == 5 else None
             avg_top5_sec = round(sum(x["time_seconds"] for x in top5) / len(top5), 2) if top5 else None
+            avg_top5_pace = round(sum(x["pace_seconds"] for x in top5 if x["pace_seconds"]) / len(top5), 1) if top5 else None
             
             race_obj = {
                 "race_id": race_id,
@@ -250,15 +337,17 @@ for m in matches:
                 "short_meet_name": meta["short_name"],
                 "date": meta["date"],
                 "location": meta["location"],
-                "level": level,
-                "division": div_name,
+                "level": "High School" if race_div_label == "HS Varsity (9-12)" else "Youth (K-8)",
+                "division": "All Youth (1M)" if is_comm else div_name,
+                "is_1m": is_comm,
                 "gender": gender_label,
                 "source_url": "https://www.smileymiles.com/" + href,
                 "source_file": fname,
                 "total_finishers": total_runners,
                 "aquinas_finishers_count": len(aq_runners),
-                "aquinas_top5_avg_seconds": avg_top5_sec,
-                "aquinas_1_to_5_spread_seconds": spread_1_5,
+                "aquinas_top5_avg_seconds": None if is_comm else avg_top5_sec,
+                "aquinas_top5_avg_pace_seconds": avg_top5_pace,
+                "aquinas_1_to_5_spread_seconds": None if is_comm else spread_1_5,
                 "winner_time_seconds": r_list[0]["time_seconds"],
                 "winner_name": r_list[0]["name"],
                 "winner_team": r_list[0]["team"],
@@ -268,14 +357,19 @@ for m in matches:
             all_races.append(race_obj)
             
             for idx_team, r in enumerate(aq_sorted, 1):
+                # Overwrite Community 1 Mile with the runner's default division!
+                effective_div = r["default_division"]
+                effective_level = "High School" if effective_div == "HS Varsity (9-12)" else "Youth (K-8)"
                 perf = {
                     "meet_id": meta["meet_id"],
                     "meet_name": meta["meet_name"],
                     "short_meet_name": meta["short_name"],
                     "date": meta["date"],
                     "location": meta["location"],
-                    "level": level,
-                    "division": div_name,
+                    "level": effective_level,
+                    "division": effective_div,
+                    "race_division": "Harvest Home 1M" if is_comm else div_name,
+                    "is_1m": is_comm,
                     "gender": gender_label,
                     "race_id": race_id,
                     "name": r["name"],
@@ -288,14 +382,13 @@ for m in matches:
                     "time": r["time"],
                     "time_seconds": r["time_seconds"],
                     "pace": r["pace"],
+                    "pace_seconds": r["pace_seconds"],
                     "source_url": "https://www.smileymiles.com/" + href
                 }
                 all_aquinas_performances.append(perf)
 
     elif "AG" not in fname:
-        # Team file!
         gender_label = "Boys" if "boys" in fname.lower() else "Girls"
-        # Check if dual/tri-meet matchup in title
         matchup = None
         vs_m = re.search(r'Teams\s+(.+?),\s*[A-Za-z\s]+,\s*PA', title)
         if vs_m and "vs" in vs_m.group(1).lower():
@@ -361,15 +454,14 @@ for m in matches:
             "teams": teams_parsed
         })
 
-# Sort chronologically
 all_races.sort(key=lambda x: (x["date"], x["division"], x["gender"]))
 all_aquinas_performances.sort(key=lambda x: (x["date"], x["division"], x["gender"], x["overall_place"]))
 all_team_standings.sort(key=lambda x: (x["date"], x["division"], x["gender"], x["title"]))
 
-# Build athlete summary profiles
+# Build unified athlete profiles keyed by (name, gender)
 athletes = {}
 for p in all_aquinas_performances:
-    key = (p["name"], p["gender"], p["level"])
+    key = (p["name"], p["gender"])
     if key not in athletes:
         athletes[key] = {
             "name": p["name"],
@@ -384,6 +476,8 @@ for p in all_aquinas_performances:
         "short_meet_name": p["short_meet_name"],
         "date": p["date"],
         "division": p["division"],
+        "race_division": p["race_division"],
+        "is_1m": p["is_1m"],
         "overall_place": p["overall_place"],
         "total_finishers": p["total_finishers"],
         "percentile": p["percentile"],
@@ -391,25 +485,54 @@ for p in all_aquinas_performances:
         "time": p["time"],
         "time_seconds": p["time_seconds"],
         "pace": p["pace"],
+        "pace_seconds": p["pace_seconds"],
         "source_url": p["source_url"]
     })
 
 athlete_list = []
 for key, a in athletes.items():
-    times = [r["time_seconds"] for r in a["races"] if r["time_seconds"]]
-    best_race = min(a["races"], key=lambda r: r["time_seconds"] or 999999)
+    a["races"].sort(key=lambda r: r["date"])
+    xc_races = [r for r in a["races"] if not r["is_1m"]]
+    ref_races = xc_races if xc_races else a["races"]
+    
+    times = [r["time_seconds"] for r in ref_races if r["time_seconds"]]
+    paces = [r["pace_seconds"] for r in a["races"] if r["pace_seconds"]]
+    best_race = min(ref_races, key=lambda r: r["time_seconds"] or 999999)
+    best_pace_race = min(a["races"], key=lambda r: r["pace_seconds"] or 999999)
+    
+    # Calculate pacing progression (first XC race pace vs best/last XC race pace)
+    pace_change_sec = None
+    if len(xc_races) >= 2 and xc_races[0]["pace_seconds"] and xc_races[-1]["pace_seconds"]:
+        # Compare opener pace vs final XC race pace (negative = got faster!)
+        pace_change_sec = xc_races[-1]["pace_seconds"] - xc_races[0]["pace_seconds"]
+    elif len(a["races"]) >= 2 and a["races"][0]["pace_seconds"] and a["races"][-1]["pace_seconds"]:
+        pace_change_sec = a["races"][-1]["pace_seconds"] - a["races"][0]["pace_seconds"]
+
+    best_gain_sec = None
+    if len(xc_races) >= 2:
+        first_p = xc_races[0]["pace_seconds"]
+        min_later_p = min(r["pace_seconds"] for r in xc_races[1:] if r["pace_seconds"])
+        best_gain_sec = min_later_p - first_p
+
     a["races_count"] = len(a["races"])
+    a["xc_races_count"] = len(xc_races)
     a["pr_seconds"] = best_race["time_seconds"]
     a["pr_time"] = best_race["time"]
     a["pr_meet"] = best_race["short_meet_name"]
     a["pr_pace"] = best_race["pace"]
+    a["pr_pace_seconds"] = best_race["pace_seconds"]
+    a["fastest_pace"] = best_pace_race["pace"]
+    a["fastest_pace_seconds"] = best_pace_race["pace_seconds"]
     a["avg_seconds"] = round(sum(times) / len(times), 2) if times else None
+    a["avg_pace_seconds"] = round(sum(paces) / len(paces), 1) if paces else None
     a["avg_percentile"] = round(sum(r["percentile"] for r in a["races"]) / len(a["races"]), 1)
     a["best_place"] = min(r["overall_place"] for r in a["races"])
     a["top_10_finishes"] = sum(1 for r in a["races"] if r["overall_place"] <= 10)
+    a["pace_change_sec"] = pace_change_sec
+    a["best_gain_sec"] = best_gain_sec
     athlete_list.append(a)
 
-athlete_list.sort(key=lambda x: (x["level"], x["gender"], x["pr_seconds"] or 999999))
+athlete_list.sort(key=lambda x: (x["level"], x["division"], x["gender"], x["pr_seconds"] or 999999))
 
 full_dataset = {
     "generated_at": "2026-10-23",
@@ -439,11 +562,10 @@ with open("data/data.js", "w", encoding="utf-8") as f:
     json.dump(full_dataset, f)
     f.write(";\n")
 
-# Save CSVs
 perf_fields = [
-    "date", "short_meet_name", "meet_name", "location", "level", "division",
+    "date", "short_meet_name", "meet_name", "location", "level", "division", "race_division",
     "gender", "name", "grade_or_age", "bib", "overall_place", "total_finishers",
-    "percentile", "team_rank", "time", "time_seconds", "pace", "source_url"
+    "percentile", "team_rank", "time", "time_seconds", "pace", "pace_seconds", "source_url"
 ]
 with open("data/aquinas_2026_performances.csv", "w", newline="", encoding="utf-8") as f:
     w = csv.DictWriter(f, fieldnames=perf_fields, extrasaction="ignore")
@@ -461,3 +583,4 @@ with open("data/aquinas_2026_team_scores.csv", "w", newline="", encoding="utf-8"
     w.writerows(all_team_standings)
 
 print("Summary:", json.dumps(full_dataset["summary"], indent=2))
+print("Divisions in athletes:", set(a["division"] for a in athlete_list))
