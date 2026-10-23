@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aquinas Academy Cross Country — 2026 Season Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --bg-card: #131a27;
+      --bg-card-hover: #192234;
+      --bg-elevated: #1c2638;
+      --border: #26334d;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --maroon: #991b1b;
+      --maroon-bright: #ef4444;
+      --gold: #eab308;
+      --gold-soft: rgba(234, 179, 8, 0.16);
+      --maroon-soft: rgba(239, 68, 68, 0.16);
+      --blue: #38bdf8;
+      --green: #22c55e;
+      --purple: #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    header {
+      background: linear-gradient(135deg, #1a090d 0%, #0f172a 65%, #17130a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+    .header-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .crest {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--maroon) 0%, #7f1d1d 100%);
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--gold);
+      box-shadow: 0 4px 16px rgba(153, 27, 27, 0.45);
+    }
+    .brand-title h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .badge-season {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: var(--gold-soft);
+      color: var(--gold);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+    }
+    .brand-title p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 0.4rem;
+      background: var(--bg-card);
+      padding: 0.3rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .nav-tab {
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      padding: 0.55rem 1rem;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active {
+      background: var(--maroon);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(153, 27, 27, 0.4);
+    }
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 4rem;
+    }
+    .filter-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .filter-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    select, input[type="search"] {
+      background: var(--bg-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+    }
+    select:focus, input[type="search"]:focus {
+      border-color: var(--gold);
+    }
+    .pill-group {
+      display: inline-flex;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .pill-btn {
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pill-btn.active {
+      background: var(--gold);
+      color: #0b0f17;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.15rem 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--maroon-bright), var(--gold));
+    }
+    .kpi-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .kpi-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      margin: 0.25rem 0;
+      color: var(--text);
+    }
+    .kpi-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 600px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+    }
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .chart-box {
+      position: relative;
+      height: 320px;
+      width: 100%;
+    }
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.02);
+      cursor: pointer;
+      user-select: none;
+    }
+    tr:hover td {
+      background: var(--bg-card-hover);
+    }
+    .pos-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+    .pos-1 { background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.45); }
+    .pos-2 { background: rgba(148, 163, 184, 0.2); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.4); }
+    .pos-3 { background: rgba(217, 119, 6, 0.2); color: #fdba74; border: 1px solid rgba(217, 119, 6, 0.4); }
+    .pos-other { background: var(--bg-elevated); color: var(--text-muted); }
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 600;
+    }
+    .tag-hs { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+    .tag-youth { background: rgba(56, 189, 248, 0.16); color: #7dd3fc; }
+    .tag-comm { background: rgba(168, 85, 247, 0.16); color: #d8b4fe; }
+    .tag-boys { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+    .tag-girls { background: rgba(244, 114, 182, 0.15); color: #f9a8d4; }
+    .link-ext {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.8rem;
+    }
+    .link-ext:hover { text-decoration: underline; }
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+    .athlete-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.85rem;
+    }
+    .athlete-chip {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .athlete-chip.selected {
+      background: var(--maroon);
+      border-color: var(--gold);
+      color: #fff;
+    }
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .dl-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .btn-dl {
+      display: inline-block;
+      background: var(--maroon);
+      color: #fff;
+      text-decoration: none;
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+    .btn-dl:hover { background: #b91c1c; }
+    .pct-bar {
+      width: 72px;
+      height: 7px;
+      background: var(--bg-elevated);
+      border-radius: 999px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    .pct-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--maroon-bright), var(--gold));
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="crest">AA</div>
+        <div class="brand-title">
+          <h1>Aquinas Academy XC <span class="badge-season">2026 Season Analytics</span></h1>
+          <p>Complete Smiley Miles Race Results, Pack Analytics &amp; Athlete Progression</p>
+        </div>
+      </div>
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-view="overview">Season &amp; Teams</button>
+        <button class="nav-tab" data-view="athletes">Athletes &amp; PRs</button>
+        <button class="nav-tab" data-view="meets">Race Explorer</button>
+        <button class="nav-tab" data-view="downloads">Data &amp; Raw Files</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Global Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <span class="filter-label">Program:</span>
+        <div class="pill-group" id="levelFilterGroup">
+          <button class="pill-btn active" data-level="ALL">AllXC &amp; Road</button>
+          <button class="pill-btn" data-level="High School">High School (9–12)</button>
+          <button class="pill-btn" data-level="Youth (K-8)">Diocesan / Youth (K–8)</button>
+          <button class="pill-btn" data-level="Community">Community 5K/1M</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Division:</span>
+        <select id="divisionSelect">
+          <option value="ALL">All Divisions</option>
+        </select>
+        <span class="filter-label">Gender:</span>
+        <div class="pill-group" id="genderFilterGroup">
+          <button class="pill-btn active" data-gender="ALL">Both</button>
+          <button class="pill-btn" data-gender="Boys">Boys</button>
+          <button class="pill-btn" data-gender="Girls">Girls</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- VIEW 1: SEASON & TEAMS -->
+    <section id="view-overview" class="view-section active">
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Top-5 Team Average Time Progression</div>
+              <div class="card-subtitle">Average finish time (minutes) of Aquinas Academy's top-5 scorers by meet</div>
+            </div>
+          </div>
+          <div class="chart-box">
+            <canvas id="teamProgressionChart"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Pack Compression (1-to-5 Runner Spread)</div>
+              <div class="card-subtitle">Time gap in seconds between Aquinas #1 and #5 scorer (lower = tighter pack)</div>
+            </div>
+          </div>
+          <div class="chart-box">
+            <canvas id="packSpreadChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Official Team Standings &amp; Matchup Scores</div>
+            <div class="card-subtitle">All 2026 invitational, championship, and dual/tri-meet team results</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="teamStandingsTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Meet</th>
+                <th>Division</th>
+                <th>Gender</th>
+                <th>Aquinas Finish</th>
+                <th>Team Points</th>
+                <th>Top-5 Total Time</th>
+                <th>Top-5 Avg</th>
+                <th>Opponent Standings</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: ATHLETES & PRS -->
+    <section id="view-athletes" class="view-section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Athlete Season Trajectory Comparison</div>
+            <div class="card-subtitle">Click athletes below (or in the table) to compare race times &amp; field percentiles across the 2026 season</div>
+          </div>
+          <div class="pill-group" id="metricToggle">
+            <button class="pill-btn active" data-metric="time">Finish Time (min)</button>
+            <button class="pill-btn" data-metric="percentile">Field Percentile (%)</button>
+          </div>
+        </div>
+        <div class="athlete-chips" id="athleteChips"></div>
+        <div class="chart-box">
+          <canvas id="athleteComparisonChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Aquinas Academy Roster &amp; Season PR Leaderboard</div>
+            <div class="card-subtitle">Click any athlete row to toggle them on the progression chart above</div>
+          </div>
+          <input type="search" id="athleteSearch" placeholder="Search athlete name..." />
+        </div>
+        <div class="table-wrap">
+          <table id="athletesTable">
+            <thead>
+              <tr>
+                <th>Athlete</th>
+                <th>Gender</th>
+                <th>Grade / Age</th>
+                <th>Primary Division</th>
+                <th>Races</th>
+                <th>Season PR</th>
+                <th>PR Pace</th>
+                <th>PR Meet</th>
+                <th>Best Place</th>
+                <th>Top-10s</th>
+                <th>Avg Field Pct</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: RACE EXPLORER -->
+    <section id="view-meets" class="view-section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Race Field Distribution &amp; Aquinas Pack Placement</div>
+            <div class="card-subtitle">Every finisher in the selected race — Aquinas Academy runners highlighted in Gold/Maroon vs. full field</div>
+          </div>
+          <select id="raceSelector" style="min-width: 320px;"></select>
+        </div>
+        <div class="chart-box">
+          <canvas id="raceFieldChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title" id="raceTableTitle">Race Results</div>
+            <div class="card-subtitle" id="raceTableSubtitle"></div>
+          </div>
+          <div class="pill-group" id="raceScopeToggle">
+            <button class="pill-btn active" data-scope="aquinas">Aquinas Runners Only</button>
+            <button class="pill-btn" data-scope="all">Entire Race Field</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="raceResultsTable">
+            <thead>
+              <tr>
+                <th>Overall Place</th>
+                <th>Team Rank</th>
+                <th>Runner</th>
+                <th>Team</th>
+                <th>Grade/Age</th>
+                <th>Bib</th>
+                <th>Time</th>
+                <th>Pace</th>
+                <th>Gap to Winner</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: DOWNLOADS & RAW FILES -->
+    <section id="view-downloads" class="view-section">
+      <div class="download-grid">
+        <div class="dl-card">
+          <div>
+            <div class="card-title">Individual Performances CSV</div>
+            <div class="card-subtitle" style="margin-top:0.35rem;">All 623 Aquinas Academy race finishes with split times, paces, overall places, team ranks, and percentiles.</div>
+          </div>
+          <a class="btn-dl" href="data/aquinas_2026_performances.csv" download>Download CSV (623 rows)</a>
+        </div>
+        <div class="dl-card">
+          <div>
+            <div class="card-title">Official Team Standings CSV</div>
+            <div class="card-subtitle" style="margin-top:0.35rem;">All 50 team scorecards across High School WPIAL/TSTCA and Youth Diocesan meets.</div>
+          </div>
+          <a class="btn-dl" href="data/aquinas_2026_team_scores.csv" download>Download Team Scores CSV</a>
+        </div>
+        <div class="dl-card">
+          <div>
+            <div class="card-title">Complete JSON Dataset</div>
+            <div class="card-subtitle" style="margin-top:0.35rem;">Full structured JSON including all meets, athlete profiles, team standings, and complete opponent field data.</div>
+          </div>
+          <a class="btn-dl" href="data/aquinas_2026_full.json" download>Download Full JSON</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">2026 Meet Directory &amp; Smiley Miles Source Links</div>
+            <div class="card-subtitle">All 10 events where Aquinas Academy competed in 2026</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="meetsSummaryTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Meet Name</th>
+                <th>Location</th>
+                <th>Program</th>
+                <th>Host</th>
+                <th>Race Sections</th>
+                <th>Aquinas Finishes</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="data/data.js"></script>
+  <script>
+    const DATA = window.AQUINAS_XC_DATA;
+    let state = {
+      view: 'overview',
+      level: 'ALL',
+      division: 'ALL',
+      gender: 'ALL',
+      athleteMetric: 'time',
+      selectedAthletes: [],
+       athleteSearch: '',
+      selectedRaceId: null,
+      raceScope: 'aquinas'
+    };
+
+    let charts = {
+      teamProg: null,
+      packSpread: null,
+      athleteComp: null,
+      raceField: null
+    };
+
+    function fmtSeconds(sec) {
+      if (sec == null || isNaN(sec)) return '—';
+      const m = Math.floor(sec / 60);
+      const s = (sec - m * 60).toFixed(2).padStart(5, '0');
+      return `${m}:${s}`;
+    }
+
+    function initControls() {
+      // Populate division dropdown
+      const divs = Array.from(new Set(DATA.races.map(r => r.division)));
+      const divSel = document.getElementById('divisionSelect');
+      divs.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        divSel.appendChild(opt);
+      });
+
+      // Default selected athletes for comparison chart
+      const defaultNames = ['Isaac Vangura', 'Andrew Deem', 'Roman Spagnolo', 'John Austin', 'Zach Guillen', 'Kat Barnett'];
+      state.selectedAthletes = DATA.athletes
+        .filter(a => defaultNames.includes(a.name))
+        .slice(0, 5)
+        .map(a => `${a.name}|${a.level}`);
+
+      // Nav tabs
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.view = btn.dataset.view;
+          document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+          document.getElementById(`view-${state.view}`).classList.add('active');
+          renderAll();
+        });
+      });
+
+      // Level filter
+      document.querySelectorAll('#levelFilterGroup .pill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#levelFilterGroup .pill-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.level = btn.dataset.level;
+          renderAll();
+        });
+      });
+
+      // Division filter
+      divSel.addEventListener('change', () => {
+        state.division = divSel.value;
+        renderAll();
+      });
+
+      // Gender filter
+      document.querySelectorAll('#genderFilterGroup .pill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#genderFilterGroup .pill-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.gender = btn.dataset.gender;
+          renderAll();
+        });
+      });
+
+      // Metric toggle
+      document.querySelectorAll('#metricToggle .pill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#metricToggle .pill-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.athleteMetric = btn.dataset.metric;
+          renderAthletesView();
+        });
+      });
+
+      // Search
+      document.getElementById('athleteSearch').addEventListener('input', e => {
+        state.athleteSearch = e.target.value.toLowerCase();
+        renderAthletesView();
+      });
+
+      // Race selector
+      document.getElementById('raceSelector').addEventListener('change', e => {
+        state.selectedRaceId = e.target.value;
+        renderMeetsView();
+      });
+
+      // Race scope toggle
+      document.querySelectorAll('#raceScopeToggle .pill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#raceScopeToggle .pill-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.raceScope = btn.dataset.scope;
+          renderMeetsView();
+        });
+      });
+    }
+
+    function filterItem(item) {
+      if (state.level !== 'ALL' && item.level !== state.level) return false;
+      if (state.division !== 'ALL' && item.division !== state.division) return false;
+      if (state.gender !== 'ALL' && item.gender !== state.gender) return false;
+      return true;
+    }
+
+    function renderKPIs() {
+      const perfs = DATA.performances.filter(filterItem);
+      const races = DATA.races.filter(filterItem);
+      const standings = DATA.team_standings.filter(filterItem);
+      const uniqueMeets = new Set(races.map(r => r.meet_id)).size;
+      const uniqueRunners = new Set(perfs.map(p => p.name)).size;
+      const teamWins = standings.filter(s => s.aquinas_position === 1).length;
+      const teamPodiums = standings.filter(s => typeof s.aquinas_position === 'number' && s.aquinas_position <= 3).length;
+      const top10s = perfs.filter(p => p.overall_place <= 10).length;
+      const individualWins = perfs.filter(p => p.overall_place === 1).length;
+
+      const kpiHtml = `
+        <div class="kpi-card">
+          <div class="kpi-label">Meets &amp; Race Divisions</div>
+          <div class="kpi-value">${uniqueMeets} <span style="font-size:1rem;color:var(--text-muted);font-weight:600;">meets (${races.length} races)</span></div>
+          <div class="kpi-sub">100% of 2026 Smiley Miles results</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Aquinas Finishes</div>
+          <div class="kpi-value">${perfs.length}</div>
+          <div class="kpi-sub">${uniqueRunners} unique Aquinas Academy runners</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Team 1st Place Wins</div>
+          <div class="kpi-value" style="color:var(--gold)">${teamWins} <span style="font-size:1rem;color:var(--text-muted);font-weight:600;">(${teamPodiums} podiums)</span></div>
+          <div class="kpi-sub">Out of ${standings.length} scored team divisions</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Individual Top-10s</div>
+          <div class="kpi-value" style="color:var(--green)">${top10s}</div>
+          <div class="kpi-sub">${individualWins} overall individual 1st-place wins</div>
+        </div>
+      `;
+      document.getElementById('kpiGrid').innerHTML = kpiHtml;
+    }
+
+    function renderOverview() {
+      const races = DATA.races.filter(filterItem).filter(r => r.aquinas_top5_avg_seconds != null);
+      const palette = {
+        'HS Varsity (9-12) Boys': '#ef4444',
+        'HS Varsity (9-12) Girls': '#f97316',
+        'MS Varsity (7-8) Boys': '#eab308',
+        'MS Varsity (7-8) Girls': '#22c55e',
+        'Elementary JV (5-6) Boys': '#38bdf8',
+        'Elementary JV (5-6) Girls': '#a855f7',
+        'Developmental (K-4) Boys': '#14b8a6',
+        'Developmental (K-4) Girls': '#ec4899'
+      };
+
+      // Group races by series (division + gender)
+      const groups = {};
+      races.forEach(r => {
+        const key = `${r.division} ${r.gender}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(r);
+      });
+
+      const allMeetLabels = Array.from(new Set(races.map(r => r.short_meet_name)));
+      const datasetsAvg = Object.entries(groups).map(([label, list]) => {
+        const color = palette[label] || '#60a5fa';
+        return {
+          label,
+          data: allMeetLabels.map(m => {
+            const found = list.find(x => x.short_meet_name === m);
+            return found ? +(found.aquinas_top5_avg_seconds / 60).toFixed(2) : null;
+          }),
+          borderColor: color,
+          backgroundColor: color,
+          spanGaps: true,
+          tension: 0.25,
+          pointRadius: 5
+        };
+      });
+
+      if (charts.teamProg) charts.teamProg.destroy();
+      charts.teamProg = new Chart(document.getElementById('teamProgressionChart'), {
+        type: 'line',
+        data: { labels: allMeetLabels, datasets: datasetsAvg },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 11 } } },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: ${fmtSeconds(ctx.raw * 60)} avg`
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: {
+              ticks: { color: '#94a3b8', callback: v => `${v}m` },
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              title: { display: true, text: 'Top-5 Avg Time (Minutes)', color: '#94a3b8' }
+            }
+          }
+        }
+      });
+
+      // Pack spread chart
+      const spreadRaces = races.filter(r => r.aquinas_1_to_5_spread_seconds != null);
+      const datasetsSpread = Object.entries(groups).map(([label, list]) => {
+        const color = palette[label] || '#60a5fa';
+        return {
+          label,
+          data: allMeetLabels.map(m => {
+            const found = list.find(x => x.short_meet_name === m);
+            return found && found.aquinas_1_to_5_spread_seconds != null ? found.aquinas_1_to_5_spread_seconds : null;
+          }),
+          backgroundColor: color,
+          borderRadius: 4
+        };
+      });
+
+      if (charts.packSpread) charts.packSpread.destroy();
+      charts.packSpread = new Chart(document.getElementById('packSpreadChart'), {
+        type: 'bar',
+        data: { labels: allMeetLabels, datasets: datasetsSpread },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 11 } } },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: ${fmtSeconds(ctx.raw)} (1–5 spread)`
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: {
+              ticks: { color: '#94a3b8', callback: v => `${v}s` },
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              title: { display: true, text: '1-to-5 Pack Spread (Seconds)', color: '#94a3b8' }
+            }
+          }
+        }
+      });
+
+      // Render Team Standings Table
+      const standings = DATA.team_standings.filter(filterItem);
+      const tbody = document.querySelector('#teamStandingsTable tbody');
+      tbody.innerHTML = standings.map(s => {
+        const pos = s.aquinas_position;
+        const posClass = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : 'pos-other';
+        const posLabel = typeof pos === 'number' ? `#${pos} of ${s.scored_teams_count}` : (pos || 'Inc.');
+        const oppSummary = s.teams
+          .filter(t => typeof t.position === 'number')
+          .slice(0, 4)
+          .map(t => `<span style="${t.is_aquinas ? 'color:var(--gold);font-weight:700;' : ''}">${t.position}. ${t.team} (${t.points})</span>`)
+          .join(' &middot; ');
+        const matchupBadge = s.matchup ? `<div style="font-size:0.74rem;color:var(--gold);">${s.matchup}</div>` : '';
+        return `
+          <tr>
+            <td class="mono">${s.date}</td>
+            <td><strong>${s.short_meet_name}</strong>${matchupBadge}</td>
+            <td>${s.division}</td>
+            <td><span class="tag ${s.gender === 'Boys' ? 'tag-boys' : 'tag-girls'}">${s.gender}</span></td>
+            <td><span class="pos-badge ${posClass}">${posLabel}</span></td>
+            <td class="mono">${s.aquinas_points != null ? s.aquinas_points + ' pts' : '—'}</td>
+            <td class="mono">${s.aquinas_total_time || '—'}</td>
+            <td class="mono">${s.aquinas_avg_time || '—'}</td>
+            <td style="font-size:0.78rem;color:var(--text-muted);">${oppSummary || 'Incomplete team (<5)'}</td>
+            <td><a class="link-ext" href="${s.source_url}" target="_blank" rel="noopener">Smiley Miles &nearr;</a></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderAthletesView() {
+      const athletes = DATA.athletes.filter(filterItem).filter(a => {
+        if (!state.athleteSearch) return true;
+        return a.name.toLowerCase().includes(state.athleteSearch) || a.division.toLowerCase().includes(state.athleteSearch);
+      });
+
+      // Render chips for selected or top athletes
+      const chipContainer = document.getElementById('athleteChips');
+      const topOrSelected = DATA.athletes.filter(filterItem).slice(0, 18);
+      chipContainer.innerHTML = topOrSelected.map(a => {
+        const key = `${a.name}|${a.level}`;
+        const isSel = state.selectedAthletes.includes(key);
+        return `<button class="athlete-chip ${isSel ? 'selected' : ''}" data-key="${key}">
+          ${a.name} <span style="opacity:0.7;font-size:0.72rem;">(${a.pr_time})</span>
+        </button>`;
+      }).join('');
+
+      chipContainer.querySelectorAll('.athlete-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const k = btn.dataset.key;
+          if (state.selectedAthletes.includes(k)) {
+            state.selectedAthletes = state.selectedAthletes.filter(x => x !== k);
+          } else {
+            state.selectedAthletes.push(k);
+          }
+          renderAthletesView();
+        });
+      });
+
+      // Comparison Chart
+      const selectedObjs = DATA.athletes.filter(a => state.selectedAthletes.includes(`${a.name}|${a.level}`));
+      const meetDates = Array.from(new Set(selectedObjs.flatMap(a => a.races.map(r => r.short_meet_name))));
+      const colors = ['#eab308', '#ef4444', '#38bdf8', '#22c55e', '#a855f7', '#f97316', '#14b8a6'];
+
+      const datasets = selectedObjs.map((a, idx) => {
+        const c = colors[idx % colors.length];
+        return {
+          label: `${a.name} (${a.division})`,
+          data: meetDates.map(m => {
+            const r = a.races.find(x => x.short_meet_name === m);
+            if (!r) return null;
+            return state.athleteMetric === 'time' ? +(r.time_seconds / 60).toFixed(2) : r.percentile;
+          }),
+          borderColor: c,
+          backgroundColor: c,
+          spanGaps: true,
+          tension: 0.25,
+          pointRadius: 5
+        };
+      });
+
+      if (charts.athleteComp) charts.athleteComp.destroy();
+      charts.athleteComp = new Chart(document.getElementById('athleteComparisonChart'), {
+        type: 'line',
+        data: { labels: meetDates, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#cbd5e1' } },
+            tooltip: {
+              callbacks: {
+                label: ctx => state.athleteMetric === 'time'
+                  ? `${ctx.dataset.label}: ${fmtSeconds(ctx.raw * 60)}`
+                  : `${ctx.dataset.label}: ${ctx.raw}% percentile`
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: {
+              ticks: {
+                color: '#94a3b8',
+                callback: v => state.athleteMetric === 'time' ? `${v}m` : `${v}%`
+              },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            }
+          }
+        }
+      });
+
+      // Athletes Table
+      const tbody = document.querySelector('#athletesTable tbody');
+      tbody.innerHTML = athletes.map(a => {
+        const key = `${a.name}|${a.level}`;
+        const isSel = state.selectedAthletes.includes(key);
+        return `
+          <tr data-key="${key}" style="cursor:pointer;${isSel ? 'background:rgba(234,179,8,0.08);' : ''}">
+            <td><strong>${a.name}</strong> ${isSel ? '<span style="color:var(--gold);font-size:0.75rem;">&#9733; Charted</span>' : ''}</td>
+            <td><span class="tag ${a.gender === 'Boys' ? 'tag-boys' : 'tag-girls'}">${a.gender}</span></td>
+            <td class="mono">${a.grade_or_age}</td>
+            <td>${a.division}</td>
+            <td class="mono">${a.races_count}</td>
+            <td class="mono" style="color:var(--gold);font-weight:700;">${a.pr_time}</td>
+            <td class="mono">${a.pr_pace}</td>
+            <td>${a.pr_meet}</td>
+            <td><span class="pos-badge ${a.best_place <= 3 ? 'pos-' + a.best_place : 'pos-other'}">#${a.best_place}</span></td>
+            <td class="mono">${a.top_10_finishes}</td>
+            <td class="mono">
+              <div class="pct-bar"><div class="pct-fill" style="width:${a.avg_percentile}%"></div></div>
+              ${a.avg_percentile}%
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      tbody.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('click', () => {
+          const k = row.dataset.key;
+          if (state.selectedAthletes.includes(k)) {
+            state.selectedAthletes = state.selectedAthletes.filter(x => x !== k);
+          } else {
+            state.selectedAthletes.push(k);
+          }
+          renderAthletesView();
+        });
+      });
+    }
+
+    function renderMeetsView() {
+      const filteredRaces = DATA.races.filter(filterItem);
+      const sel = document.getElementById('raceSelector');
+      if (!filteredRaces.length) {
+        sel.innerHTML = '<option>No races match filter</option>';
+        return;
+      }
+      if (!state.selectedRaceId || !filteredRaces.some(r => r.race_id === state.selectedRaceId)) {
+        state.selectedRaceId = filteredRaces[filteredRaces.length - 1].race_id;
+      }
+      sel.innerHTML = filteredRaces.map(r => `
+        <option value="${r.race_id}" ${r.race_id === state.selectedRaceId ? 'selected' : ''}>
+          ${r.date} — ${r.short_meet_name} | ${r.division} ${r.gender} (${r.aquinas_finishers_count} Aquinas / ${r.total_finishers} total)
+        </option>
+      `).join('');
+
+      const race = filteredRaces.find(r => r.race_id === state.selectedRaceId);
+      if (!race) return;
+
+      document.getElementById('raceTableTitle').textContent = `${race.meet_name} — ${race.division} ${race.gender}`;
+      document.getElementById('raceTableSubtitle').innerHTML = `
+        ${race.date} &bull; ${race.location} &bull; ${race.aquinas_finishers_count} Aquinas runners out of ${race.total_finishers} total finishers
+        &bull; <a class="link-ext" href="${race.source_url}" target="_blank" rel="noopener">View Original Smiley Miles HTML &nearr;</a>
+      `;
+
+      // Scatter chart of all runners in the field
+      const aqPoints = [];
+      const otherPoints = [];
+      race.all_runners.forEach(r => {
+        const pt = { x: r.place, y: +(r.time_seconds / 60).toFixed(2), name: r.name, team: r.team, time: r.time, pace: r.pace };
+        if (r.is_aquinas) aqPoints.push(pt);
+        else otherPoints.push(pt);
+      });
+
+      if (charts.raceField) charts.raceField.destroy();
+      charts.raceField = new Chart(document.getElementById('raceFieldChart'), {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Aquinas Academy Runners',
+              data: aqPoints,
+              backgroundColor: '#eab308',
+              borderColor: '#991b1b',
+              borderWidth: 2,
+              pointRadius: 7,
+              pointHoverRadius: 9
+            },
+            {
+              label: 'Other Competitors',
+              data: otherPoints,
+              backgroundColor: 'rgba(148, 163, 184, 0.35)',
+              pointRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const p = ctx.raw;
+                  return `#${p.x} ${p.name} (${p.team}) — ${p.time} (${p.pace})`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Overall Finish Place', color: '#94a3b8' },
+              ticks: { color: '#94a3b8' },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            },
+            y: {
+              title: { display: true, text: 'Finish Time (Minutes)', color: '#94a3b8' },
+              ticks: { color: '#94a3b8', callback: v => `${v}m` },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            }
+          }
+        }
+      });
+
+      // Race table
+      const rows = state.raceScope === 'aquinas' ? race.aquinas_runners : race.all_runners;
+      let aqCounter = 0;
+      const tbody = document.querySelector('#raceResultsTable tbody');
+      tbody.innerHTML = rows.map(r => {
+        if (r.is_aquinas) aqCounter++;
+        const gap = r.time_seconds && race.winner_time_seconds ? `+${fmtSeconds(r.time_seconds - race.winner_time_seconds)}` : 'Winner';
+        return `
+          <tr style="${r.is_aquinas ? 'background:rgba(234,179,8,0.07);' : ''}">
+            <td><span class="pos-badge ${r.place <= 3 ? 'pos-' + r.place : 'pos-other'}">#${r.place}</span></td>
+            <td class="mono">${r.is_aquinas ? '#' + aqCounter : '—'}</td>
+            <td><strong style="${r.is_aquinas ? 'color:var(--gold);' : ''}">${r.name}</strong></td>
+            <td>${r.team}</td>
+            <td class="mono">${r.grade_or_age}</td>
+            <td class="mono">${r.bib}</td>
+            <td class="mono" style="font-weight:600;">${r.time}</td>
+            <td class="mono">${r.pace}</td>
+            <td class="mono" style="color:var(--text-muted);">${r.place === 1 ? '0:00.00' : gap}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDownloadsView() {
+      const tbody = document.querySelector('#meetsSummaryTable tbody');
+      tbody.innerHTML = DATA.meets.map(m => {
+        const mRaces = DATA.races.filter(r => r.meet_id === m.meet_id);
+        const mFinishes = mRaces.reduce((acc, r) => acc + r.aquinas_finishers_count, 0);
+        return `
+          <tr>
+            <td class="mono">${m.date}</td>
+            <td><strong>${m.meet_name}</strong></td>
+            <td>${m.location}</td>
+            <td>${m.program}</td>
+            <td>${m.host}</td>
+            <td class="mono">${mRaces.length} races</td>
+            <td class="mono" style="color:var(--gold);font-weight:700;">${mFinishes} finishes</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderAll() {
+      renderKPIs();
+      if (state.view === 'overview') renderOverview();
+      if (state.view === 'athletes') renderAthletesView();
+      if (state.view === 'meets') renderMeetsView();
+      if (state.view === 'downloads') renderDownloadsView();
+    }
+
+    initControls();
+    renderAll();
+  </script>
+</body>
+</html>

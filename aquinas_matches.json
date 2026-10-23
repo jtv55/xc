@@ -1,0 +1,515 @@
+{
+  "matches": [
+    {
+      "index": 14,
+      "href": "2026/RES102226%20TSTCA%20XC%20MEET%20A%20BOYS%20OA.htm",
+      "title": "TSTCA XC Invite A Boys, White Oak, PA, 10-22-2026",
+      "file": "2026__RES102226 TSTCA XC MEET A BOYS OA.htm"
+    },
+    {
+      "index": 15,
+      "href": "2026/RES102226%20TSTCA%20XC%20MEET%20A%20BOYS%20TEAMS.htm",
+      "title": "TSTCA XC Invite A Boys Teams, White Oak, PA, 10-22-2026",
+      "file": "2026__RES102226 TSTCA XC MEET A BOYS TEAMS.htm"
+    },
+    {
+      "index": 16,
+      "href": "2026/RES102226%20TSTCA%20XC%20MEET%20A%20GIRLS%20OA.htm",
+      "title": "TSTCA XC Invite A Girls, White Oak, PA, 10-22-2026",
+      "file": "2026__RES102226 TSTCA XC MEET A GIRLS OA.htm"
+    },
+    {
+      "index": 17,
+      "href": "2026/RES102226%20TSTCA%20XC%20MEET%20A%20GIRLS%20TEAMS.htm",
+      "title": "TSTCA XC Invite A Girls Teams, White Oak, PA, 10-22-2026",
+      "file": "2026__RES102226 TSTCA XC MEET A GIRLS TEAMS.htm"
+    },
+    {
+      "index": 140,
+      "href": "2026/RES100626%20Seelos%20XC%20Meet%20Varsity%20Boys%20and%20Girls%20OA.htm",
+      "title": "Seelos Pine Park XC Meet Varsity Boys and Girls, Wexford, PA, 10-06-2026",
+      "file": "2026__RES100626 Seelos XC Meet Varsity Boys and Girls OA.htm"
+    },
+    {
+      "index": 141,
+      "href": "2026/RES100626%20Seelos%20XC%20Meet%20Varsity%20Boys%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet Varsity Boys Teams, Wexford, PA, 10-06-2026",
+      "file": "2026__RES100626 Seelos XC Meet Varsity Boys Teams.htm"
+    },
+    {
+      "index": 142,
+      "href": "2026/RES100626%20Seelos%20XC%20Meet%20Varsity%20Girls%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet Varsity Girls Teams, Wexford, PA, 10-06-2026",
+      "file": "2026__RES100626 Seelos XC Meet Varsity Girls Teams.htm"
+    },
+    {
+      "index": 143,
+      "href": "2026/RES100626%20Seelos%20XC%20Meet%20JV%20Boys%20and%20Girls%20OA.htm",
+      "title": "Seelos Pine Park XC Meet JV Boys and Girls, Wexford, PA, 10-06-2026",
+      "file": "2026__RES100626 Seelos XC Meet JV Boys and Girls OA.htm"
+    },
+    {
+      "index": 144,
+      "href": "2026/RES100626%20Seelos%20XC%20Meet%20JV%20Boys%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet JV Boys Teams, Wexford, PA, 10-06-2026",
+      "file": "2026__RES100626 Seelos XC Meet JV Boys Teams.htm"
+    },
+    {
+      "index": 145,
+      "href": "2026/RES100626%20Seelos%20XC%20Meet%20JV%20Girls%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet JV Girls Teams, Wexford, PA, 10-06-2026",
+      "file": "2026__RES100626 Seelos XC Meet JV Girls Teams.htm"
+    },
+    {
+      "index": 146,
+      "href": "2026/RES100626%20Seelos%20XC%20Meet%20Developmental%20Boys%20and%20Girls%20OA.htm",
+      "title": "Seelos Pine Park XC Meet Developmental Boys and Girls, Wexford, PA, 10-06-2026",
+      "file": "2026__RES100626 Seelos XC Meet Developmental Boys and Girls OA.htm"
+    },
+    {
+      "index": 147,
+      "href": "2026/RES100626%20Seelos%20XC%20Meet%20Developmental%20Boys%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet Developmental Boys Teams, Wexford, PA, 10-06-2026",
+      "file": "2026__RES100626 Seelos XC Meet Developmental Boys Teams.htm"
+    },
+    {
+      "index": 148,
+      "href": "2026/RES100626%20Seelos%20XC%20Meet%20Developmental%20Girls%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet Developmental Girls Teams, Wexford, PA, 10-06-2026",
+      "file": "2026__RES100626 Seelos XC Meet Developmental Girls Teams.htm"
+    },
+    {
+      "index": 231,
+      "href": "2026/RES100226%20North%20Area%20XC%20Championships%20Varsity%20Boys%20and%20Girls%20OA.htm",
+      "title": "North Area XC Championships Varsity Boys and Girls, North Park, PA, 10-02-2026",
+      "file": "2026__RES100226 North Area XC Championships Varsity Boys and Girls OA.htm"
+    },
+    {
+      "index": 232,
+      "href": "2026/RES100226%20North%20Area%20XC%20Championships%20Varsity%20Boys%20Teams.htm",
+      "title": "North Area XC Championships Varsity Boys Teams, North Park, PA, 10-02-2026",
+      "file": "2026__RES100226 North Area XC Championships Varsity Boys Teams.htm"
+    },
+    {
+      "index": 233,
+      "href": "2026/RES100226%20North%20Area%20XC%20Championships%20Varsity%20Girls%20Teams.htm",
+      "title": "North Area XC Championships Varsity Girls Teams, North Park, PA, 10-02-2026",
+      "file": "2026__RES100226 North Area XC Championships Varsity Girls Teams.htm"
+    },
+    {
+      "index": 234,
+      "href": "2026/RES100226%20North%20Area%20XC%20Championships%20JV%20Boys%20and%20Girls%20OA.htm",
+      "title": "North Area XC Championships JV Boys and Girls, North Park, PA, 10-02-2026",
+      "file": "2026__RES100226 North Area XC Championships JV Boys and Girls OA.htm"
+    },
+    {
+      "index": 235,
+      "href": "2026/RES100226%20North%20Area%20XC%20Championships%20JV%20Boys%20Teams.htm",
+      "title": "North Area XC Championships JV Boys Teams, North Park, PA, 10-02-2026",
+      "file": "2026__RES100226 North Area XC Championships JV Boys Teams.htm"
+    },
+    {
+      "index": 236,
+      "href": "2026/RES100226%20North%20Area%20XC%20Championships%20JV%20Girls%20Teams.htm",
+      "title": "North Area XC Championships JV Girls Teams, North Park, PA, 10-02-2026",
+      "file": "2026__RES100226 North Area XC Championships JV Girls Teams.htm"
+    },
+    {
+      "index": 237,
+      "href": "2026/RES100226%20North%20Area%20XC%20Championships%20Dev%20Boys%20and%20Girls%20OA.htm",
+      "title": "North Area XC Championships Developmental Boys and Girls, North Park, PA, 10-02-2026",
+      "file": "2026__RES100226 North Area XC Championships Dev Boys and Girls OA.htm"
+    },
+    {
+      "index": 238,
+      "href": "2026/RES100226%20North%20Area%20XC%20Championships%20Dev%20Boys%20Teams.htm",
+      "title": "North Area XC Championships Developmental Boys Teams, North Park, PA, 10-02-2026",
+      "file": "2026__RES100226 North Area XC Championships Dev Boys Teams.htm"
+    },
+    {
+      "index": 239,
+      "href": "2026/RES100226%20North%20Area%20XC%20Championships%20Dev%20Girls%20Teams.htm",
+      "title": "North Area XC Championships Developmental Girls Teams, North Park, PA, 10-02-2026",
+      "file": "2026__RES100226 North Area XC Championships Dev Girls Teams.htm"
+    },
+    {
+      "index": 273,
+      "href": "2026/RES092926%20Avonworth%20XC%20Meet%20Varsity%20Boys%20and%20Girls%20OA.htm",
+      "title": "Avonworth XC Meet, Sewickley Varsity Boys and Girls, PA, 09-29-2026",
+      "file": "2026__RES092926 Avonworth XC Meet Varsity Boys and Girls OA.htm"
+    },
+    {
+      "index": 274,
+      "href": "2026/RES092926%20Avonworth%20XC%20Meet%20Varsity%20Boys%20Teams%20Avonworth%20vs%20Neighborhood%20Academy.htm",
+      "title": "Avonworth XC Meet Boys Teams Avonworth vs Neighborhood Academy, Sewickley, PA, 09-29-2026",
+      "file": "2026__RES092926 Avonworth XC Meet Varsity Boys Teams Avonworth vs Neighborhood Academy.htm"
+    },
+    {
+      "index": 275,
+      "href": "2026/RES092926%20Avonworth%20XC%20Meet%20Varsity%20BoysTeams%20Avonworth%20vs%20Aquinas.htm",
+      "title": "Avonworth XC Meet Boys Teams Avonworth vs Aquinas, Sewickley, PA, 09-29-2026",
+      "file": "2026__RES092926 Avonworth XC Meet Varsity BoysTeams Avonworth vs Aquinas.htm"
+    },
+    {
+      "index": 276,
+      "href": "2026/RES092926%20Avonworth%20XC%20Meet%20Varsity%20Boys%20Teams%20Neighborhood%20Acad%20vs%20Aquinas.htm",
+      "title": "Avonworth XC Meet Boys Teams Neighborhood Academy vs Aquinas, Sewickley, PA, 09-29-2026",
+      "file": "2026__RES092926 Avonworth XC Meet Varsity Boys Teams Neighborhood Acad vs Aquinas.htm"
+    },
+    {
+      "index": 277,
+      "href": "2026/RES092926%20Avonworth%20XC%20Meet%20Varsity%20Girls%20Teams%20Avonworth%20vs%20Neighborhood%20Acad.htm",
+      "title": "Avonworth XC Meet Girls Teams Avonworth vs Neighborhood Academy, Sewickley, PA, 09-29-2026",
+      "file": "2026__RES092926 Avonworth XC Meet Varsity Girls Teams Avonworth vs Neighborhood Acad.htm"
+    },
+    {
+      "index": 278,
+      "href": "2026/RES092926%20Avonworth%20XC%20Meet%20Varsity%20Girls%20Teams%20Avonworth%20vs%20Aquinas.htm",
+      "title": "Avonworth XC Meet Girls Teams Avonworth vs Aquinas, Sewickley, PA, 09-29-2026",
+      "file": "2026__RES092926 Avonworth XC Meet Varsity Girls Teams Avonworth vs Aquinas.htm"
+    },
+    {
+      "index": 279,
+      "href": "2026/RES092926%20Avonworth%20XC%20Meet%20Varsity%20Girls%20Teams%20Neighborhood%20Acad%20vs%20Aquinas.htm",
+      "title": "Avonworth XC Meet Girls Teams Neighborhood Academy vs Aquinas, Sewickley, PA, 09-29-2026",
+      "file": "2026__RES092926 Avonworth XC Meet Varsity Girls Teams Neighborhood Acad vs Aquinas.htm"
+    },
+    {
+      "index": 318,
+      "href": "2026/RES092426%20Aquinas%20XC%20Varsity%20Boys%20and%20Girls%20OA.htm",
+      "title": "Aquinas XC Meet Varsity Boys and Girls, Allison Park, PA, 09-24-2026",
+      "file": "2026__RES092426 Aquinas XC Varsity Boys and Girls OA.htm"
+    },
+    {
+      "index": 319,
+      "href": "2026/RES092426%20Aquinas%20XC%20Varsity%20Boys%20Teams.htm",
+      "title": "Aquinas XC Meet Varsity Boys Teams, Allison Park, PA, 09-24-2026",
+      "file": "2026__RES092426 Aquinas XC Varsity Boys Teams.htm"
+    },
+    {
+      "index": 320,
+      "href": "2026/RES092426%20Aquinas%20XC%20Varsity%20Girls%20Teams.htm",
+      "title": "Aquinas XC Meet Varsity Girls Teams, Allison Park, PA, 09-24-2026",
+      "file": "2026__RES092426 Aquinas XC Varsity Girls Teams.htm"
+    },
+    {
+      "index": 321,
+      "href": "2026/RES092426%20Aquinas%20XC%20JV%20Boys%20and%20Girls%20OA.htm",
+      "title": "Aquinas XC Meet JV Boys and Girls, Allison Park, PA, 09-24-2026",
+      "file": "2026__RES092426 Aquinas XC JV Boys and Girls OA.htm"
+    },
+    {
+      "index": 322,
+      "href": "2026/RES092426%20Aquinas%20XC%20JV%20Boys%20Teams.htm",
+      "title": "Aquinas XC Meet JV Boys Teams, Allison Park, PA, 09-24-2026",
+      "file": "2026__RES092426 Aquinas XC JV Boys Teams.htm"
+    },
+    {
+      "index": 323,
+      "href": "2026/RES092426%20Aquinas%20XC%20JV%20Girls%20Teams.htm",
+      "title": "Aquinas XC Meet JV Girls Teams, Allison Park, PA, 09-24-2026",
+      "file": "2026__RES092426 Aquinas XC JV Girls Teams.htm"
+    },
+    {
+      "index": 324,
+      "href": "2026/RES092426%20Aquinas%20XC%20Dev%20Boys%20and%20Girls%20OA.htm",
+      "title": "Aquinas XC Meet Developmental Boys and Girls, Allison Park, PA, 09-24-2026",
+      "file": "2026__RES092426 Aquinas XC Dev Boys and Girls OA.htm"
+    },
+    {
+      "index": 325,
+      "href": "2026/RES092426%20Aquinas%20XC%20Dev%20Boys%20Teams.htm",
+      "title": "Aquinas XC Meet Developmental Boys Teams, Allison Park, PA, 09-24-2026",
+      "file": "2026__RES092426 Aquinas XC Dev Boys Teams.htm"
+    },
+    {
+      "index": 326,
+      "href": "2026/RES092426%20Aquinas%20XC%20Dev%20Girls%20Teams.htm",
+      "title": "Aquinas XC Meet Developmental Girls Teams, Allison Park, PA, 09-24-2026",
+      "file": "2026__RES092426 Aquinas XC Dev Girls Teams.htm"
+    },
+    {
+      "index": 392,
+      "href": "2026/RES091826%20Youthtowne%20Clash%20Varsity%20Boys%20OA.html",
+      "title": "Youthtowne Clash Varsity Boys, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash Varsity Boys OA.html"
+    },
+    {
+      "index": 393,
+      "href": "2026/RES091826%20Youthtowne%20Clash%20Varsity%20Boys%20Teams.htm",
+      "title": "Youthtowne Clash Varsity Boys Teams, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash Varsity Boys Teams.htm"
+    },
+    {
+      "index": 394,
+      "href": "2026/RES091826%20Youthtowne%20Clash%20Varsity%20Girls%20OA.html",
+      "title": "Youthtowne Clash Varsity Girls, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash Varsity Girls OA.html"
+    },
+    {
+      "index": 395,
+      "href": "2026/RES091826%20Youthtowne%20Clash%20Varsity%20Girls%20Teams.htm",
+      "title": "Youthtowne Clash Varsity Girls Teams, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash Varsity Girls Teams.htm"
+    },
+    {
+      "index": 399,
+      "href": "2026/RES091826%20Youthtowne%20Clash%20%20Jr%20High%20Boys%20and%20Girls%20OA.html",
+      "title": "Youthtowne Clash Jr High Boys and Girls, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash  Jr High Boys and Girls OA.html"
+    },
+    {
+      "index": 400,
+      "href": "2026/RES091826%20Youthtowne%20Clash%20%20Jr%20High%20Boys%20Teams.htm",
+      "title": "Youthtowne Clash Jr High Boys Teams, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash  Jr High Boys Teams.htm"
+    },
+    {
+      "index": 401,
+      "href": "2026/RES091826%20Youthtowne%20Clash%20%20Jr%20High%20Girls%20Teams.htm",
+      "title": "Youthtowne Clash Jr High Girls Teams, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash  Jr High Girls Teams.htm"
+    },
+    {
+      "index": 402,
+      "href": "2026/RES091826%20Youthtowne%20Clash%205th%20and%206th%20Boys%20and%20Girls%20OA.html",
+      "title": "Youthtowne Clash 5th and 6th Grade Boys and Girls, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash 5th and 6th Boys and Girls OA.html"
+    },
+    {
+      "index": 403,
+      "href": "2026/RES091826%20Youthtowne%20Clash%205th%20and%206th%20Boys%20Teams.htm",
+      "title": "Youthtowne Clash 5th and 6th Grade Boys Teams, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash 5th and 6th Boys Teams.htm"
+    },
+    {
+      "index": 404,
+      "href": "2026/RES091826%20Youthtowne%20Clash%205th%20and%206th%20Girls%20Teams.htm",
+      "title": "Youthtowne Clash 5th and 6th Grade Girls Teams, Clinton, PA, 9-18-2026",
+      "file": "2026__RES091826 Youthtowne Clash 5th and 6th Girls Teams.htm"
+    },
+    {
+      "index": 405,
+      "href": "2026/RES091826%20Youthtowne%203rd%20and%204th%20Boys%20and%20Girls%20OA.htm",
+      "title": "Youthtowne Clash 3 and 4 Grade Boys and Girls, Clinton, PA, 09-18-2026",
+      "file": "2026__RES091826 Youthtowne 3rd and 4th Boys and Girls OA.htm"
+    },
+    {
+      "index": 406,
+      "href": "2026/RES091826%20Youthtowne%203rd%20and%204th%20Boys%20Teams.htm",
+      "title": "Youthtowne Clash 3 and 4 Grade Boys Teams, Clinton, PA, 09-18-2026",
+      "file": "2026__RES091826 Youthtowne 3rd and 4th Boys Teams.htm"
+    },
+    {
+      "index": 407,
+      "href": "2026/RES091826%20Youthtowne%203rd%20and%204th%20Girls%20Teams.htm",
+      "title": "Youthtowne Clash 3 and 4 Grade Girls Teams, Clinton, PA, 09-18-2026",
+      "file": "2026__RES091826 Youthtowne 3rd and 4th Girls Teams.htm"
+    },
+    {
+      "index": 458,
+      "href": "2026/RES090926%20Twilight%20Harvest%20Home%205K%20OA.htm",
+      "title": "St Al Twilight Harvest Home 5K, Allison Park, PA, 09/10/2026",
+      "file": "2026__RES090926 Twilight Harvest Home 5K OA.htm"
+    },
+    {
+      "index": 459,
+      "href": "2026/RES090926%20Twilight%20Harvest%20Home%205K%20AG.htm",
+      "title": "St Al Twilight Harvest Home 5K Age Groups, Allison Park, PA, 09/10/2026",
+      "file": "2026__RES090926 Twilight Harvest Home 5K AG.htm"
+    },
+    {
+      "index": 460,
+      "href": "2026/RES090926%20Twilight%20Harvest%20Home%201M%20OA.htm",
+      "title": "St Al Twilight Harvest Home 1 Mile, Allison Park, PA, 09/10/2026",
+      "file": "2026__RES090926 Twilight Harvest Home 1M OA.htm"
+    },
+    {
+      "index": 461,
+      "href": "2026/RES090926%20Twilight%20Harvest%20Home%201M%20AG.htm",
+      "title": "St Al Twilight Harvest Home 1 Mile Age Groups, Allison Park, PA, 09/10/2026",
+      "file": "2026__RES090926 Twilight Harvest Home 1M AG.htm"
+    },
+    {
+      "index": 531,
+      "href": "2026/RES090426%20St%20Kilian%20XC%20Dev%20Boys%20and%20Girls%20OA.htm",
+      "title": "St Kilian XC Meet Developmental Boys and Girls, Mars, PA, 09-04-2026",
+      "file": "2026__RES090426 St Kilian XC Dev Boys and Girls OA.htm"
+    },
+    {
+      "index": 532,
+      "href": "2026/RES090426%20St%20Kilian%20XC%20Dev%20Boys%20Teams.htm",
+      "title": "St Kilian XC Meet Developmental Boys Teams, Mars, PA, 09-04-2026",
+      "file": "2026__RES090426 St Kilian XC Dev Boys Teams.htm"
+    },
+    {
+      "index": 533,
+      "href": "2026/RES090426%20St%20Kilian%20XC%20Dev%20Girls%20Teams.htm",
+      "title": "St Kilian XC Meet Developmental Girls Teams, Mars, PA, 09-04-2026",
+      "file": "2026__RES090426 St Kilian XC Dev Girls Teams.htm"
+    },
+    {
+      "index": 534,
+      "href": "2026/RES090426%20St%20Kilian%20XC%20JV%20Boys%20and%20Girls%20OA.htm",
+      "title": "St Kilian XC Meet JV Boys and Girls, Mars, PA, 09-04-2026",
+      "file": "2026__RES090426 St Kilian XC JV Boys and Girls OA.htm"
+    },
+    {
+      "index": 535,
+      "href": "2026/RES090426%20St%20Kilian%20XC%20JV%20Boys%20Teams.htm",
+      "title": "St Kilian XC Meet JV Boys Teams, Mars, PA, 09-04-2026",
+      "file": "2026__RES090426 St Kilian XC JV Boys Teams.htm"
+    },
+    {
+      "index": 536,
+      "href": "2026/RES090426%20St%20Kilian%20XC%20JV%20Girls%20Teams.htm",
+      "title": "St Kilian XC Meet JV Girls Teams, Mars, PA, 09-04-2026",
+      "file": "2026__RES090426 St Kilian XC JV Girls Teams.htm"
+    },
+    {
+      "index": 537,
+      "href": "2026/RES090426%20St%20Kilian%20XC%20Varsity%20Boys%20and%20Girls%20OA.htm",
+      "title": "St Kilian XC Meet Varsity Boys and Girls, Mars, PA, 09-04-2026",
+      "file": "2026__RES090426 St Kilian XC Varsity Boys and Girls OA.htm"
+    },
+    {
+      "index": 538,
+      "href": "2026/RES090426%20St%20Kilian%20XC%20Varsity%20Boys%20Teams.htm",
+      "title": "St Kilian XC Meet Varsity Boys Teams, Mars, PA, 09-04-2026",
+      "file": "2026__RES090426 St Kilian XC Varsity Boys Teams.htm"
+    },
+    {
+      "index": 539,
+      "href": "2026/RES090426%20St%20Kilian%20XC%20Varsity%20Girls%20Teams.htm",
+      "title": "St Kilian XC Meet Varsity Girls Teams, Mars, PA, 09-04-2026",
+      "file": "2026__RES090426 St Kilian XC Varsity Girls Teams.htm"
+    },
+    {
+      "index": 565,
+      "href": "2026/RES082926%20BTA%20DEV%20Boys%20and%20Girls%20OA.htm",
+      "title": "Blessed Trinity XC Meet Developmental Boys and Girls, Glenshaw, PA, 08-29-2026",
+      "file": "2026__RES082926 BTA DEV Boys and Girls OA.htm"
+    },
+    {
+      "index": 566,
+      "href": "2026/RES082926%20BTA%20DEV%20Boys%20Teams.htm",
+      "title": "Blessed Trinity XC Meet Developmental Boys Teams, Glenshaw, PA, 08-29-2026",
+      "file": "2026__RES082926 BTA DEV Boys Teams.htm"
+    },
+    {
+      "index": 567,
+      "href": "2026/RES082926%20BTA%20DEV%20Girls%20Teams.htm",
+      "title": "Blessed Trinity XC Meet Developmental Girls Teams, Glenshaw, PA, 08-29-2026",
+      "file": "2026__RES082926 BTA DEV Girls Teams.htm"
+    },
+    {
+      "index": 568,
+      "href": "2026/RES082926%20BTA%20JV%20Boys%20and%20Girls%20OA.htm",
+      "title": "Blessed Trinity XC Meet JV Boys and Girls, Glenshaw, PA, 08-29-2026",
+      "file": "2026__RES082926 BTA JV Boys and Girls OA.htm"
+    },
+    {
+      "index": 569,
+      "href": "2026/RES082926%20BTA%20JV%20Boys%20Teams.htm",
+      "title": "Blessed Trinity XC Meet JV Boys Teams, Glenshaw, PA, 08-29-2026",
+      "file": "2026__RES082926 BTA JV Boys Teams.htm"
+    },
+    {
+      "index": 570,
+      "href": "2026/RES082926%20BTA%20JV%20Girls%20Teams.htm",
+      "title": "Blessed Trinity XC Meet JV Girls Teams, Glenshaw, PA, 08-29-2026",
+      "file": "2026__RES082926 BTA JV Girls Teams.htm"
+    },
+    {
+      "index": 571,
+      "href": "2026/RES082926%20BTA%20Varsity%20Boys%20and%20Girls%20OA.htm",
+      "title": "Blessed Trinity XC Meet Varsity Boys and Girls, Glenshaw, PA, 08-29-2026",
+      "file": "2026__RES082926 BTA Varsity Boys and Girls OA.htm"
+    },
+    {
+      "index": 572,
+      "href": "2026/RES082926%20BTA%20Varsity%20Boys%20Teams.htm",
+      "title": "Blessed Trinity XC Meet Varsity Boys Teams, Glenshaw, PA, 08-29-2026",
+      "file": "2026__RES082926 BTA Varsity Boys Teams.htm"
+    },
+    {
+      "index": 573,
+      "href": "2026/RES082926%20BTA%20Varsity%20Girls%20Teams.htm",
+      "title": "Blessed Trinity XC Meet Varsity Girls Teams, Glenshaw, PA, 08-29-2026",
+      "file": "2026__RES082926 BTA Varsity Girls Teams.htm"
+    },
+    {
+      "index": 586,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20Varsity%20Boys%20OA.htm",
+      "title": "Seelos Pine Park XC Meet Varsity Boys, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet Varsity Boys OA.htm"
+    },
+    {
+      "index": 587,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20Varsity%20Boys%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet Varsity Boys Teams, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet Varsity Boys Teams.htm"
+    },
+    {
+      "index": 588,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20Varsity%20Girls%20OA.htm",
+      "title": "Seelos Pine Park XC Meet Varsity Girls, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet Varsity Girls OA.htm"
+    },
+    {
+      "index": 589,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20Varsity%20Girls%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet Varsity Girls Teams, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet Varsity Girls Teams.htm"
+    },
+    {
+      "index": 590,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20JV%20Boys%20OA.htm",
+      "title": "Seelos Pine Park XC Meet JV Boys, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet JV Boys OA.htm"
+    },
+    {
+      "index": 591,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20JV%20Boys%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet JV Boys Teams, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet JV Boys Teams.htm"
+    },
+    {
+      "index": 592,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20JV%20Girls%20OA.htm",
+      "title": "Seelos Pine Park XC Meet JV Girls, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet JV Girls OA.htm"
+    },
+    {
+      "index": 593,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20JV%20Girls%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet JV Girls Teams, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet JV Girls Teams.htm"
+    },
+    {
+      "index": 594,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20Dev%20Boys%20OA.htm",
+      "title": "Seelos Pine Park XC Meet Developmental Boys, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet Dev Boys OA.htm"
+    },
+    {
+      "index": 595,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20Dev%20Boys%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet Developmental Boys Teams, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet Dev Boys Teams.htm"
+    },
+    {
+      "index": 596,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20Dev%20Girls%20OA.htm",
+      "title": "Seelos Pine Park XC Meet Developmental Girls, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet Dev Girls OA.htm"
+    },
+    {
+      "index": 597,
+      "href": "2026/RES082526%20Seelos%20XC%20Meet%20Dev%20Girls%20Teams.htm",
+      "title": "Seelos Pine Park XC Meet Developmental Girls Teams, Wexford, PA, 08-25-2026",
+      "file": "2026__RES082526 Seelos XC Meet Dev Girls Teams.htm"
+    }
+  ],
+  "errors": []
+}
