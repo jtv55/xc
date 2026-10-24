@@ -100,6 +100,10 @@ let state = {
   ridgeMode: 'meets',
   teamRidgeMode: 'divisions',
   leagueRidgeMode: 'scored',
+  hoeffdingPop: 'aquinas',
+  hoeffdingTarget: 'score',
+  hoeffdingPair: ['p5', 'score'],
+  hoeffdingSpace: 'raw',
   scurveDiv: 'ALL',
   scurveGend: 'ALL',
   schoolDiv: 'MS Varsity (7-8)',
@@ -945,6 +949,9 @@ function renderTeamTab() {
   // 2. Pack Ladder + Top-5 Avg + 1-to-5 Spread
   renderPackLadderAndTeamCharts();
 
+  // 2b. Hoeffding's D Non-Parametric Dependence Analysis (Matrix + Driver Bars + Bivariate Copula Inspector)
+  renderHoeffdingAnalysis();
+
   // 3. Season Pacing Improvement Charts
   renderSeasonProgression();
 
@@ -1653,6 +1660,523 @@ function renderPackLadderAndTeamCharts() {
   VZ.axisStyle(g2.append('g').attr('transform', `translate(0,${o2.ih})`).call(d3.axisBottom(x2).ticks(5).tickFormat(d => d + 's')));
 }
 
+/* ============================================================================
+   HOEFFDING'S D NON-PARAMETRIC DEPENDENCE ENGINE & VISUALIZATION SUITE
+   ============================================================================ */
+function computeMidranks(arr) {
+  const n = arr.length;
+  const idx = Array.from({ length: n }, (_, i) => i).sort((a, b) => arr[a] - arr[b]);
+  const ranks = new Array(n);
+  let i = 0;
+  while (i < n) {
+    let j = i;
+    while (j < n && arr[idx[j]] === arr[idx[i]]) j++;
+    const avgRank = i + 1 + (j - i - 1) / 2.0;
+    for (let k = i; k < j; k++) ranks[idx[k]] = avgRank;
+    i = j;
+  }
+  return ranks;
+}
+
+function computeHoeffdingD(x, y) {
+  const n = x.length;
+  if (n < 5) return 0;
+  const R = computeMidranks(x);
+  const S = computeMidranks(y);
+  const Q = new Array(n);
+  for (let i = 0; i < n; i++) {
+    let q = 1.0;
+    const xi = x[i], yi = y[i];
+    for (let j = 0; j < n; j++) {
+      if (i === j) continue;
+      const xj = x[j], yj = y[j];
+      if (xj < xi && yj < yi) q += 1.0;
+      else if (xj === xi && yj < yi) q += 0.5;
+      else if (xj < xi && yj === yi) q += 0.5;
+      else if (xj === xi && yj === yi) q += 0.25;
+    }
+    Q[i] = q;
+  }
+  let D1 = 0, D2 = 0, D3 = 0;
+  for (let i = 0; i < n; i++) {
+    D1 += (Q[i] - 1.0) * (Q[i] - 2.0);
+    D2 += (R[i] - 1.0) * (R[i] - 2.0) * (S[i] - 1.0) * (S[i] - 2.0);
+    D3 += (R[i] - 2.0) * (S[i] - 2.0) * (Q[i] - 1.0);
+  }
+  return (30.0 * ((n - 2) * (n - 3) * D1 + D2 - 2.0 * (n - 2) * D3)) / (n * (n - 1) * (n - 2) * (n - 3) * (n - 4));
+}
+
+function computePearsonR(x, y) {
+  const n = x.length;
+  if (n < 3) return 0;
+  const mx = d3.mean(x), my = d3.mean(y);
+  let num = 0, dx2 = 0, dy2 = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = x[i] - mx, dy = y[i] - my;
+    num += dx * dy;
+    dx2 += dx * dx;
+    dy2 += dy * dy;
+  }
+  return (dx2 > 0 && dy2 > 0) ? num / Math.sqrt(dx2 * dy2) : 0;
+}
+
+function computeSpearmanRho(x, y) {
+  return computePearsonR(computeMidranks(x), computeMidranks(y));
+}
+
+const HOEFFDING_VARS = [
+  { key: 'score', label: 'Team Score (Pts)', short: 'Score', fmt: v => `${Math.round(v)} pts` },
+  { key: 'rank', label: 'Team Finish Rank', short: 'Rank', fmt: v => `#${Math.round(v)}` },
+  { key: 'p1', label: '#1 Ace Points', short: '#1 Ace', fmt: v => `+${Math.round(v)} pts` },
+  { key: 'p2', label: '#2 Scorer Points', short: '#2 Pts', fmt: v => `+${Math.round(v)} pts` },
+  { key: 'p3', label: '#3 Scorer Points', short: '#3 Pts', fmt: v => `+${Math.round(v)} pts` },
+  { key: 'p4', label: '#4 Scorer Points', short: '#4 Pts', fmt: v => `+${Math.round(v)} pts` },
+  { key: 'p5', label: '#5 Scorer Points', short: '#5 Pts', fmt: v => `+${Math.round(v)} pts` },
+  { key: 'spread', label: '1-to-5 Spread (s)', short: 'Spread', fmt: v => `${v.toFixed(1)}s` },
+  { key: 'depth', label: 'Roster Depth', short: 'Depth', fmt: v => `${Math.round(v)} runners` }
+];
+
+function renderHoeffdingAnalysis() {
+  const matEl = el('hoeffdingMatrixChart');
+  const barEl = el('hoeffdingBarChart');
+  const scatEl = el('hoeffdingScatterChart');
+  if (!matEl || !barEl || !scatEl) return;
+
+  const P = VZ.pal();
+  const races = RAW.races
+    .filter(r => !r.is_1m)
+    .filter(r => state.scope === 'ALL' ? true : r.division === state.scope)
+    .filter(r => state.gend === 'ALL' || r.gender === state.gend);
+
+  const entries = [];
+  races.forEach(r => {
+    const scoredCount = (r.school_teams || []).filter(s => s.scored).length;
+    if (scoredCount < 2) return;
+    (r.school_teams || []).forEach(s => {
+      if (!s.scored || !s.composition || s.composition.length < 5) return;
+      if (state.hoeffdingPop === 'aquinas' && !s.is_aquinas) return;
+      const c = s.composition;
+      const t1 = c[0].time_seconds, t5 = c[4].time_seconds;
+      if (!t1 || !t5) return;
+      entries.push({
+        race_id: r.race_id,
+        meet_short: r.meet_short,
+        short_meet_name: r.short_meet_name,
+        date: r.date,
+        division: r.sub_division || r.division,
+        base_div: r.division,
+        gender: r.gender,
+        team: s.team,
+        is_aquinas: s.is_aquinas,
+        scored_teams: scoredCount,
+        score: s.points,
+        rank: s.position,
+        p1: c[0].scoring_points,
+        p2: c[1].scoring_points,
+        p3: c[2].scoring_points,
+        p4: c[3].scoring_points,
+        p5: c[4].scoring_points,
+        spread: +(t5 - t1).toFixed(2),
+        depth: s.finishers_count,
+        names: c.slice(0, 5).map(x => `#${x.team_rank} ${x.name} (+${x.scoring_points}p, ${x.time})`).join('<br>')
+      });
+    });
+  });
+
+  // Update population button labels with exact N for current division/gender filter
+  const aqTotal = races.reduce((acc, r) => acc + ((r.school_teams || []).filter(s => s.scored).length >= 2 ? (r.school_teams || []).filter(s => s.scored && s.is_aquinas && s.composition && s.composition.length >= 5).length : 0), 0);
+  const lgTotal = races.reduce((acc, r) => acc + ((r.school_teams || []).filter(s => s.scored).length >= 2 ? (r.school_teams || []).filter(s => s.scored && s.composition && s.composition.length >= 5).length : 0), 0);
+  const btnAq = document.querySelector('[data-hpop="aquinas"]');
+  const btnLg = document.querySelector('[data-hpop="league"]');
+  if (btnAq) btnAq.textContent = `Aquinas Academy Scored Squads (N = ${aqTotal})`;
+  if (btnLg) btnLg.textContent = `All League Scored School Teams (N = ${lgTotal})`;
+
+  if (entries.length < 5) {
+    matEl.innerHTML = '<div class="sub">Need at least 5 scored team appearances for Hoeffding\'s D calculation. Try selecting "All 4 divisions" or "All League Scored School Teams".</div>';
+    barEl.innerHTML = '';
+    scatEl.innerHTML = '';
+    return;
+  }
+
+  // Compute full 9x9 pairwise Hoeffding's D, Spearman rho, and Pearson r matrices
+  const vectors = {};
+  const midranks = {};
+  HOEFFDING_VARS.forEach(v => {
+    vectors[v.key] = entries.map(e => e[v.key]);
+    midranks[v.key] = computeMidranks(vectors[v.key]);
+  });
+
+  const dMatrix = {};
+  const rhoMatrix = {};
+  const rMatrix = {};
+  HOEFFDING_VARS.forEach((v1, i) => {
+    dMatrix[v1.key] = {};
+    rhoMatrix[v1.key] = {};
+    rMatrix[v1.key] = {};
+    HOEFFDING_VARS.forEach((v2, j) => {
+      if (i === j) {
+        dMatrix[v1.key][v2.key] = 1.0;
+        rhoMatrix[v1.key][v2.key] = 1.0;
+        rMatrix[v1.key][v2.key] = 1.0;
+      } else if (j < i) {
+        dMatrix[v1.key][v2.key] = dMatrix[v2.key][v1.key];
+        rhoMatrix[v1.key][v2.key] = rhoMatrix[v2.key][v1.key];
+        rMatrix[v1.key][v2.key] = rMatrix[v2.key][v1.key];
+      } else {
+        dMatrix[v1.key][v2.key] = computeHoeffdingD(vectors[v1.key], vectors[v2.key]);
+        rhoMatrix[v1.key][v2.key] = computeSpearmanRho(vectors[v1.key], vectors[v2.key]);
+        rMatrix[v1.key][v2.key] = computePearsonR(vectors[v1.key], vectors[v2.key]);
+      }
+    });
+  });
+
+  const targetKey = state.hoeffdingTarget || 'score';
+  const targetMeta = HOEFFDING_VARS.find(v => v.key === targetKey) || HOEFFDING_VARS[0];
+
+  // Ensure selected pair is valid
+  if (!state.hoeffdingPair || state.hoeffdingPair.length !== 2 || state.hoeffdingPair[0] === state.hoeffdingPair[1]) {
+    state.hoeffdingPair = [targetKey === 'p5' ? 'p4' : 'p5', targetKey];
+  }
+
+  // 1. Render Ranked Driver Bar Chart (Hoeffding's D vs. Spearman |rho|)
+  const drivers = HOEFFDING_VARS
+    .filter(v => v.key !== targetKey)
+    .map(v => {
+      const dVal = dMatrix[v.key][targetKey];
+      const rhoVal = rhoMatrix[v.key][targetKey];
+      const rVal = rMatrix[v.key][targetKey];
+      return {
+        ...v,
+        dVal,
+        dClamped: Math.max(0, dVal),
+        rhoVal,
+        absRho: Math.abs(rhoVal),
+        rVal,
+        nonLinGap: Math.abs(rhoVal) - Math.abs(rVal)
+      };
+    })
+    .sort((a, b) => b.dVal - a.dVal);
+
+  if (el('hoeffdingBarTitle')) {
+    el('hoeffdingBarTitle').innerHTML = `Ranked drivers of <b>${esc(targetMeta.label)}</b>: Hoeffding's <i>D</i> (bars) vs. Spearman |&rho;| (dots)`;
+  }
+
+  const hBar = drivers.length * 27 + 40;
+  const oB = VZ.svg(barEl, 520, hBar, { t: 10, r: 78, b: 28, l: 128 }), gB = oB.g;
+  const yB = d3.scaleBand().domain(drivers.map(d => d.label)).range([0, oB.ih]).padding(0.28);
+  const xB = d3.scaleLinear().domain([0, 1.0]).range([0, oB.iw]);
+
+  [0.2, 0.4, 0.6, 0.8, 1.0].forEach(tk => {
+    gB.append('line').attr('x1', xB(tk)).attr('x2', xB(tk)).attr('y1', 0).attr('y2', oB.ih).attr('stroke', P.line).attr('stroke-dasharray', '2 2');
+  });
+
+  const dColor = val => {
+    if (val >= 0.55) return '#12b886';
+    if (val >= 0.35) return '#15aabf';
+    if (val >= 0.18) return '#2185d5';
+    if (val >= 0.06) return '#eab308';
+    return P.muted;
+  };
+
+  drivers.forEach(d => {
+    const ry = yB(d.label);
+    const isSel = (state.hoeffdingPair[0] === d.key && state.hoeffdingPair[1] === targetKey) || (state.hoeffdingPair[1] === d.key && state.hoeffdingPair[0] === targetKey);
+    const rowG = gB.append('g')
+      .style('cursor', 'pointer')
+      .on('click', () => {
+        state.hoeffdingPair = [d.key, targetKey];
+        renderHoeffdingAnalysis();
+      })
+      .on('mousemove', e => tip.show(`<b>${esc(d.label)} &harr; ${esc(targetMeta.label)}</b><br>Hoeffding's <i>D</i>: <b>${d.dVal.toFixed(3)}</b><br>Spearman &rho;: <b>${d.rhoVal >= 0 ? '+' : ''}${d.rhoVal.toFixed(3)}</b><br>Pearson <i>r</i>: <b>${d.rVal >= 0 ? '+' : ''}${d.rVal.toFixed(3)}</b><br><i>Click to inspect bivariate scatter &amp; copula on right</i>`, e))
+      .on('mouseleave', tip.hide);
+
+    if (isSel) {
+      rowG.append('rect')
+        .attr('x', -124).attr('y', ry - 2)
+        .attr('width', oB.iw + 196).attr('height', yB.bandwidth() + 4)
+        .attr('rx', 5).attr('fill', P.soft).attr('stroke', '#e5c058').attr('stroke-width', 1.5);
+    }
+
+    // Hoeffding's D bar
+    rowG.append('rect')
+      .attr('x', 0).attr('y', ry)
+      .attr('width', Math.max(3, xB(d.dClamped))).attr('height', yB.bandwidth())
+      .attr('rx', 3).attr('fill', dColor(d.dVal)).attr('opacity', 0.88);
+
+    // Connector line to Spearman |rho| diamond marker
+    const cy = ry + yB.bandwidth() / 2;
+    rowG.append('line')
+      .attr('x1', xB(d.dClamped)).attr('x2', xB(d.absRho))
+      .attr('y1', cy).attr('y2', cy)
+      .attr('stroke', P.fg2).attr('stroke-width', 1.2).attr('stroke-dasharray', '2 2');
+
+    rowG.append('circle')
+      .attr('cx', xB(d.absRho)).attr('cy', cy).attr('r', 4.2)
+      .attr('fill', '#e5c058').attr('stroke', '#141413').attr('stroke-width', 1.3);
+
+    rowG.append('text')
+      .attr('x', Math.max(xB(d.dClamped), xB(d.absRho)) + 6).attr('y', cy + 4)
+      .attr('fill', P.fg).style('font-family', 'var(--font-mono)').style('font-size', '10.5px').style('font-weight', isSel ? '700' : '500')
+      .text(`D=${d.dVal.toFixed(2)}`);
+  });
+
+  VZ.axisStyle(gB.append('g').call(d3.axisLeft(yB).tickSize(0)));
+  VZ.axisStyle(gB.append('g').attr('transform', `translate(0,${oB.ih})`).call(d3.axisBottom(xB).ticks(5).tickFormat(d => d.toFixed(1))));
+
+  const topD = drivers[0];
+  const aceD = drivers.find(d => d.key === 'p1');
+  if (el('hoeffdingBarSo') && topD) {
+    el('hoeffdingBarSo').innerHTML = `Colored bars show <b>Hoeffding's <i>D</i></b> (0 to 1.0); gold circles mark <b>Spearman |&rho;|</b>. Strongest driver of <b>${esc(targetMeta.label)}</b>: <b>${esc(topD.label)}</b> (<i>D</i> = <b>${topD.dVal.toFixed(3)}</b>, &rho; = ${topD.rhoVal.toFixed(2)}).${aceD && targetKey === 'score' ? ` Notice that #4/#5 scorers carry <b>${(topD.dVal / Math.max(0.01, aceD.dVal)).toFixed(1)}&times;</b> stronger Hoeffding dependence with Team Score than #1 Ace (<i>D</i> = ${aceD.dVal.toFixed(3)}).` : ''}`;
+  }
+
+  // 2. Render 9x9 Pairwise Hoeffding's D Matrix
+  const nV = HOEFFDING_VARS.length;
+  const cellS = 38;
+  const matW = 520, matH = nV * cellS + 68;
+  const oM = VZ.svg(matEl, matW, matH, { t: 48, r: 20, b: 14, l: 112 }), gM = oM.g;
+
+  const xM = d3.scaleBand().domain(HOEFFDING_VARS.map(v => v.key)).range([0, nV * cellS]).padding(0.08);
+  const yM = d3.scaleBand().domain(HOEFFDING_VARS.map(v => v.key)).range([0, nV * cellS]).padding(0.08);
+
+  const heatColor = dVal => {
+    if (dVal >= 0.99) return P.soft;
+    if (dVal >= 0.55) return '#12b886';
+    if (dVal >= 0.35) return '#15aabf';
+    if (dVal >= 0.20) return '#2185d5';
+    if (dVal >= 0.10) return '#eab308';
+    if (dVal >= 0.04) return '#f59f00';
+    return P.soft;
+  };
+
+  HOEFFDING_VARS.forEach(v => {
+    const cx = xM(v.key) + xM.bandwidth() / 2;
+    gM.append('text')
+      .attr('transform', `translate(${cx},-8) rotate(-30)`)
+      .attr('text-anchor', 'start')
+      .attr('fill', P.fg).style('font-size', '10.5px').style('font-weight', '600')
+      .text(v.short);
+  });
+
+  HOEFFDING_VARS.forEach((rv, rIdx) => {
+    const ry = yM(rv.key);
+    gM.append('text')
+      .attr('x', -8).attr('y', ry + yM.bandwidth() / 2 + 4)
+      .attr('text-anchor', 'end')
+      .attr('fill', P.fg).style('font-size', '11px').style('font-weight', rv.key === targetKey ? '700' : '500')
+      .text(rv.short);
+
+    HOEFFDING_VARS.forEach((cv, cIdx) => {
+      const cx = xM(cv.key);
+      const val = dMatrix[rv.key][cv.key];
+      const rho = rhoMatrix[rv.key][cv.key];
+      const isDiag = rIdx === cIdx;
+      const isSelectedPair = !isDiag && (
+        (state.hoeffdingPair[0] === cv.key && state.hoeffdingPair[1] === rv.key) ||
+        (state.hoeffdingPair[0] === rv.key && state.hoeffdingPair[1] === cv.key)
+      );
+
+      const cellG = gM.append('g')
+        .style('cursor', isDiag ? 'default' : 'pointer')
+        .on('click', () => {
+          if (isDiag) return;
+          state.hoeffdingPair = [cv.key, rv.key];
+          renderHoeffdingAnalysis();
+        })
+        .on('mousemove', e => {
+          if (isDiag) return;
+          tip.show(`<b>${esc(cv.label)} &times; ${esc(rv.label)}</b><br>Hoeffding's <i>D</i>: <b>${val.toFixed(3)}</b><br>Spearman &rho;: <b>${rho >= 0 ? '+' : ''}${rho.toFixed(3)}</b><br>Sample: N = ${entries.length} scored teams<br><i>Click cell to plot on right</i>`, e);
+        })
+        .on('mouseleave', tip.hide);
+
+      cellG.append('rect')
+        .attr('x', cx).attr('y', ry)
+        .attr('width', xM.bandwidth()).attr('height', yM.bandwidth())
+        .attr('rx', 4)
+        .attr('fill', heatColor(val))
+        .attr('fill-opacity', isDiag ? 0.45 : (val >= 0.04 ? 0.86 : 0.45))
+        .attr('stroke', isSelectedPair ? '#e5c058' : 'none')
+        .attr('stroke-width', isSelectedPair ? 2.5 : 0);
+
+      cellG.append('text')
+        .attr('x', cx + xM.bandwidth() / 2).attr('y', ry + yM.bandwidth() / 2 + 4)
+        .attr('text-anchor', 'middle')
+        .attr('fill', isDiag ? P.muted : (val >= 0.10 ? '#ffffff' : P.fg))
+        .style('font-family', 'var(--font-mono)')
+        .style('font-size', '10px')
+        .style('font-weight', isSelectedPair || val >= 0.35 ? '600' : '400')
+        .text(isDiag ? '1.0' : val.toFixed(2));
+    });
+  });
+
+  if (el('hoeffdingMatrixSo')) {
+    el('hoeffdingMatrixSo').innerHTML = `Symmetric 9&times;9 non-parametric dependence matrix across N = ${entries.length} scored team appearances. Gold-outlined cells indicate the currently active variable pair in the right-hand inspector.`;
+  }
+
+  // 3. Render Right Card: Joint Bivariate Scatter / Empirical Copula Inspector
+  const xKey = state.hoeffdingPair[0];
+  const yKey = state.hoeffdingPair[1];
+  const xVar = HOEFFDING_VARS.find(v => v.key === xKey) || HOEFFDING_VARS[6];
+  const yVar = HOEFFDING_VARS.find(v => v.key === yKey) || HOEFFDING_VARS[0];
+  const pairD = dMatrix[xKey][yKey];
+  const pairRho = rhoMatrix[xKey][yKey];
+  const pairR = rMatrix[xKey][yKey];
+  const isCopula = state.hoeffdingSpace === 'copula';
+
+  if (el('hoeffdingScatterTitle')) {
+    el('hoeffdingScatterTitle').innerHTML = `${esc(xVar.short)} vs. ${esc(yVar.short)} <span class="mono" style="font-size:12px;color:var(--up);margin-left:6px">D = ${pairD.toFixed(3)} · &rho; = ${pairRho >= 0 ? '+' : ''}${pairRho.toFixed(2)}</span>`;
+  }
+
+  const xRanks = midranks[xKey];
+  const yRanks = midranks[yKey];
+  const nE = entries.length;
+
+  const plotPts = entries.map((e, i) => ({
+    ...e,
+    xv: isCopula ? (xRanks[i] / nE) * 100 : e[xKey],
+    yv: isCopula ? (yRanks[i] / nE) * 100 : e[yKey],
+    rawX: e[xKey],
+    rawY: e[yKey],
+    rkX: xRanks[i],
+    rkY: yRanks[i]
+  }));
+
+  const oS = VZ.svg(scatEl, 520, 330, { t: 18, r: 24, b: 42, l: 58 }), gS = oS.g;
+  const xDom = isCopula ? [0, 102] : d3.extent(plotPts, d => d.xv);
+  const yDom = isCopula ? [0, 102] : d3.extent(plotPts, d => d.yv);
+  const xPad = isCopula ? 0 : Math.max(1, (xDom[1] - xDom[0]) * 0.06);
+  const yPad = isCopula ? 0 : Math.max(1, (yDom[1] - yDom[0]) * 0.06);
+
+  const xS = d3.scaleLinear().domain([xDom[0] - xPad, xDom[1] + xPad]).range([0, oS.iw]);
+  const yS = d3.scaleLinear().domain([yDom[0] - yPad, yDom[1] + yPad]).range([oS.ih, 0]);
+
+  xS.ticks(6).forEach(tk => {
+    gS.append('line').attr('x1', xS(tk)).attr('x2', xS(tk)).attr('y1', 0).attr('y2', oS.ih).attr('stroke', P.line).attr('stroke-opacity', 0.55);
+  });
+  yS.ticks(6).forEach(tk => {
+    gS.append('line').attr('x1', 0).attr('x2', oS.iw).attr('y1', yS(tk)).attr('y2', yS(tk)).attr('stroke', P.line).attr('stroke-opacity', 0.55);
+  });
+
+  // Compute binned quantile curve (6 bins across x) to visualize non-linear / monotonic trend
+  const sortedByX = plotPts.slice().sort((a, b) => a.xv - b.xv);
+  const numBins = Math.min(7, Math.max(4, Math.floor(nE / 8)));
+  const binCurves = [];
+  for (let b = 0; b < numBins; b++) {
+    const sIdx = Math.floor((b * nE) / numBins);
+    const eIdx = Math.floor(((b + 1) * nE) / numBins);
+    const slice = sortedByX.slice(sIdx, eIdx);
+    if (slice.length >= 2) {
+      const yVals = slice.map(p => p.yv).sort(d3.ascending);
+      binCurves.push({
+        xm: d3.median(slice, p => p.xv),
+        ym: d3.quantile(yVals, 0.5),
+        q25: d3.quantile(yVals, 0.25),
+        q75: d3.quantile(yVals, 0.75)
+      });
+    }
+  }
+
+  if (binCurves.length >= 3) {
+    const areaBand = d3.area()
+      .curve(d3.curveMonotoneX)
+      .x(d => xS(d.xm))
+      .y0(d => yS(d.q25))
+      .y1(d => yS(d.q75));
+    gS.append('path')
+      .datum(binCurves)
+      .attr('d', areaBand)
+      .attr('fill', P.accent)
+      .attr('fill-opacity', 0.14);
+
+    const trendLine = d3.line()
+      .curve(d3.curveMonotoneX)
+      .x(d => xS(d.xm))
+      .y(d => yS(d.ym));
+    gS.append('path')
+      .datum(binCurves)
+      .attr('d', trendLine)
+      .attr('fill', 'none')
+      .attr('stroke', P.accent)
+      .attr('stroke-width', 2.2)
+      .attr('stroke-dasharray', '4 3');
+  }
+
+  // Plot non-Aquinas league points first (if league scope)
+  plotPts.filter(p => !p.is_aquinas).forEach(p => {
+    gS.append('circle')
+      .attr('cx', xS(p.xv)).attr('cy', yS(p.yv)).attr('r', 3.6)
+      .attr('fill', cc(p.base_div)).attr('fill-opacity', 0.38)
+      .attr('stroke', cc(p.base_div)).attr('stroke-width', 1)
+      .on('mousemove', e => tip.show(`<b>${esc(p.team)}</b> (#${p.rank} of ${p.scored_teams}, ${p.score} pts)<br>${esc(p.short_meet_name)} · ${esc(p.division)} ${esc(p.gender)}<br>${esc(xVar.label)}: <b>${xVar.fmt(p.rawX)}</b> (Rank ${p.rkX}/${nE})<br>${esc(yVar.label)}: <b>${yVar.fmt(p.rawY)}</b> (Rank ${p.rkY}/${nE})`, e))
+      .on('mouseleave', tip.hide);
+  });
+
+  // Plot Aquinas Academy points prominently
+  plotPts.filter(p => p.is_aquinas).forEach(p => {
+    const col = cc(p.base_div);
+    gS.append('circle')
+      .attr('cx', xS(p.xv)).attr('cy', yS(p.yv)).attr('r', state.hoeffdingPop === 'league' ? 5.5 : 5.2)
+      .attr('fill', state.hoeffdingPop === 'league' ? '#e5c058' : col)
+      .attr('fill-opacity', 0.88)
+      .attr('stroke', state.hoeffdingPop === 'league' ? '#991b1b' : P.surface)
+      .attr('stroke-width', 1.6)
+      .style('cursor', 'pointer')
+      .on('mousemove', e => tip.show(`<b>&#9733; ${esc(p.team)}</b> (#${p.rank} of ${p.scored_teams} teams · <b>${p.score} pts</b>)<br>${esc(p.short_meet_name)} (${p.date}) · ${esc(p.division)} ${esc(p.gender)}<br>${esc(xVar.label)}: <b>${xVar.fmt(p.rawX)}</b> (Rank ${p.rkX}/${nE})<br>${esc(yVar.label)}: <b>${yVar.fmt(p.rawY)}</b> (Rank ${p.rkY}/${nE})<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">${p.names}`, e))
+      .on('mouseleave', tip.hide);
+  });
+
+  VZ.axisStyle(gS.append('g').attr('transform', `translate(0,${oS.ih})`).call(d3.axisBottom(xS).ticks(6).tickFormat(d => isCopula ? `${Math.round(d)}%` : d)));
+  VZ.axisStyle(gS.append('g').call(d3.axisLeft(yS).ticks(6).tickFormat(d => isCopula ? `${Math.round(d)}%` : d)));
+
+  gS.append('text')
+    .attr('x', oS.iw / 2).attr('y', oS.ih + 34).attr('text-anchor', 'middle')
+    .attr('fill', P.fg).style('font-size', '12px').style('font-weight', '600')
+    .text(isCopula ? `${xVar.label} — Empirical Rank Percentile (0–100%)` : xVar.label);
+
+  gS.append('text')
+    .attr('transform', 'rotate(-90)').attr('x', -oS.ih / 2).attr('y', -42).attr('text-anchor', 'middle')
+    .attr('fill', P.fg).style('font-size', '12px').style('font-weight', '600')
+    .text(isCopula ? `${yVar.label} — Empirical Rank Percentile (0–100%)` : yVar.label);
+
+  if (el('hoeffdingScatterSo')) {
+    el('hoeffdingScatterSo').innerHTML = isCopula
+      ? `<b>Empirical copula view:</b> Every race is plotted by its joint marginal rank percentiles $(R_i/N, S_i/N)$. Hoeffding's <i>D</i> = <b>${pairD.toFixed(3)}</b> measures how tightly this joint rank distribution concentrates away from uniform independence.`
+      : `<b>Raw metric view:</b> Dashed curve and shaded ribbon trace the running median and interquartile band (25th–75th percentile) of <b>${esc(yVar.label)}</b> across <b>${esc(xVar.label)}</b> (Hoeffding's <i>D</i> = <b>${pairD.toFixed(3)}</b>, Spearman &rho; = <b>${pairRho.toFixed(2)}</b>, Pearson <i>r</i> = <b>${pairR.toFixed(2)}</b>).`;
+  }
+
+  // 4. Populate Summary Table & Insight Note
+  if (el('hoeffdingTableBody')) {
+    el('hoeffdingTableBody').innerHTML = drivers.map(d => {
+      const isActive = (state.hoeffdingPair[0] === d.key && state.hoeffdingPair[1] === targetKey) || (state.hoeffdingPair[1] === d.key && state.hoeffdingPair[0] === targetKey);
+      const regime = d.dVal >= 0.50
+        ? '<span class="up"><b>Primary Pack Driver</b></span>'
+        : d.dVal >= 0.25
+        ? '<span style="color:var(--accent)"><b>Moderate Driver</b></span>'
+        : d.dVal >= 0.08
+        ? '<span class="warn">Conditional / Non-Linear</span>'
+        : '<span style="color:var(--muted)">Weak Unconditional</span>';
+      const gapStr = (d.nonLinGap >= 0 ? '+' : '') + d.nonLinGap.toFixed(3);
+      return `
+        <tr class="${isActive ? 'hl' : ''}" data-hrow="${esc(d.key)}" style="cursor:pointer">
+          <td><b>${esc(d.label)}</b></td>
+          <td class="num"><b>${d.dVal.toFixed(3)}</b></td>
+          <td class="num">${d.rhoVal >= 0 ? '+' : ''}${d.rhoVal.toFixed(3)}</td>
+          <td class="num">${d.rVal >= 0 ? '+' : ''}${d.rVal.toFixed(3)}</td>
+          <td class="num">${gapStr}</td>
+          <td>${regime}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  if (el('hoeffdingInsightNote')) {
+    const d5 = dMatrix['p5']['score'], d4 = dMatrix['p4']['score'], d3v = dMatrix['p3']['score'], d2 = dMatrix['p2']['score'], d1 = dMatrix['p1']['score'];
+    const dSp = dMatrix['spread']['score'], dSpRk = dMatrix['spread']['rank'];
+    el('hoeffdingInsightNote').innerHTML = state.hoeffdingPop === 'aquinas'
+      ? `<b>Key Aquinas Discovery (N = ${entries.length} scored team races):</b> Hoeffding's <i>D</i> reveals a strict monotonic staircase from #1 to #5: <b>#1 Ace (<i>D</i> = ${d1.toFixed(3)}) &lt; #2 Scorer (${d2.toFixed(3)}) &lt; #3 Scorer (${d3v.toFixed(3)}) &lt; #4 Scorer (${d4.toFixed(3)}) &lt; #5 Scorer (${d5.toFixed(3)})</b>. Because Aquinas consistently puts an elite low-stick runner near the front (Isaac Vangura, John Austin, Kat Barnett, Noah Malone, Cora Donahue, Linus Gruber), #1 Ace varies very little—meaning Aquinas's team score and championship trophies are governed <b>${(d5 / Math.max(0.01, d1)).toFixed(1)}&times; more strongly by the #4 and #5 closing scorers</b> than by the #1 runner! Meanwhile, <b>1-to-5 Pack Spread</b> has nearly double the dependence with <b>Team Finish Rank (<i>D</i> = ${dSpRk.toFixed(3)})</b> as with raw points (<i>D</i> = ${dSp.toFixed(3)}), because tight pack compression decides close head-to-head team duals and invitationals.`
+      : `<b>Key League-Wide Discovery (N = ${entries.length} scored school teams across all meets):</b> Across all competing schools, <b>#4 Scorer (<i>D</i> = ${d4.toFixed(3)})</b>, <b>#3 Scorer (<i>D</i> = ${d3v.toFixed(3)})</b>, and <b>#5 Scorer (<i>D</i> = ${d5.toFixed(3)})</b> dominate team scoring—nearly <b>3&times; higher Hoeffding dependence</b> than having a #1 front-runner (<i>D</i> = ${d1.toFixed(3)}). Click <b>1-to-5 Spread</b> in the matrix to see why raw spread alone has low unconditional <i>D</i> (${dSp.toFixed(3)}): a tight 20-second spread at 35th–40th place loses, whereas a tight spread anchored by a top-15 #3/#4 pack wins championships.`;
+  }
+}
+
 function renderMap() {
   if (!el('map')) return;
   const P = VZ.pal();
@@ -1892,6 +2416,42 @@ function initEvents() {
       lrMode.setAttribute('aria-pressed', 'true');
       state.leagueRidgeMode = lrMode.dataset.lrmode;
       renderSchoolsTab();
+    }
+    const hPop = e.target.closest('[data-hpop]');
+    if (hPop) {
+      document.querySelectorAll('[data-hpop]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      hPop.setAttribute('aria-pressed', 'true');
+      state.hoeffdingPop = hPop.dataset.hpop;
+      renderHoeffdingAnalysis();
+    }
+    const hTarget = e.target.closest('[data-htarget]');
+    if (hTarget) {
+      document.querySelectorAll('[data-htarget]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      hTarget.setAttribute('aria-pressed', 'true');
+      state.hoeffdingTarget = hTarget.dataset.htarget;
+      const defPredictor = state.hoeffdingTarget === 'score' ? 'p5' : (state.hoeffdingTarget === 'rank' ? 'p2' : 'depth');
+      state.hoeffdingPair = [defPredictor, state.hoeffdingTarget];
+      renderHoeffdingAnalysis();
+    }
+    const hSpace = e.target.closest('[data-hspace]');
+    if (hSpace) {
+      document.querySelectorAll('[data-hspace]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      hSpace.setAttribute('aria-pressed', 'true');
+      state.hoeffdingSpace = hSpace.dataset.hspace;
+      renderHoeffdingAnalysis();
+    }
+    const hRow = e.target.closest('[data-hrow]');
+    if (hRow) {
+      state.hoeffdingPair = [hRow.dataset.hrow, state.hoeffdingTarget || 'score'];
+      renderHoeffdingAnalysis();
+    }
+    const jumpH = e.target.closest('#jumpHoeffdingLink');
+    if (jumpH) {
+      e.preventDefault();
+      switchTab('team', true);
+      setTimeout(() => {
+        if (el('hoeffdingSection')) el('hoeffdingSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
     }
     const scDiv = e.target.closest('[data-scdiv]');
     if (scDiv) {

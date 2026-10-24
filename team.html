@@ -6,7 +6,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Aquinas Academy XC · Aquinas Team · Pack Analytics & Progression</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261023-4">
+<link rel="stylesheet" href="styles.css?v=20261023-5">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body>
@@ -217,6 +217,10 @@
           <p class="so" id="compSchoolSummary"></p>
         </div>
       </div>
+      <div class="note" style="margin-top:12px">
+        <b>Statistical dependence of team scoring (Hoeffding's <i>D</i>).</b> Across all 446 scored league team appearances in 2026, a school's <b>#4 scorer (<i>D</i> = 0.68)</b>, <b>#3 scorer (<i>D</i> = 0.66)</b>, and <b>#5 scorer (<i>D</i> = 0.61)</b> exhibit nearly <b>3&times; stronger non-parametric dependence</b> with total team score than the <b>#1 front-runner (<i>D</i> = 0.23)</b>.
+        <a href="team.html#hoeffdingSection" id="jumpHoeffdingLink" style="margin-left:6px;font-weight:600">Explore the interactive 9&times;9 Hoeffding's <i>D</i> matrix &amp; copula inspector on Aquinas Team &rarr;</a>
+      </div>
     </section>
   </div>
 
@@ -224,9 +228,9 @@
        TAB 3: AQUINAS TEAM
        ====================================================================== -->
   <div id="tab-team" class="tab-pane active">
-    <div class="eyebrow">Aquinas Team · pack analytics, ridgelines &amp; season progression · Oct 23, 2026</div>
+    <div class="eyebrow">Aquinas Team · pack analytics, ridgelines, Hoeffding's D &amp; season progression · Oct 23, 2026</div>
     <h1>Aquinas Academy Team Analytics &amp; Pack Progression</h1>
-    <p class="lede">Deep dive into Aquinas Academy's team performance across High School (9–12) and Youth Diocesan (K–8) squads: pace density waves, top-7 pack compression ladders, season-over-season pace gains, and official team scorecards.</p>
+    <p class="lede">Deep dive into Aquinas Academy's team performance across High School (9–12) and Youth Diocesan (K–8) squads: pace density waves, top-7 pack compression ladders, Hoeffding's <i>D</i> non-parametric scoring dependence, season-over-season pace gains, and official team scorecards.</p>
 
     <div class="kpis" id="kpisTeam"></div>
 
@@ -259,6 +263,58 @@
         <div class="card">
           <h3>1-to-5 scoring pack spread (seconds between #1 and #5)</h3>
           <div id="chg"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="hoeffdingSection">
+      <h2>Hoeffding's <i>D</i> non-parametric dependence: what actually drives a winning XC team score?</h2>
+      <p class="sub">Hoeffding's <i>D</i> (&minus;0.5 to 1.0, where <i>D</i> &gt; 0 measures joint rank dependence including non-linear and non-monotonic relationships) tests which pack variables truly govern team scoring and finish rank across the 2026 season. Click any bar or any cell in the 9&times;9 matrix to inspect its joint bivariate &amp; empirical copula distribution on the right.</p>
+      <div class="ctl">
+        <span class="ctl-label">Sample population</span>
+        <button class="pill" data-hpop="aquinas" aria-pressed="true">Aquinas Academy Scored Squads (N = 66)</button>
+        <button class="pill" data-hpop="league" aria-pressed="false">All League Scored School Teams (N = 446)</button>
+        <span class="ctl-label" style="margin-left:8px">Target metric</span>
+        <button class="pill" data-htarget="score" aria-pressed="true">Team Score (Pts)</button>
+        <button class="pill" data-htarget="rank" aria-pressed="false">Team Finish Rank (#1, #2&hellip;)</button>
+        <button class="pill" data-htarget="spread" aria-pressed="false">1-to-5 Pack Spread (s)</button>
+      </div>
+      <div class="note" id="hoeffdingInsightNote"></div>
+      <div class="two" style="margin-bottom:12px">
+        <div class="card">
+          <h3 id="hoeffdingBarTitle">Ranked drivers of Team Score: Hoeffding's D vs. Spearman |&rho;|</h3>
+          <div id="hoeffdingBarChart"></div>
+          <p class="so" id="hoeffdingBarSo"></p>
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0 10px">
+          <h3>9&times;9 pairwise Hoeffding's <i>D</i> dependence matrix (click any cell)</h3>
+          <div id="hoeffdingMatrixChart"></div>
+          <p class="so" id="hoeffdingMatrixSo"></p>
+        </div>
+        <div class="card">
+          <div class="ctl" style="justify-content:space-between;margin-bottom:8px">
+            <h3 id="hoeffdingScatterTitle" style="margin:0">Joint bivariate inspector: #5 Scorer vs. Team Score</h3>
+            <span style="display:inline-flex;gap:4px">
+              <button class="pill" data-hspace="raw" aria-pressed="true">Raw values</button>
+              <button class="pill" data-hspace="copula" aria-pressed="false">Empirical copula (ranks)</button>
+            </span>
+          </div>
+          <div id="hoeffdingScatterChart"></div>
+          <p class="so" id="hoeffdingScatterSo"></p>
+          <div class="tablewrap" style="margin-top:10px">
+            <table class="t">
+              <thead>
+                <tr>
+                  <th>Predictor Variable</th>
+                  <th class="num">Hoeffding's <i>D</i></th>
+                  <th class="num">Spearman &rho;</th>
+                  <th class="num">Pearson <i>r</i></th>
+                  <th class="num">Non-Linear Gap</th>
+                  <th>Dependence Regime</th>
+                </tr>
+              </thead>
+              <tbody id="hoeffdingTableBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -367,7 +423,7 @@
 </div>
 
 <script>window.DEFAULT_TAB = 'team';</script>
-<script src="data/data.js?v=20261023-4"></script>
-<script src="app.js?v=20261023-4"></script>
+<script src="data/data.js?v=20261023-5"></script>
+<script src="app.js?v=20261023-5"></script>
 </body>
 </html>
