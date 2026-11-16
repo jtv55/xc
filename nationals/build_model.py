@@ -68,13 +68,18 @@ NICKNAMES = {
     "lucia": ["lucy"], "evina": ["evie"], "mirabella": ["bella"],
     "vincenzo": ["vinny", "enzo", "vincent"], "raymond": ["ray"], "maximus": ["max"],
     "james": ["jamie", "jimmy"], "allie": ["allison", "alison"], "abby": ["abigail"], "abigail": ["abby"],
-    "addison": ["addie"], "cam": ["cameron"], "cameron": ["cam"],
+    "addison": ["addie"], "addi": ["addison", "adeline"], "cam": ["cameron", "camden"], "cameron": ["cam"],
     "philomena": ["phoebe"], "virginia": ["jenni", "ginny"],
+    "cecila": ["cecilia"], "noaah": ["noah"], "acher": ["archer", "david"],
+    "marty": ["martin"], "maddison": ["maddi", "madison", "maddie"],
+    "karlee": ["carly"], "joseph": ["joey", "joe", "jay"],
 }
 
 def name_keys(first, last):
     fn, ln = clean_person_name(first, last)
-    keys = [(fn, ln)]
+    keys = [(fn, ln), (ln, fn)]
+    if re.search(r"([a-z])\1\1", ln):
+        keys.append((fn, re.sub(r"([a-z])\1\1", r"\1\1", ln)))
     # Also full compound last name without spaces (e.g. Mas Pecina -> maspecina or pecina)
     if " " in ln:
         keys.append((fn, ln.replace(" ", "")))
@@ -109,9 +114,9 @@ CLUB_GEO = {
     "Columbus CYO": ("OH", "CYO / Diocesan", "Columbus, OH"),
     "Columbus CYO-B": ("OH", "CYO / Diocesan", "Columbus, OH"),
     "Greensburg CYO": ("PA", "CYO / Diocesan", "Greensburg, PA"),
-    "Bishop McDevitt - CYO": ("PA", "CYO / Diocesan", "Wyncote / Phila, PA"),
-    "St. Patrick": ("KY", "CYO / Parish", "Louisville, KY"),
-    "St. Charles Club": ("OH", "CYO / Parish", "Lima / Columbus, OH"),
+    "Bishop McDevitt - CYO": ("PA", "CYO / Diocesan", "Harrisburg, PA"),
+    "St. Patrick": ("MI", "CYO / Parish", "White Lake, MI"),
+    "St. Charles Club": ("MI", "CYO / Parish", "Newport, MI"),
     "CRC Grasshoppers": ("OH", "Youth Club", "Columbus, OH"),
     "CRC Grasshoppers B": ("OH", "Youth Club", "Columbus, OH"),
     "CRC Grasshoppers Dublin": ("OH", "Youth Club", "Dublin, OH"),
@@ -126,25 +131,25 @@ CLUB_GEO = {
     "Hilliard Track Club": ("OH", "Youth Club", "Hilliard, OH"),
     "North Union Intermdiate": ("OH", "School", "Richwood, OH"),
     "Dresden Middle": ("OH", "School", "Dresden, OH"),
-    "Clinton Running Club": ("OH", "Youth Club", "Clinton, OH"),
+    "Clinton Running Club": ("MI", "Youth Club", "Clinton, MI"),
     "Team Kentucky": ("KY", "State All-Star Club", "Kentucky"),
     "Bates Elementary": ("KY", "School", "Louisville, KY"),
     "Harmony Elementary School": ("KY", "School", "Goshen, KY"),
     "Shelby County Pacers": ("KY", "Youth Club", "Shelbyville, KY"),
-    "Camden Clock Chasers": ("KY", "Youth Club", "Crestwood, KY"),
+    "Camden Clock Chasers": ("NJ", "Youth Club", "Camden, NJ"),
     "Northeast Striders": ("KY", "Youth Club", "Louisville, KY"),
     "Eastern KY Striders": ("KY", "Youth Club", "Eastern KY"),
-    "Green Wave": ("KY", "Youth Club", "Louisville / Meade, KY"),
-    "Eagles Elite": ("IN", "Youth Club", "Zionsville / Carmel, IN"),
-    "Accel Sports": ("IN", "Youth Club", "Indianapolis / KY-IN"),
-    "Indiana Pathfinders": ("IN", "Youth Club", "Central Indiana"),
-    "Southern Indiana Runing Club": ("IN", "Youth Club", "Southern Indiana"),
+    "Green Wave": ("IN", "Youth Club", "Westfield, IN"),
+    "Eagles Elite": ("MI", "Youth Club", "Hartland, MI"),
+    "Accel Sports": ("TN", "Youth Club", "Lebanon, TN"),
+    "Indiana Pathfinders": ("IN", "Youth Club", "Columbus, IN"),
+    "Southern Indiana Runing Club": ("IN", "Youth Club", "New Albany / So. IN"),
     "Saline MS": ("MI", "School", "Saline, MI"),
     "Ann Arbor Track Club": ("MI", "Youth Club", "Ann Arbor, MI"),
     "Michigan Cougars": ("MI", "Youth Club", "SE Michigan"),
     "Pinconning": ("MI", "School / Club", "Pinconning, MI"),
     "Chicago Rabbits": ("IL", "Youth Club", "Chicago, IL"),
-    "Crimson Knights": ("IL", "Youth Club", "Lockport / Homer Glen, IL"),
+    "Crimson Knights": ("NJ", "Youth Club", "Woodbridge, NJ"),
     "Buffalo Chips Running Club": ("CA", "Youth Club", "Sacramento, CA"),
     "NorCal Distance": ("CA", "Youth Club", "Northern California"),
     "FREDERICK BLAZE": ("MD", "Youth Club", "Frederick, MD"),
@@ -153,14 +158,14 @@ CLUB_GEO = {
     "Nittany Track and Field": ("PA", "Youth Club", "State College, PA"),
     "Team F.C.A. KS": ("KS", "Youth Club", "Kansas"),
     "Southern MN Youth XC": ("MN", "Youth Club", "Owatonna, MN"),
-    "Staley Striders": ("MO", "Youth Club", "Kansas City, MO"),
+    "Staley Striders": ("IL", "Youth Club", "Decatur, IL"),
     "Edmond Thunder Cross Country &": ("OK", "Youth Club", "Edmond, OK"),
-    "Delta Hawks Racing": ("MI", "Youth Club", "Lansing / Delta, MI"),
+    "Delta Hawks Racing": ("CA", "Youth Club", "West Sacramento, CA"),
     "Embrace Sportz": ("MI", "Youth Club", "Detroit, MI"),
-    "Fox City": ("WI", "Youth Club", "Appleton / Fox Cities, WI"),
+    "Fox City": ("VA", "Youth Club", "Fairfax, VA"),
     "ALTIUS Track & Field": ("OH", "Youth Club", "Ohio"),
     "Bermuda Pacers": ("INTL", "Youth Club", "Bermuda"),
-    "REAL Distance Training Academy": ("IL", "Youth Club", "Chicago, IL"),
+    "REAL Distance Training Academy": ("AL", "Youth Club", "Madison, AL"),
     "Styn Strong Racing": ("OH", "Youth Club", "Columbus, OH"),
     "Tailwind TC": ("NY", "Youth Club", "Westchester, NY"),
     "The Stead": ("CO", "Youth Club", "Colorado"),
@@ -195,6 +200,7 @@ DELTA_GHOSTS = {
     (8, "Betsy, Steed"), (8, "Mia, Jackson"),
     (9, "Benjamin, Schafer"), (9, "William, Welch"),
     (10, "Amelia, Weeks"), (10, "Josie, Thronson"), (10, "Maddi, Orr"),
+    (11, "David, Rodriguez"),
 }
 
 athletes = []
@@ -301,8 +307,13 @@ def ingest_rsu(fp, meet_label, meet_date, state_code):
         if "Combined" in ev_name: continue
         dist_str = str(ev.get("distance") or "") + " " + ev_name
         dm_fixed = None
-        if "2 Mile" in dist_str or "3200" in dist_str: dm_fixed = 3219
+        if "5K" in dist_str.upper() or "5000" in dist_str: dm_fixed = 5000
+        elif "4K" in dist_str.upper() or "4000" in dist_str: dm_fixed = 4000
+        elif "2 Mile" in dist_str or "3200" in dist_str: dm_fixed = 3219
+        elif "3K" in dist_str.upper() or "3000" in dist_str or ("Middle School" in meet_label and state_code == "IN"): dm_fixed = 3000
+        elif "2K" in dist_str.upper() or "2000" in dist_str: dm_fixed = 2000
         elif "1.5" in dist_str: dm_fixed = 2414
+        elif "0.75" in dist_str: dm_fixed = 1207
         elif "1 Mile" in dist_str and "193936" not in fp: dm_fixed = 1609
         headers_map = ev.get("headers", {})
         school_fields = [k for k, v in headers_map.items() if v in ("School", "Team Name")]
@@ -351,6 +362,23 @@ ingest_rsu(r"c:\Users\j_t_v\XC\data\extra\rsu_193936_diocesan_champ.json", "Pitt
 ingest_rsu(r"c:\Users\j_t_v\XC\data\extra\rsu_191674_oakland_catholic.json", "Oakland Catholic XC Invitational", "2026-09-12", "PA")
 ingest_rsu(r"c:\Users\j_t_v\XC\data\extra\rsu_193469_run_for_pumpkins.json", "Run for the Pumpkins XC", "2026-10-10", "PA")
 ingest_rsu(os.path.join(ms_dir, "rsu_217626_oh_state.json"), "Ohio Elementary & MS State Championship", "2026-10-24", "OH")
+
+# Ingest all newly scraped regional RunSignup Youth/CYO/Qualifier JSONs across 14 states!
+for rsu_fp in sorted(glob.glob(os.path.join(ms_dir, "rsu_*.json"))) + sorted(glob.glob(os.path.join(web_dir, "extra_2026", "rsu_*.json"))):
+    if "217626" in rsu_fp:
+        continue
+    try:
+        meta_rsu = json.load(open(rsu_fp, encoding="utf-8"))
+        r_nm = meta_rsu.get("race_name") or os.path.basename(rsu_fp)
+        r_st = meta_rsu.get("state") or ("DE" if "218442" in rsu_fp else ("NJ" if "96405" in rsu_fp else ("MI" if "191074" in rsu_fp else ("OH" if "toledo" in rsu_fp or "anthony" in rsu_fp else None))))
+        r_dt_raw = str(meta_rsu.get("date") or "2026-10-01")
+        if "/" in r_dt_raw:
+            mm_d, dd_d, yy_d = r_dt_raw.split("/")
+            r_dt_raw = f"{yy_d}-{int(mm_d):02d}-{int(dd_d):02d}"
+        if r_dt_raw.startswith("2026"):
+            ingest_rsu(rsu_fp, r_nm, r_dt_raw, r_st)
+    except Exception:
+        pass
 
 # --- 2. Ingest Smiley Miles 2026 ---
 sm_line_re = re.compile(r"^\s*(\d+)\s+([A-Za-z'\-\.\s]+?)\s{2,}([A-Za-z0-9'\-\.\&\s]+?)\s+(\d+)\s+(\d{1,2})\s+([MF])\s+(?:[\d:]+\s+)?(\d+:\d+\.\d+)\s+(\d+:\d+)/[MK]")
@@ -408,6 +436,7 @@ MS_MEET_INFO = {
     "788598": ("Greensburg CYO Meet #5 (St. Vincent)", "2026-10-11", "PA"),
     "779207": ("Windy City XC Challenge", "2026-09-12", "IL"),
     "789241": ("Illinois Youth XC Championships", "2026-11-08", "IL"),
+    "761984": ("SEC-MS Saline MS vs Dexter MS", "2026-09-15", "MI"),
 }
 
 def infer_dist_and_gender(hl):
@@ -564,22 +593,88 @@ for r in hist_cccnyc:
     if r["place"] <= 25: st_m["top25"] += 1
     if r["place"] <= 3: st_m["top3"] += 1
 
+# --- 6. Ingest Curated Verified 2026 Open-Web Marks & MileSplit National Athlete Sweep (v2) ---
+curated_fp = os.path.join(base_scratch, "curated_verified_2026.json")
+if os.path.exists(curated_fp):
+    curated_map = json.load(open(curated_fp, encoding="utf-8"))
+    for a in athletes:
+        if a["is_duplicate_ghost"]: continue
+        if a["display_name"] in curated_map:
+            for cm in curated_map[a["display_name"]]:
+                a["races_2026"].append({
+                    "meet": cm["meet"], "date": cm["date"], "division": cm["division"],
+                    "place": cm.get("place"), "field_size": cm.get("field_size", 60),
+                    "dist_m": cm["dist_m"], "time_sec": round(float(cm["time_sec"]), 2),
+                    "time_str": fmt_time(float(cm["time_sec"])),
+                    "pace_mi": fmt_pace_mi(float(cm["time_sec"]), cm["dist_m"]),
+                    "school_team": cm.get("school_team"),
+                    "surface": "track" if "Track" in cm["meet"] or "Outdoor" in cm["meet"] else "xc",
+                })
+
+ms_v2_fp = os.path.join(base_scratch, "ms_athlete_verified_v2.json")
+for a in athletes:
+    a["prior_season_marks"] = []
+
+if os.path.exists(ms_v2_fp):
+    ms_v2 = json.load(open(ms_v2_fp, encoding="utf-8"))
+    for a in athletes:
+        if a["is_duplicate_ghost"]: continue
+        rec = ms_v2.get(a["id"])
+        if not rec or not rec.get("marks"): continue
+        for m in rec["marks"]:
+            dm = int(m["dist_m"])
+            if dm < 800: continue # Do not extrapolate pure 100m/200m/400m sprints to XC distance
+            t_sec = float(m["time_sec"])
+            seas = m.get("season", "cc")
+            surf = "xc" if seas == "cc" else "track"
+            pid = int(m.get("perf_id") or 0)
+            if m.get("year") == 2026:
+                if seas == "cc":
+                    dt_est = "2026-10-18" if pid >= 220_500_000 else ("2026-09-26" if pid >= 218_500_000 else "2026-09-05")
+                elif seas == "outdoor":
+                    dt_est = "2026-05-16"
+                else:
+                    dt_est = "2026-02-14"
+                a["races_2026"].append({
+                    "meet": m["meet"], "date": dt_est,
+                    "division": f"{'XC' if surf == 'xc' else 'Track'} {m['event_code']}",
+                    "place": None, "field_size": None, "dist_m": dm,
+                    "time_sec": round(t_sec, 2), "time_str": fmt_time(t_sec),
+                    "pace_mi": fmt_pace_mi(t_sec, dm), "school_team": None,
+                    "surface": surf,
+                })
+            else:
+                a["prior_season_marks"].append({
+                    "year": int(m.get("year") or 2025),
+                    "meet": m["meet"], "event_code": m["event_code"],
+                    "dist_m": dm, "time_sec": round(t_sec, 2),
+                    "time_str": fmt_time(t_sec), "pace_mi": fmt_pace_mi(t_sec, dm),
+                    "surface": surf,
+                })
+
+def clean_school_str(s):
+    if not s: return s
+    return re.sub(r"\s*\([^)]*$", "", s).strip()
+
 # Deduplicate races_2026 & sort
 for a in athletes:
+    if a.get("home_school"):
+        a["home_school"] = clean_school_str(a["home_school"])
     seen = set()
     dedup = []
-    for rc in sorted(a["races_2026"], key=lambda x: x["date"]):
-        k = (rc["date"], round(rc["time_sec"], 1))
+    # Prefer entries with actual place/field_size from raw meet scrapes when deduplicating same time!
+    for rc in sorted(a["races_2026"], key=lambda x: (x["date"], 0 if x.get("place") else 1)):
+        k = (round(rc["time_sec"], 1), rc["dist_m"])
         if k not in seen:
             seen.add(k)
             dedup.append(rc)
-    a["races_2026"] = dedup
+    a["races_2026"] = sorted(dedup, key=lambda x: x["date"])
     a["cccnyc_history"] = sorted(a["cccnyc_history"], key=lambda x: -x["year"])
 
 dop_check = [a for a in athletes if a["is_dop"]]
 print(f"DoP 2026 matched: {sum(1 for a in dop_check if a['races_2026'])}/{len(dop_check)}!")
 unique_all = [a for a in athletes if not a["is_duplicate_ghost"]]
-print(f"Total unique entrants with empirical individual seed: {sum(1 for a in unique_all if a['races_2026'] or a['cccnyc_history'])}/{len(unique_all)}")
+print(f"Total unique entrants with empirical individual seed: {sum(1 for a in unique_all if a['races_2026'] or a['cccnyc_history'] or a['prior_season_marks'])}/{len(unique_all)}")
 
 # ==============================================================================
 # STEP 2: PROJECTION ENGINE (Cedarville Target-Distance Equivalent Time mu, sigma)
@@ -597,20 +692,29 @@ COURSE_FACTOR = {
 def project_from_2026(a, target_dist_m):
     ests = []
     weights = []
+    has_xc = any(rc.get("surface", "xc") != "track" for rc in a["races_2026"])
     for rc in a["races_2026"]:
         dm = rc["dist_m"]
         t = rc["time_sec"]
-        # Convert distance via Youth Riegel 1.07
-        conv = t * ((target_dist_m / dm) ** 1.07)
-        cf = 0.992
-        for k, v in COURSE_FACTOR.items():
-            if k.lower() in rc["meet"].lower():
-                cf = v; break
+        surf = rc.get("surface", "xc")
+        # Convert distance via Youth Riegel (1.095 for 800m, 1.080 for 1500m/1600m track, 1.07 for XC)
+        exp_r = 1.095 if dm <= 800 else (1.080 if (surf == "track" and dm <= 1650) else 1.07)
+        conv = t * ((target_dist_m / dm) ** exp_r)
+        if surf == "track":
+            # Rubber track -> grass XC surface conversion (+5.2%, or +7.5% from 800m mid-distance)
+            cf = 1.075 if dm <= 800 else 1.052
+        else:
+            cf = 0.992
+            for k, v in COURSE_FACTOR.items():
+                if k.lower() in rc["meet"].lower():
+                    cf = v; break
         conv *= cf
-        # Weight recent & championship & closer-distance races higher
+        # Weight recent & championship & closer-distance XC races higher
         dist_ratio = min(dm, target_dist_m) / max(dm, target_dist_m)
-        w = (0.5 + 0.5 * dist_ratio)
-        if "championship" in rc["meet"].lower() or "state" in rc["meet"].lower() or "nxr" in rc["meet"].lower():
+        w = (0.45 + 0.55 * dist_ratio)
+        if surf == "track":
+            w *= (0.28 if has_xc else 0.75)
+        if "championship" in rc["meet"].lower() or "state" in rc["meet"].lower() or "nxr" in rc["meet"].lower() or "qualifier" in rc["meet"].lower():
             w *= 1.6
         if rc["date"] >= "2026-10-01":
             w *= 1.35
@@ -618,19 +722,43 @@ def project_from_2026(a, target_dist_m):
         weights.append(w)
     ests = np.array(ests)
     weights = np.array(weights)
-    # Blend weighted mean (65%) and best normalized performance (35%) to reflect championship peaking
+    # Blend weighted mean (62%) and best normalized XC performance (38%) to reflect championship peaking
     w_mean = float(np.sum(ests * weights) / np.sum(weights))
-    best_t = float(np.min(ests))
+    xc_ests = [ests[i] for i, rc in enumerate(a["races_2026"]) if rc.get("surface", "xc") != "track"]
+    best_t = float(np.min(xc_ests)) if xc_ests else float(np.min(ests))
     mu = 0.62 * w_mean + 0.38 * best_t
     # Individual consistency from multi-race CV if >=3 races
     if len(ests) >= 3:
         emp_sd = float(np.std(ests))
         rel_sd = np.clip(emp_sd / mu, 0.024, 0.048)
     elif len(ests) == 2:
-        rel_sd = 0.033
+        rel_sd = 0.034 if has_xc else 0.044
     else:
-        rel_sd = 0.038
+        rel_sd = 0.038 if has_xc else 0.048
     return mu, mu * rel_sd
+
+def project_from_prior_marks(a, target_dist_m):
+    ests, weights = [], []
+    g = a["gender"]
+    med_now, _ = age_stats[(g, min(max(a["age"], 6), 18))]
+    for m in a["prior_season_marks"]:
+        yr = m["year"]
+        yr_gap = max(1, 2026 - yr)
+        hist_age = max(6, a["age"] - yr_gap)
+        med_then, _ = age_stats[(g, min(hist_age, 18))]
+        dm = m["dist_m"]
+        exp_r = 1.085 if dm <= 800 else 1.07
+        conv_then = m["time_sec"] * ((target_dist_m / dm) ** exp_r)
+        if m.get("surface") == "track":
+            conv_then *= (1.070 if dm <= 800 else 1.044)
+        spk_then = conv_then / (target_dist_m / 1000.0)
+        ratio = spk_then / med_then
+        damped_ratio = 1.0 + 0.85 * (ratio - 1.0)
+        est_t = (med_now * damped_ratio) * (target_dist_m / 1000.0) * 0.995
+        w = (1.0 / (yr_gap ** 1.1)) * (1.0 if m.get("surface") == "xc" else 0.65)
+        ests.append(est_t); weights.append(w)
+    mu = float(np.sum(np.array(ests) * np.array(weights)) / np.sum(weights))
+    return mu, mu * 0.046
 
 def project_from_cccnyc_vet(a, target_dist_m):
     # Project using empirical age_stats ratio from historical age -> 2026 age!
@@ -659,6 +787,7 @@ for a in athletes:
     td = EVENT_META[a["event_num"]]["dist_m"]
     mu_26, sd_26 = (project_from_2026(a, td) if a["races_2026"] else (None, None))
     mu_vet, sd_vet = (project_from_cccnyc_vet(a, td) if a["cccnyc_history"] else (None, None))
+    mu_prior, sd_prior = (project_from_prior_marks(a, td) if (not mu_26 and a.get("prior_season_marks")) else (None, None))
     if mu_26 and mu_vet:
         # Inverse-variance precision blend of 2026 form + CCCNYC Nationals pedigree!
         p1, p2 = 1.0 / (sd_26**2), 0.55 / (sd_vet**2)
@@ -668,9 +797,17 @@ for a in athletes:
     elif mu_26:
         mu, sd = mu_26, sd_26
         tier = "Tier 1 (2026 Empirical)"
+    elif mu_vet and mu_prior:
+        p1, p2 = 1.0 / (sd_vet**2), 0.85 / (sd_prior**2)
+        mu = (mu_vet * p1 + mu_prior * p2) / (p1 + p2)
+        sd = math.sqrt(1.0 / (p1 + p2))
+        tier = "Tier 2 (CCCNYC Veteran)"
     elif mu_vet:
         mu, sd = mu_vet, sd_vet
         tier = "Tier 2 (CCCNYC Veteran)"
+    elif mu_prior:
+        mu, sd = mu_prior, sd_prior
+        tier = "Tier 2M (Prior Season Empirical)"
     else:
         mu, sd, tier = None, None, "Tier 3 (Club × Age Prior)"
     a["proj_mu"] = mu
@@ -1097,9 +1234,5 @@ os.makedirs(pdf_dir, exist_ok=True)
 import shutil
 shutil.copyfile(os.path.join(base_scratch, "Entry_List__CYO.pdf"), os.path.join(pdf_dir, "Entry_List__CYO.pdf"))
 shutil.copyfile(os.path.join(web_dir, "Entry_List_Web.pdf"), os.path.join(pdf_dir, "Entry_List_Saturday_10PM.pdf"))
-for d in ["1K", "2K", "3K", "4K", "5K"]:
-    src_m = os.path.join(web_dir, f"XC_Course_{d}_Map.pdf")
-    if os.path.exists(src_m):
-        shutil.copyfile(src_m, os.path.join(pdf_dir, f"Cedarville_Course_{d}_Map.pdf"))
 
 print(f"\nExported data.js ({os.path.getsize(os.path.join(data_out_dir, 'data.js'))/1024:.1f} KB) and CSVs/PDFs to {data_out_dir}!")

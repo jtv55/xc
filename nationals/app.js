@@ -47,7 +47,8 @@
   const tierBadge = (tier) => {
     if (!tier) return "";
     if (tier.includes("Tier 1+")) return `<span class="badge b-up" title="2026 XC Race Log + Returning CCCNYC Nationals Veteran">2026 + Vet</span>`;
-    if (tier.includes("Tier 1")) return `<span class="badge b-accent" title="Direct 2026 Season XC Race Log">2026 Verified</span>`;
+    if (tier.includes("Tier 1")) return `<span class="badge b-accent" title="Direct 2026 Season Empirical Race Log">2026 Verified</span>`;
+    if (tier.includes("Tier 2M")) return `<span class="badge b-gold" title="Verified 2023–2025 Empirical Race History">Prior Season</span>`;
     if (tier.includes("Tier 2")) return `<span class="badge b-gold" title="Returning 2022–2025 CCCNYC Nationals Veteran">CCCNYC Vet</span>`;
     return `<span class="badge b-muted" title="Hierarchical Club × Single-Year Age Empirical Prior">Club×Age Prior</span>`;
   };
@@ -1464,8 +1465,21 @@
           <td class="muted">${esc(r.school_team || "—")}</td>
         </tr>
       `).join("") + `</tbody></table></div>`;
+    } else if (a.prior_season_marks && a.prior_season_marks.length) {
+      racesHtml = `<div class="tablewrap" style="margin-top:8px"><table><thead><tr>
+        <th>Season</th><th>Verified Prior Meet</th><th class="num">Dist</th><th class="num">Time</th><th class="num">Pace</th><th>Surface</th>
+      </tr></thead><tbody>` + a.prior_season_marks.slice(0, 8).map((r) => `
+        <tr>
+          <td class="mono muted">${r.year}</td>
+          <td><b>${esc(r.meet)}</b></td>
+          <td class="num">${r.dist_m}m</td>
+          <td class="num"><b>${r.time_str}</b></td>
+          <td class="num">${r.pace_mi}/mi</td>
+          <td class="muted">${r.surface === "track" ? "Track" : "XC"}</td>
+        </tr>
+      `).join("") + `</tbody></table></div>`;
     } else {
-      racesHtml = `<div class="muted" style="font-size:13px;margin-top:6px">No 2026 regular-season meet scraped in public databases; projected via ${esc(a.seed_tier)}.</div>`;
+      racesHtml = `<div class="muted" style="font-size:13px;margin-top:6px">First-year youth entrant without prior chip-timed public race record; projected via ${esc(a.seed_tier)}.</div>`;
     }
 
     let vetHtml = "";

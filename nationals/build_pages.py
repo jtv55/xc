@@ -10,7 +10,7 @@ NAV_TEMPLATE = """<!doctype html>
 <title>2026 CCCNYC &amp; CYO Nationals · __PAGE_TITLE__</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261115-1">
+<link rel="stylesheet" href="styles.css?v=20261116-2">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body data-page="__PAGE_KEY__">
@@ -20,8 +20,8 @@ NAV_TEMPLATE = """<!doctype html>
   <a href="index.html" __CUR_HUB__>Meet Hub &amp; Course</a>
   <a href="races.html" __CUR_RACES__>Race Simulator (11)</a>
   <a href="diocese.html" __CUR_DIOCESE__>Diocese of Pittsburgh (63)</a>
-  <a href="clubs.html" __CUR_CLUBS__>Schools &amp; Clubs (57)</a>
-  <a href="runners.html" __CUR_RUNNERS__>Runners &amp; Dossiers (1,062)</a>
+  <a href="clubs.html" __CUR_CLUBS__>Schools &amp; Clubs (55)</a>
+  <a href="runners.html" __CUR_RUNNERS__>Runners &amp; Dossiers (1,061)</a>
   <span class="nav-right">
     <button id="globalScoringBtn" class="pill pill-cyo" aria-pressed="false" title="Toggle between Full National Open scoring and CYO Catholic/Diocesan scoring">Lens: National Open</button>
     <button id="themeBtn" class="pill" style="font-size:11.5px;padding:3px 9px">Theme: auto</button>
@@ -35,7 +35,7 @@ __BODY__
   <footer class="foot">
     <div>
       <b>2026 Cross Country Coaches National Youth Championships (20th Edition) &amp; CYO Nationals</b> · Saturday, Nov 21, 2026 · Elvin R. King XC Course, Cedarville University, OH.<br>
-      Built from official Google Drive <a href="data/pdfs/Entry_List__CYO.pdf" target="_blank">Entry_List__CYO.pdf</a> + Saturday 10:00 PM web update, cross-referenced against 250+ scraped 2026 &amp; 2022–2025 meet files across 14 states (10,000 Monte Carlo trials per race).
+      Built from official Google Drive <a href="data/pdfs/Entry_List__CYO.pdf" target="_blank">Entry_List__CYO.pdf</a> + Saturday 10:00 PM web update, cross-referenced against 990+ individual empirical race histories across 18 states + Bermuda (10,000 Monte Carlo trials per race).
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
       <a class="pill" href="data/cccnyc_2026_runner_predictions.csv" download>Runner Predictions CSV</a>
@@ -46,8 +46,8 @@ __BODY__
 </div>
 
 <div id="d3Tooltip" class="d3-tip"></div>
-<script src="data/data.js?v=20261115-1"></script>
-<script src="app.js?v=20261115-1"></script>
+<script src="data/data.js?v=20261116-2"></script>
+<script src="app.js?v=20261116-2"></script>
 </body>
 </html>
 """
