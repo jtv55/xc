@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 CCCNYC &amp; CYO Nationals · Runner Scouting Dossiers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css?v=20261115-1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+</head>
+<body data-page="runners">
+
+<nav class="sitenav">
+  <span class="nav-brand">&#9670; CCCNYC / CYO '26</span>
+  <a href="index.html" >Meet Hub &amp; Course</a>
+  <a href="races.html" >Race Simulator (11)</a>
+  <a href="diocese.html" >Diocese of Pittsburgh (63)</a>
+  <a href="clubs.html" >Schools &amp; Clubs (57)</a>
+  <a href="runners.html" aria-current="page">Runners &amp; Dossiers (1,062)</a>
+  <span class="nav-right">
+    <button id="globalScoringBtn" class="pill pill-cyo" aria-pressed="false" title="Toggle between Full National Open scoring and CYO Catholic/Diocesan scoring">Lens: National Open</button>
+    <button id="themeBtn" class="pill" style="font-size:11.5px;padding:3px 9px">Theme: auto</button>
+    <a href="../index.html" class="pill" style="font-size:11.5px;padding:3px 9px" title="Aquinas Academy 2026 XC Season Analytics">&#8599; Aquinas '26</a>
+  </span>
+</nav>
+
+<div class="wrap">
+
+  <div class="eyebrow">1,062 Unique Entrants · Individual Scouting Dossiers, Age-Group Cutlines &amp; Rivalry Duels</div>
+  <h1>Runner Scouting Database &amp; All-American Cutlines</h1>
+  <p class="lede">Inspect individual Monte Carlo projections, scraped 2026 season race logs, 2022–2025 CCCNYC veteran resumes, single-year birth-age All-American medal cutlines, and head-to-head probability duels for every athlete in the meet.</p>
+
+  <section id="dossierSection">
+    <div class="dossier-card" id="runnerDossierCard"></div>
+  </section>
+
+  <section>
+    <div class="two">
+      <div class="card">
+        <h2>Single-year birth-age All-American Top-25 cutline explorer</h2>
+        <p class="sub">Select any single-year award ceremony to see the Top 35 contenders' P10–P90 projected finish ranges relative to the dashed <b>#25 All-American Medal Cutline</b>.</p>
+        <div class="ctl">
+          <span class="ctl-label">Award Ceremony</span>
+          <select id="cutlineGroupSel" class="sel"></select>
+        </div>
+        <div id="ageCutlineChart"></div>
+        <p class="so" id="ageCutlineSo"></p>
+      </div>
+      <div class="card">
+        <h2>Head-to-head runner duel &amp; density comparator</h2>
+        <p class="sub">Pick any two athletes in the same race to compute exact win probability <code class="mono">P(A beats B)</code>, expected time gap, and overlapping finish-time distributions.</p>
+        <div class="ctl">
+          <select id="duelEventSel" class="sel"></select>
+        </div>
+        <div class="ctl">
+          <select id="duelRunnerASel" class="sel" style="max-width:48%"></select>
+          <span class="mono muted">vs</span>
+          <select id="duelRunnerBSel" class="sel" style="max-width:48%"></select>
+        </div>
+        <div id="duelChart"></div>
+        <p class="so" id="duelSo"></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Search &amp; filter all 1,062 national entrants</h2>
+    <div class="ctl-bar">
+      <input type="search" id="globalRunnerSearch" class="search" placeholder="Search name, club, or feeder school..." style="min-width:230px">
+      <select id="fltEventSel" class="sel"><option value="ALL">All 11 Events</option></select>
+      <select id="fltAgeSel" class="sel"><option value="ALL">All Ages (1–18)</option></select>
+      <select id="fltTierSel" class="sel">
+        <option value="ALL">All Seed Tiers</option>
+        <option value="EMP">Verified Empirical (2026 / Vet)</option>
+        <option value="2026">2026 Race Log Verified</option>
+        <option value="VET">CCCNYC Returning Veteran</option>
+      </select>
+      <button class="pill pill-dop" id="fltDopBtn" aria-pressed="false">Diocese of Pittsburgh (63)</button>
+      <button class="pill" id="fltAquinasBtn" aria-pressed="false">Aquinas Academy (10)</button>
+      <button class="pill pill-cyo" id="fltCyoBtn" aria-pressed="false">All CYO (155)</button>
+    </div>
+    <p class="sub" id="runnerCountSummary"></p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Runner</th>
+            <th>Event</th>
+            <th class="num">Age</th>
+            <th>Club / Team</th>
+            <th>Home School / City</th>
+            <th>Seed Source</th>
+            <th class="num">'26 Races</th>
+            <th class="num">Proj Time</th>
+            <th class="num">Pace</th>
+            <th class="num">Ov Exp Pl</th>
+            <th class="num">Age Rk</th>
+            <th class="num">Age AA%</th>
+          </tr>
+        </thead>
+        <tbody id="allRunnersTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <footer class="foot">
+    <div>
+      <b>2026 Cross Country Coaches National Youth Championships (20th Edition) &amp; CYO Nationals</b> · Saturday, Nov 21, 2026 · Elvin R. King XC Course, Cedarville University, OH.<br>
+      Built from official Google Drive <a href="data/pdfs/Entry_List__CYO.pdf" target="_blank">Entry_List__CYO.pdf</a> + Saturday 10:00 PM web update, cross-referenced against 250+ scraped 2026 &amp; 2022–2025 meet files across 14 states (10,000 Monte Carlo trials per race).
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+      <a class="pill" href="data/cccnyc_2026_runner_predictions.csv" download>Runner Predictions CSV</a>
+      <a class="pill" href="data/cccnyc_2026_team_predictions.csv" download>Team Predictions CSV</a>
+      <a class="pill" href="data/cccnyc_2026_master.json" download>Full Master JSON</a>
+    </div>
+  </footer>
+</div>
+
+<div id="d3Tooltip" class="d3-tip"></div>
+<script src="data/data.js?v=20261115-1"></script>
+<script src="app.js?v=20261115-1"></script>
+</body>
+</html>

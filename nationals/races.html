@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 CCCNYC &amp; CYO Nationals · Race Simulator (11 Divisions)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css?v=20261115-1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+</head>
+<body data-page="races">
+
+<nav class="sitenav">
+  <span class="nav-brand">&#9670; CCCNYC / CYO '26</span>
+  <a href="index.html" >Meet Hub &amp; Course</a>
+  <a href="races.html" aria-current="page">Race Simulator (11)</a>
+  <a href="diocese.html" >Diocese of Pittsburgh (63)</a>
+  <a href="clubs.html" >Schools &amp; Clubs (57)</a>
+  <a href="runners.html" >Runners &amp; Dossiers (1,062)</a>
+  <span class="nav-right">
+    <button id="globalScoringBtn" class="pill pill-cyo" aria-pressed="false" title="Toggle between Full National Open scoring and CYO Catholic/Diocesan scoring">Lens: National Open</button>
+    <button id="themeBtn" class="pill" style="font-size:11.5px;padding:3px 9px">Theme: auto</button>
+    <a href="../index.html" class="pill" style="font-size:11.5px;padding:3px 9px" title="Aquinas Academy 2026 XC Season Analytics">&#8599; Aquinas '26</a>
+  </span>
+</nav>
+
+<div class="wrap">
+
+  <div class="eyebrow">10,000-Trial Monte Carlo Engine · Team Score Fans, Ridgelines, S-Curves &amp; What-If Sandbox</div>
+  <h1>Race-by-Race Simulator &amp; Tactical Breakdown</h1>
+  <p class="lede">Select any of the 11 championship races to inspect team win &amp; trophy probabilities, scoring pack mile-pace ridgelines, full-field rank-vs-time S-curves, pairwise head-to-head matrices, and an interactive Coach's What-If Sandbox.</p>
+
+  <div class="ctl-bar">
+    <span class="ctl-label">Select Race</span>
+    <div id="raceEventPills" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+    <span class="ctl-label" style="margin-left:auto">Scoring Mode</span>
+    <button class="pill lens-btn" data-lens="nat" aria-pressed="true">National Open</button>
+    <button class="pill pill-cyo lens-btn" data-lens="cyo" aria-pressed="false">CYO National</button>
+  </div>
+
+  <div class="kpis" id="raceKpis"></div>
+
+  <section>
+    <div class="two">
+      <div class="card">
+        <h2 id="teamFanTitle">Projected team score distribution (P10–P90) &amp; trophy odds</h2>
+        <p class="sub">Official XC displacement scoring (only Complete 5+ runner clubs assign points; 6th runner breaks ties). Bars span 10th-to-90th percentile simulated team scores.</p>
+        <div id="raceTeamFanChart"></div>
+        <p class="so" id="raceTeamFanSo"></p>
+      </div>
+      <div class="card">
+        <h2>Team mile-pace density ridgelines</h2>
+        <p class="sub">Projected Cedarville mile-pace curves across scoring squads. Tighter, left-shifted waves indicate faster front-running packs and superior 1–5 compression.</p>
+        <div id="raceRidgeChart"></div>
+        <p class="so" id="raceRidgeSo"></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="two">
+      <div class="card">
+        <h2 id="scurveRaceTitle">Projected finish S-curve &amp; traffic density</h2>
+        <p class="sub">Every runner plotted by Expected Place (X) vs Projected Finish Time (Y) with P10–P90 uncertainty whiskers. Red dots highlight Diocese of Pittsburgh; purple dots mark other CYO runners.</p>
+        <div id="raceScurveChart"></div>
+        <p class="so" id="raceScurveSo"></p>
+      </div>
+      <div class="card">
+        <h2 id="h2hMatrixTitle">Pairwise head-to-head team win matrix</h2>
+        <p class="sub">Probability (%) that the <b>Row Team</b> defeats the <b>Column Team</b> across 10,000 simulated races (including 6th-runner tiebreakers).</p>
+        <div id="raceH2hChart"></div>
+        <p class="so" id="raceH2hSo"></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Coach's Interactive "What-If" Tactical Sandbox</h2>
+    <p class="sub">Test how a race-day pack surge (e.g., shaving 12 seconds per runner off a team's projection) or adding a 5th scorer to an incomplete 4-runner roster shifts the official XC team standings in real time.</p>
+    <div class="card">
+      <div class="ctl" style="gap:10px 16px">
+        <div>
+          <span class="ctl-label">Target Team</span>
+          <select id="sandboxTeamSel" class="sel"></select>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="ctl-label">Pack Time Delta</span>
+          <input type="range" id="sandboxDeltaSlider" class="range-slider" min="-30" max="30" step="1" value="0">
+          <span id="sandboxDeltaVal" class="badge b-accent mono" style="min-width:56px;text-align:center">0s / rnr</span>
+        </div>
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="sandboxAdd5thChk">
+          <span>Simulate 5th scorer if roster has 4 runners (e.g. DoP Boys 6–8)</span>
+        </label>
+        <button class="pill" id="sandboxResetBtn">Reset Sandbox</button>
+      </div>
+      <div id="sandboxStandingsWrap"></div>
+    </div>
+  </section>
+
+  <section>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+      <div>
+        <h2 id="raceRosterHeading">Complete projected finish order &amp; single-year All-American odds</h2>
+        <p class="sub" style="margin-bottom:0">Click any athlete row to open their full 2026 season &amp; CCCNYC scouting dossier.</p>
+      </div>
+      <div class="ctl" style="margin-bottom:0">
+        <span class="ctl-label">Filter Award Age</span>
+        <div id="raceAgeFilterPills" style="display:inline-flex;gap:4px"></div>
+        <input type="search" id="raceRunnerSearch" class="search" placeholder="Filter runner or club...">
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num">Proj Pl</th>
+            <th>Runner</th>
+            <th>Team</th>
+            <th class="num">Age</th>
+            <th>Home School</th>
+            <th>Seed Tier</th>
+            <th class="num">Proj Time</th>
+            <th class="num">P10–P90 Band</th>
+            <th class="num">Pace</th>
+            <th class="num">Ov Top-25%</th>
+            <th class="num">Age Rk</th>
+            <th class="num">Age AA Top-25%</th>
+            <th class="num">Passing Lev</th>
+          </tr>
+        </thead>
+        <tbody id="raceFinishTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <footer class="foot">
+    <div>
+      <b>2026 Cross Country Coaches National Youth Championships (20th Edition) &amp; CYO Nationals</b> · Saturday, Nov 21, 2026 · Elvin R. King XC Course, Cedarville University, OH.<br>
+      Built from official Google Drive <a href="data/pdfs/Entry_List__CYO.pdf" target="_blank">Entry_List__CYO.pdf</a> + Saturday 10:00 PM web update, cross-referenced against 250+ scraped 2026 &amp; 2022–2025 meet files across 14 states (10,000 Monte Carlo trials per race).
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+      <a class="pill" href="data/cccnyc_2026_runner_predictions.csv" download>Runner Predictions CSV</a>
+      <a class="pill" href="data/cccnyc_2026_team_predictions.csv" download>Team Predictions CSV</a>
+      <a class="pill" href="data/cccnyc_2026_master.json" download>Full Master JSON</a>
+    </div>
+  </footer>
+</div>
+
+<div id="d3Tooltip" class="d3-tip"></div>
+<script src="data/data.js?v=20261115-1"></script>
+<script src="app.js?v=20261115-1"></script>
+</body>
+</html>
