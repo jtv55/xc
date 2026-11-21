@@ -2,35 +2,25 @@
 
 Comprehensive scouting, race simulation, school/club power analysis, and individual runner intelligence for the **20th Cross Country Coaches National Youth Championships (CCCNYC)** and **CYO National Championships** (**Saturday, November 21, 2026** at Elvin R. King Cross Country Course, Cedarville University, Cedarville, OH).
 
+> **Dashboard Scope Note:** The web dashboard filters out the young tier (**ages 8 & under** — Events 3, 4, and 5) at the presentation layer in `app.js` to focus cleanly on the **8 Ages 9–18 championship divisions (`2,133` unique runners · `88.4%` empirically seeded · `90` organizations · `54` Pittsburgh CYO qualifiers across `8` complete squads)**. No underlying data has been deleted: all 11 events and 2,616 unique entrants remain preserved intact in `build_model.py`, `data/data.js`, `data/cccnyc_2026_master.json`, the CSV exports, and all 6 PDFs.
+
 ## Pages
 
-- **`index.html` — Meet Hub**: Schedule & projected podiums across all 11 championship races (toggleable between **National Open** and **CYO National Championship** scoring), interactive Cedarville 1K–5K course elevation/terrain visualizer, 4-year historical benchmark charts (13,540 finishers from 2022–2025), and official Nov 20 entry-list forensic audit.
-- **`races.html` — 11-Race Simulator**: 10,000-trial Monte Carlo team displacement forecasts, P10–P90 score range fans, field pace distribution ridgelines, individual win/podium/All-American S-curves, pairwise head-to-head team win probability matrix, and a live **Coach's What-If Sandbox** (including hypothetical 5th-runner injection for incomplete squads).
-- **`diocese.html` — Pittsburgh CYO (Diocese of Pittsburgh) Command Center**: Complete breakdown of all 63 Pittsburgh CYO entrants mapped to their **13 Catholic feeder schools**, Dual-Crown National Open vs. CYO National projections, 1–5 pack compression ladders & 6–7 displacer analysis, and single-year birth-age Top-25 All-American medal odds.
-- **`clubs.html` — Schools & Clubs Power Index**: Program power index bubble chart across **91 organizations** from **20 US states + Bermuda**, CYO National Cup omnium standings across **10 Catholic diocesan & parish programs (489 runners)**, cross-division club × race rank heatmap, and interactive club roster inspector.
-- **`runners.html` — 2,616-Runner Scouting**: Searchable/filterable table of every entrant, individual scouting dossiers with 2026 season pace trajectories & CCCNYC veteran history, **Single-Year Birth-Age #25 All-American Cutline Explorer** (`Ages 6..14`, `15–16`, `17–18`), and interactive **Head-to-Head Rivalry Density Comparator**.
+- **`index.html` — Meet Hub**: Schedule & projected podiums across the **8 Ages 9–18 championship races** (toggleable between **National Open** and **CYO National Championship** scoring), interactive Cedarville 3K–5K course elevation/terrain visualizer, 4-year historical benchmark charts (13,540 finishers from 2022–2025), and official Nov 20 entry-list forensic audit.
+- **`races.html` — 8-Race Simulator**: 10,000-trial Monte Carlo team displacement forecasts, P10–P90 score range fans, field pace distribution ridgelines, individual win/podium/All-American S-curves, pairwise head-to-head team win probability matrix, and a live **Coach's What-If Sandbox**.
+- **`diocese.html` — Pittsburgh CYO (Diocese of Pittsburgh) Command Center**: Complete breakdown of all **54 Ages 9–14 Pittsburgh CYO entrants** (`8` complete 6–8 runner scoring squads) mapped to their **13 Catholic feeder schools**, Dual-Crown National Open vs. CYO National projections, 1–5 pack compression ladders & 6–7 displacer analysis, and single-year birth-age Top-25 All-American medal odds.
+- **`clubs.html` — Schools & Clubs Power Index**: Program power index bubble chart across **90 Ages 9–18 organizations** from **19 US states + Bermuda**, CYO National Cup omnium standings across **10 Catholic diocesan & parish programs (366 runners)**, cross-division club × race rank heatmap, and interactive club roster inspector.
+- **`runners.html` — 2,133-Runner Scouting**: Searchable/filterable table of every Ages 9–18 entrant, individual scouting dossiers with 2026 season pace trajectories & CCCNYC veteran history, **Single-Year Birth-Age #25 All-American Cutline Explorer** (`Ages 9..14`), and interactive **Head-to-Head Rivalry Density Comparator**.
 
 ## Data Pipeline & Methodology
 
-1. **Final Entry List Reconciliation (Nov 20)**: Parsed all 31 pages of the official `Entry List.pdf` (`2,617` raw entries → `2,616` unique runners after neutralizing 1 dual-listed entry in Event 2), mapping all **91 clubs/dioceses** and **10 CYO programs** (`Pittsburgh CYO` 63/63 intact).
-2. **Nationwide Empirical Performance Coverage (`2,226 / 2,616 = 85.1%` overall; `90.2%` across Ages 9–14)**:
-   - **100% (`63/63`) Pittsburgh CYO entrants** matched across 2026 Western PA meets (Smiley Miles OA results + RunSignup Diocesan Championship & invitational APIs, averaging 6.2 verified 2026 races per runner) and mapped to their 13 Catholic feeder schools.
-   - **2,226 unique national entrants** tied directly to verified individual race results across:
-     - **220+ RunSignup REST API 2025–2026 XC databases** (including strict zero-false-positive age+state+initial matching for privacy-masked minor results across CO, NJ, MD, MI, IN, IL, OH, VA, MO, OK)
-     - **20 Indiana Midwest Championship & Mudsock Youth XC PDFs** (`abtiming.com` public archives)
-     - **21 Official 2026 KHSAA Kentucky Regional Championship files** (`khsaa.org`)
-     - **17 Brocaw Blazers & Missouri Valley Regional PDFs (2024–2026)** (`brocawblazers.org`)
-     - **53 Missouri TRXC Timing 2025–2026 MS/HS race pages** (`trxctiming.com`)
-     - **10 Oklahoma OSSAA 2026 State & Regional PDFs** (`ohstrack.com`)
-     - **LA-CYO 2026 Finals (Nov 15) & Semifinals (Nov 8)** (`extramiletiming`)
-     - **227 Smiley Miles OA files**, **PAUSATF California**, **earlier MileSplit verified athlete histories**, and **4 years of CCCNYC National Championship results (2022–2025, 13,540 finishers)**.
-   - The remaining `14.9%` (`390` runners — over one-third of whom are ages 3–8 developmental beginners with no public timing history) receive calibrated **Hierarchical Club × Single-Year Birth-Age Empirical Bayes priors**.
-3. **Distance, Surface & Age-Progression Calibration**:
-   - Calibrated the Oct 17, 2026 Pittsburgh Diocesan Championship (`#193936`) Developmental K–2 & 3–4 distance from mis-tagged `1.35 mi` to true `1.50 mi (2,414m)`.
-   - Applied youth Riegel distance scaling, rubber-track-to-grass-XC surface conversion, and empirical single-age annual progression curves for returning veterans, passing a strict physiological pace floor check (`0` outliers across all 2,616 runners).
-4. **10,000-Trial Monte Carlo Engine (`build_model.py`)**:
-   - Correlated club-day form + individual race-day right-skewed variance across 10,000 simulated races per event.
-   - Simultaneous **National Open** and **CYO National Championship** Rule B.5 team displacement scoring (top 5 score, 6–7 displace, Rule B.6 6th-runner tiebreaker) plus **Single-Year Birth-Age Top-25 All-American** tracking.
+1. **Final Entry List Reconciliation (Nov 20)**: Parsed all 31 pages of the official `Entry List.pdf` (`2,617` total rows → `2,616` unique runners; `2,133` unique runners in the Ages 9–18 dashboard view after neutralizing 1 dual-listed entry in Event 2).
+2. **Nationwide Empirical Performance Coverage**:
+   - **Ages 9–18 Dashboard View:** **`1,886 / 2,133` (`88.4%`)** directly tied to verified individual race histories (`1,588` with 2026 race logs + `878` returning CCCNYC veterans); **`90.2%`** across core youth championship Ages 9–14.
+   - **Full 11-Event Underlying Archive:** **`2,226 / 2,616` (`85.1%`)** empirically seeded (`63/63 = 100%` Pittsburgh CYO overall; `54/54 = 100%` in Ages 9–14).
+   - Sources include **220+ RunSignup REST API 2025–2026 XC databases** (with strict age+state+initial matching for privacy-masked minor results), **20 Indiana Midwest Championship & Mudsock Youth XC PDFs**, **21 Official 2026 KHSAA Kentucky Regional files**, **17 Brocaw Blazers & Missouri Valley Regional PDFs (2024–2026)**, **53 Missouri TRXC Timing race pages**, **10 Oklahoma OSSAA 2026 State & Regional PDFs**, **LA-CYO 2026 Finals & Semifinals**, **227 Smiley Miles OA files**, **PAUSATF California**, verified MileSplit athlete histories, and **4 years of CCCNYC National Championship results (2022–2025, 13,540 finishers)**.
+3. **10,000-Trial Monte Carlo Engine (`build_model.py`)**:
+   - Correlated club-day form + individual race-day right-skewed variance across 10,000 simulated races per event, with simultaneous **National Open** and **CYO National Championship** Rule B.5 team displacement scoring and **Single-Year Birth-Age Top-25 All-American** tracking.
 
 ## Running Locally
 

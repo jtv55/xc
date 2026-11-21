@@ -7,14 +7,90 @@
     return;
   }
 
-  const META = DATA.meta;
-  const EVENTS = DATA.events;
+  // Dashboard display filter: exclude young tier (ages 8 & under / Events 3, 4, 5).
+  // Full 11-event dataset (2,616 runners) remains preserved intact in data.js, master JSON, and CSVs.
+  const EXCLUDED_YOUNG_EVENTS = new Set([3, 4, 5]);
+  const isKeptEvent = (evNum) => !EXCLUDED_YOUNG_EVENTS.has(Number(evNum));
+  const isKeptAthlete = (a) => isKeptEvent(a.event_num) && (a.age == null || a.age >= 9);
+
+  const EVENTS = DATA.events.filter((e) => isKeptEvent(e.num));
   const EV_MAP = Object.fromEntries(EVENTS.map((e) => [e.num, e]));
-  const TEAMS = DATA.teams;
-  const CLUBS = DATA.clubs;
-  const ALL_ROWS = DATA.athletes;
+  const TEAMS = DATA.teams.filter((t) => isKeptEvent(t.event_num));
+  const ALL_ROWS = DATA.athletes.filter(isKeptAthlete);
   const ATHLETES = ALL_ROWS.filter((a) => !a.is_duplicate_ghost);
   const ATH_MAP = Object.fromEntries(ALL_ROWS.map((a) => [a.id, a]));
+
+  // Recompute club rollups dynamically for the filtered Ages 9–18 dashboard view
+  const origClubMap = Object.fromEntries(DATA.clubs.map((c) => [c.org, c]));
+  const clubRollup = {};
+  ATHLETES.forEach((a) => {
+    const bo = a.base_org;
+    const orig = origClubMap[bo] || {};
+    const c = (clubRollup[bo] = clubRollup[bo] || {
+      org: bo,
+      state: a.club_state,
+      category: a.club_category,
+      region: a.club_region,
+      is_cyo: a.is_cyo,
+      is_dop: a.is_dop,
+      runners_count: 0,
+      events_entered: new Set(),
+      scoring_squads: 0,
+      seeded_runners: 0,
+      cccnyc_vets: 0,
+      exp_national_titles: 0,
+      exp_national_podiums: 0,
+      exp_age_all_americans: 0,
+      feeder_schools: {},
+      hist_2022_2025_finishers: orig.hist_2022_2025_finishers || 0,
+      hist_2022_2025_top25: orig.hist_2022_2025_top25 || 0,
+      hist_2022_2025_top3: orig.hist_2022_2025_top3 || 0,
+    });
+    c.runners_count += 1;
+    c.events_entered.add(a.event_num);
+    if (!String(a.seed_tier || "").includes("Tier 3")) c.seeded_runners += 1;
+    if ((a.cccnyc_history || []).length > 0) c.cccnyc_vets += 1;
+    c.exp_age_all_americans += (a.aa_age_prob || 0) / 100;
+    if (a.home_school) c.feeder_schools[a.home_school] = (c.feeder_schools[a.home_school] || 0) + 1;
+  });
+  TEAMS.forEach((t) => {
+    if (!t.scores_official_team) return;
+    const c = clubRollup[t.base_org];
+    if (!c) return;
+    c.scoring_squads += 1;
+    if (t.nat) {
+      c.exp_national_titles += (t.nat.win_prob || 0) / 100;
+      c.exp_national_podiums += (t.nat.podium_prob || 0) / 100;
+    }
+  });
+  const CLUBS = Object.values(clubRollup)
+    .map((c) => ({
+      ...c,
+      events_entered: Array.from(c.events_entered).sort((x, y) => x - y),
+      exp_national_titles: Number(c.exp_national_titles.toFixed(2)),
+      exp_national_podiums: Number(c.exp_national_podiums.toFixed(2)),
+      exp_age_all_americans: Number(c.exp_age_all_americans.toFixed(1)),
+    }))
+    .sort((a, b) => b.runners_count - a.runners_count || a.org.localeCompare(b.org));
+
+  const META = {
+    ...DATA.meta,
+    raw_pdf_entries: ALL_ROWS.length,
+    drive_pdf_entries: ALL_ROWS.filter((a) => a.in_drive_pdf).length,
+    unique_runners: ATHLETES.length,
+    ghost_duplicates: ALL_ROWS.filter((a) => a.is_duplicate_ghost).length,
+    seeded_individual_count: ATHLETES.filter((a) => !String(a.seed_tier || "").includes("Tier 3")).length,
+    verified_2026_runners: ATHLETES.filter((a) => (a.races_2026 || []).length > 0).length,
+    cccnyc_veterans: ATHLETES.filter((a) => (a.cccnyc_history || []).length > 0).length,
+    dop_runners: ATHLETES.filter((a) => a.is_dop).length,
+    dop_feeder_schools: new Set(ATHLETES.filter((a) => a.is_dop && a.home_school).map((a) => a.home_school)).size,
+    clubs_count: CLUBS.filter((c) => c.org !== "Unattached").length,
+    states_represented: Array.from(new Set(CLUBS.map((c) => c.state).filter((s) => s && s !== "USA" && s !== "INTL"))).sort(),
+    hist_editions: (DATA.meta.hist_editions || []).map((ed) => ({
+      ...ed,
+      returning_2026: ATHLETES.filter((a) => (a.cccnyc_history || []).some((h) => h.year === ed.year)).length,
+    })),
+  };
 
   // Shared state
   let scoringLens = localStorage.getItem("cccnyc_lens") || "nat"; // 'nat' | 'cyo'
@@ -131,7 +207,7 @@
       <div class="kpi kpi-accent">
         <div class="v">${META.unique_runners.toLocaleString()}</div>
         <div class="l">Unique Race-Day Runners</div>
-        <div class="s">${META.raw_pdf_entries} raw PDF rows · 11 races</div>
+        <div class="s">${META.raw_pdf_entries.toLocaleString()} entries (Ages 9–18) · ${EVENTS.length} races</div>
       </div>
       <div class="kpi kpi-gold">
         <div class="v">${META.clubs_count}</div>
@@ -145,13 +221,13 @@
       </div>
       <div class="kpi kpi-dop">
         <div class="v">${META.dop_runners} / ${META.dop_runners}</div>
-        <div class="l">Diocese of Pittsburgh Matched</div>
+        <div class="l">Pittsburgh CYO Matched</div>
         <div class="s">100% matched across ${META.dop_feeder_schools} feeder schools</div>
       </div>
       <div class="kpi kpi-cyo">
         <div class="v">${scoringLens === "cyo" ? expDopCyoTitles.toFixed(1) : expDopNatPods.toFixed(1)}</div>
         <div class="l">${scoringLens === "cyo" ? "Proj. DoP CYO Team Titles" : "Proj. DoP National Team Trophies"}</div>
-        <div class="s">${scoringLens === "cyo" ? "Out of 6 CYO-eligible divisions" : `${expDopCyoTitles.toFixed(1)} projected CYO titles`}</div>
+        <div class="s">${scoringLens === "cyo" ? `Out of ${EVENTS.filter((e) => e.cyo_scoring_teams_count > 0).length} CYO-eligible divisions` : `${expDopCyoTitles.toFixed(1)} projected CYO titles`}</div>
       </div>
       <div class="kpi kpi-dop">
         <div class="v">${expDopAA.toFixed(1)}</div>
@@ -345,19 +421,19 @@
   function renderAnomalyAudit() {
     const box = document.getElementById("anomalyAuditList");
     if (!box) return;
-    const dupList = DATA.athletes.filter((a) => a.is_duplicate_ghost);
-    const ev4Dop = ATHLETES.filter((a) => a.event_num === 4 && a.is_dop);
+    const dupList = ALL_ROWS.filter((a) => a.is_duplicate_ghost);
+    const dopScoringSquads = TEAMS.filter((t) => t.is_dop && t.scores_official_team);
     const cyoOrgs = CLUBS.filter((c) => c.is_cyo).sort((a, b) => b.runners_count - a.runners_count);
     box.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:9px;font-size:13px">
         <div class="callout callout-up" style="margin:0;padding:9px 12px">
-          <b>1. Final Nov 20 Entry List Update (${fmtInt(DATA.meta.raw_pdf_entries)} Entries · 31 Pages):</b> Expanded by <b>+${fmtInt(DATA.meta.raw_pdf_entries - DATA.meta.drive_pdf_entries)} late entries</b> over the initial Drive draft—adding national dynasties (<b>Brocaw Blazers</b>, <b>Louisville TigerSharks</b>, <b>Body in Training</b>, <b>HP Distance</b>, <b>Belvidere Tornados</b>) and major CYO delegations (<b>Phila. CYO</b>, <b>Toledo CYO</b>, <b>LA-CYO</b>). Meet Manager also resolved all prior Delta Hawks swapped-name duplicates!
+          <b>1. Final Nov 20 Entry List · Ages 9–18 View (${fmtInt(META.raw_pdf_entries)} Entries · ${EVENTS.length} Races):</b> Expanded by <b>+${fmtInt(META.raw_pdf_entries - META.drive_pdf_entries)} late entries</b> over the initial Drive draft across Ages 9–18 (young tier ages 8 &amp; under filtered out of the dashboard; full ${fmtInt(DATA.meta.unique_runners)}-runner archive preserved in downloadable CSV/JSON)—featuring <b>Brocaw Blazers</b>, <b>Louisville TigerSharks</b>, <b>Body in Training</b>, <b>HP Distance</b>, and major CYO delegations.
         </div>
         <div class="callout callout-dop" style="margin:0;padding:9px 12px">
-          <b>2. Pittsburgh CYO (Diocese of Pittsburgh) Boys 6–8 Roster Alert (${ev4Dop.length} Runners):</b> Officially listed as <b>Pittsburgh CYO</b> (${DATA.meta.dop_runners}/63 intact across 13 feeder schools). Event 4 still lists <b>${ev4Dop.length} boys</b> (<span class="mono">${ev4Dop.map((a) => esc(a.display_name)).join(", ")}</span>)—1 short of Rule B.5's 5-runner team minimum. Test adding a 5th runner in the <a href="races.html?event=4">Event 4 Sandbox</a>!
+          <b>2. Pittsburgh CYO (Diocese of Pittsburgh) Roster Status (${META.dop_runners}/${META.dop_runners} Complete):</b> Officially listed as <b>Pittsburgh CYO</b> across <b>${META.dop_feeder_schools} Catholic feeder schools</b>. All <b>${dopScoringSquads.length} Pittsburgh CYO squads</b> (Ages 9–14: 6–8 runners each) meet Rule B.5's 5-runner minimum for both National Open and CYO National team scoring!
         </div>
         <div class="callout callout-warn" style="margin:0;padding:9px 12px">
-          <b>3. Final-PDF Dual-Entry Audit (${dupList.length} Neutralized) &amp; CYO Expansion:</b> ${dupList.length ? dupList.map((d) => `<span class="mono">${esc(d.display_name)}</span> (Ev ${d.event_num}, ${esc(d.anomaly_note || "duplicate")})`).join("; ") : "Zero duplicate registrations remain"}. The CYO National Cup now features <b>${cyoOrgs.length} Catholic dioceses/parishes</b> totaling <b>${fmtInt(cyoOrgs.reduce((s, c) => s + c.runners_count, 0))} runners</b>!
+          <b>3. Final-PDF Dual-Entry Audit (${dupList.length} Neutralized) &amp; CYO Expansion:</b> ${dupList.length ? dupList.map((d) => `<span class="mono">${esc(d.display_name)}</span> (Ev ${d.event_num}, ${esc(d.anomaly_note || "duplicate")})`).join("; ") : "Zero duplicate registrations remain"}. The Ages 9–18 CYO National Cup features <b>${cyoOrgs.length} Catholic dioceses/parishes</b> totaling <b>${fmtInt(cyoOrgs.reduce((s, c) => s + c.runners_count, 0))} runners</b>!
         </div>
       </div>
     `;
@@ -844,38 +920,10 @@
     const total2026Races = dopAths.reduce((s, a) => s + a.races_2026.length, 0);
     const dioChamps = dopAths.filter((a) => a.races_2026.some((r) => r.meet.includes("Pittsburgh Diocesan") && r.place === 1)).length;
 
-    document.getElementById("dopKpis").innerHTML = `
-      <div class="kpi kpi-dop">
-        <div class="v">63</div>
-        <div class="l">Pittsburgh Qualifiers</div>
-        <div class="s">10 squads across 8 youth divisions</div>
-      </div>
-      <div class="kpi kpi-accent">
-        <div class="v">13</div>
-        <div class="l">Catholic Feeder Schools</div>
-        <div class="s">St. Louise (11), Aquinas (10), Seelos (8)</div>
-      </div>
-      <div class="kpi kpi-up">
-        <div class="v">${total2026Races}</div>
-        <div class="l">Verified 2026 Season Finishes</div>
-        <div class="s">6.2 avg races/athlete · ${dioChamps} Oct 17 Champs</div>
-      </div>
-      <div class="kpi kpi-gold">
-        <div class="v">${expNatPod.toFixed(2)}</div>
-        <div class="l">Expected National Team Trophies</div>
-        <div class="s">Led by 6–8G (100%) &amp; 13–14B (72%)</div>
-      </div>
-      <div class="kpi kpi-cyo">
-        <div class="v">${expCyoWins.toFixed(2)}</div>
-        <div class="l">Expected CYO National Team Titles</div>
-        <div class="s">Favored in 6 of 7 scored CYO divisions</div>
-      </div>
-      <div class="kpi kpi-dop">
-        <div class="v">${expAA.toFixed(1)}</div>
-        <div class="l">Expected Birth-Age All-Americans</div>
-        <div class="s">${dopAths.filter((a) => a.aa_age_prob >= 50).length} athletes project &ge;50% Top-25</div>
-      </div>
-    `;
+    const avgRaces = dopAths.length ? (total2026Races / dopAths.length).toFixed(1) : "0.0";
+    const bestNatSquad = scoringDop.slice().sort((a, b) => b.nat.podium_prob - a.nat.podium_prob)[0];
+    const bestCyoSquad = scoringDop.slice().sort((a, b) => b.cyo.win_prob - a.cyo.win_prob)[0];
+    const dopDivsCount = new Set(dopTeams.map((t) => t.event_num)).size;
 
     // Feeder Schools Breakdown
     const schMap = {};
@@ -887,11 +935,45 @@
       if (a.gender === "M") obj.boys += 1; else obj.girls += 1;
     });
     const schRows = Object.values(schMap).sort((a, b) => b.count - a.count || b.expAA - a.expAA);
+    const top3SchTxt = schRows.slice(0, 3).map((r) => `${r.school.replace(" Catholic School", "").replace(" Elementary School", "").replace(" Parish School", "").replace(" Academy", "").replace(" de Marillac School", "")} (${r.count})`).join(", ");
+
+    document.getElementById("dopKpis").innerHTML = `
+      <div class="kpi kpi-dop">
+        <div class="v">${dopAths.length}</div>
+        <div class="l">Pittsburgh Qualifiers</div>
+        <div class="s">${scoringDop.length} complete squads across ${dopDivsCount} divisions</div>
+      </div>
+      <div class="kpi kpi-accent">
+        <div class="v">${schRows.length}</div>
+        <div class="l">Catholic Feeder Schools</div>
+        <div class="s">${esc(top3SchTxt)}</div>
+      </div>
+      <div class="kpi kpi-up">
+        <div class="v">${total2026Races}</div>
+        <div class="l">Verified 2026 Season Finishes</div>
+        <div class="s">${avgRaces} avg races/athlete · ${dioChamps} Oct 17 Champs</div>
+      </div>
+      <div class="kpi kpi-gold">
+        <div class="v">${expNatPod.toFixed(2)}</div>
+        <div class="l">Expected National Team Trophies</div>
+        <div class="s">${bestNatSquad ? `Led by ${esc(bestNatSquad.event_short)} (${bestNatSquad.nat.podium_prob}% pod)` : "—"}</div>
+      </div>
+      <div class="kpi kpi-cyo">
+        <div class="v">${expCyoWins.toFixed(2)}</div>
+        <div class="l">Expected CYO National Team Titles</div>
+        <div class="s">${bestCyoSquad ? `Led by ${esc(bestCyoSquad.event_short)} (${bestCyoSquad.cyo.win_prob}% CYO Win)` : "—"}</div>
+      </div>
+      <div class="kpi kpi-dop">
+        <div class="v">${expAA.toFixed(1)}</div>
+        <div class="l">Expected Birth-Age All-Americans</div>
+        <div class="s">${dopAths.filter((a) => a.aa_age_prob >= 50).length} athletes project &ge;50% Top-25</div>
+      </div>
+    `;
 
     // School filter bar
     const fbar = document.getElementById("dopSchoolFilterBar");
     fbar.innerHTML = `<span class="ctl-label">Filter Feeder School</span>` +
-      `<button class="pill pill-dop" data-sch="ALL" aria-pressed="true">All 13 Schools (63)</button>` +
+      `<button class="pill pill-dop" data-sch="ALL" aria-pressed="true">All ${schRows.length} Schools (${dopAths.length})</button>` +
       schRows.map((r) => `<button class="pill" data-sch="${esc(r.school)}" aria-pressed="false">${esc(r.school.replace(" Catholic School", "").replace(" Elementary School", "").replace(" Parish School", ""))} (${r.count})</button>`).join("");
 
     const setSchFilter = (val) => {
@@ -953,8 +1035,13 @@
         .text(`${r.count} (${r.expAA.toFixed(1)} AA)`);
     });
 
+    const totDopSch = d3.sum(schRows, (r) => r.count);
+    const top4 = schRows.slice(0, 4);
+    const top4Sum = d3.sum(top4, (r) => r.count);
+    const top4Pct = totDopSch ? Math.round((100 * top4Sum) / totDopSch) : 0;
+    const top4Txt = top4.map((r) => `${esc(r.school.replace(" Catholic School", "").replace(" Elementary School", "").replace(" Parish School", ""))} (${r.count})`).join(", ");
     document.getElementById("dopSchoolsSo").innerHTML =
-      `<b>Top 4 Feeder Schools Supply 56% of Delegation:</b> St. Louise de Marillac (11), Aquinas Academy (10), Seelos Academy (8), and St. Kilian (6) account for 35 of the 63 qualifiers (red = Girls, blue = Boys).`;
+      `<b>Top 4 Feeder Schools Supply ${top4Pct}% of Delegation:</b> ${top4Txt} account for ${top4Sum} of the ${totDopSch} qualifiers (red = Girls, blue = Boys).`;
   }
 
   function renderDopSquadDualChart(dopTeams) {
@@ -1076,8 +1163,10 @@
         .attr("font-size", 11.5).style("font-family", "var(--font-mono)").attr("fill", "var(--fg2)").text(spreadTxt);
     });
 
+    const tightList = rows.filter((r) => r.nat && r.nat.spread_1_5_sec != null).slice().sort((a, b) => a.nat.spread_1_5_sec - b.nat.spread_1_5_sec);
+    const tightTxt = tightList.slice(0, 2).map((r) => `<b>${esc(r.event_short)}${r.team.endsWith(" A") ? " A" : r.team.endsWith(" B") ? " B" : ""}</b> (${r.nat.spread_1_5_sec}s 1–5)`).join(" and ");
     document.getElementById("dopPackLadderSo").innerHTML =
-      `<b>Tightest Packs:</b> <b>11–12 Girls A</b> and <b>6–8 Girls</b> boast exceptional front-5 compression, while <b>13–14 Boys</b> is anchored by overall front-runner <b>Liam Ginsburg (5:31/mi projected 4K pace)</b>.`;
+      `<b>Tightest Packs:</b> ${tightTxt || "Pittsburgh CYO squads"} boast strong front-5 compression, while <b>13–14 Boys</b> is anchored by overall front-runner <b>Liam Ginsburg (5:31/mi projected 4K pace)</b>.`;
   }
 
   function renderDopAllAmericanAndTable(dopAths) {
@@ -1257,7 +1346,7 @@
   function renderClubHeatmap(realClubs) {
     const box = document.getElementById("clubHeatmapChart");
     const topClubs = realClubs.slice(0, 24);
-    const cols = [3, 4, 6, 7, 8, 9, 10, 11, 1, 2];
+    const cols = [6, 7, 8, 9, 10, 11, 1, 2];
 
     let html = `<table style="font-size:12px"><thead><tr><th>Organization</th><th class="num">Rnrs</th>` +
       cols.map((evNum) => `<th class="num">${EV_MAP[evNum].short.replace(" Girls", "G").replace(" Boys", "B")}</th>`).join("") +
@@ -1378,7 +1467,7 @@
   function initRunnersPage() {
     // Populate filter dropdowns
     const evSel = document.getElementById("fltEventSel");
-    evSel.innerHTML = `<option value="ALL">All 11 Events</option>` +
+    evSel.innerHTML = `<option value="ALL">All ${EVENTS.length} Events</option>` +
       EVENTS.map((e) => `<option value="${e.num}">Ev ${e.num}: ${esc(e.name)}</option>`).join("");
 
     const ageSel = document.getElementById("fltAgeSel");
@@ -1386,11 +1475,12 @@
     ageSel.innerHTML = `<option value="ALL">All Ages (${ages[0]}–${ages[ages.length - 1]})</option>` +
       ages.map((ag) => `<option value="${ag}">Age ${ag}</option>`).join("");
 
-    // Cutline group selector (all single-year award ceremonies in Events 3,4,6,7,8,9,10,11)
+    // Cutline group selector (single-year award ceremonies across Ages 9–14)
     const cutSel = document.getElementById("cutlineGroupSel");
     const cutOpts = [];
-    [3, 4, 6, 7, 8, 9, 10, 11].forEach((en) => {
+    [6, 7, 8, 9, 10, 11].forEach((en) => {
       const ev = EV_MAP[en];
+      if (!ev) return;
       Object.keys(ev.award_group_sizes).sort((a, b) => Number(a) - Number(b)).forEach((ag) => {
         cutOpts.push({ key: `${en}_${ag}`, label: `${ev.gender === "F" ? "Girls" : "Boys"} Age ${ag} (${ev.dist_m}m · ${ev.award_group_sizes[ag]} entries)` });
       });

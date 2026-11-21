@@ -6,7 +6,7 @@
 <title>2026 CCCNYC &amp; CYO Nationals · Meet Hub & Predictions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261120-v3">
+<link rel="stylesheet" href="styles.css?v=20261120-v4">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body data-page="hub">
@@ -14,10 +14,10 @@
 <nav class="sitenav">
   <span class="nav-brand">&#9670; CCCNYC / CYO '26</span>
   <a href="index.html" aria-current="page">Meet Hub &amp; Course</a>
-  <a href="races.html" >Race Simulator (11)</a>
-  <a href="diocese.html" >Pittsburgh CYO (63)</a>
-  <a href="clubs.html" >Schools &amp; Clubs (91)</a>
-  <a href="runners.html" >Runners &amp; Dossiers (2,616)</a>
+  <a href="races.html" >Race Simulator (8)</a>
+  <a href="diocese.html" >Pittsburgh CYO (54)</a>
+  <a href="clubs.html" >Schools &amp; Clubs (90)</a>
+  <a href="runners.html" >Runners &amp; Dossiers (2,133)</a>
   <span class="nav-right">
     <button id="globalScoringBtn" class="pill pill-cyo" aria-pressed="false" title="Toggle between Full National Open scoring and CYO Catholic/Diocesan scoring">Lens: National Open</button>
     <button id="themeBtn" class="pill" style="font-size:11.5px;padding:3px 9px">Theme: auto</button>
@@ -28,13 +28,13 @@
 <div class="wrap">
 
   <div class="hero">
-    <div class="eyebrow">20th Annual National Youth XC &amp; CYO Championships · Final Entry List (Nov 20) · Race Day Nov 21, 2026 · Cedarville, OH</div>
+    <div class="eyebrow">20th Annual National Youth XC &amp; CYO Championships · Ages 9–18 Championship View · Race Day Nov 21, 2026 · Cedarville, OH</div>
     <h1>2026 CCCNYC &amp; CYO National Championship Intelligence</h1>
-    <p class="lede">Final race-eve analytical preview, 10,000-trial Monte Carlo simulation engine, and scouting database for tomorrow's 2,616-runner national championship at Cedarville University's Elvin R. King Cross Country Course. Switch anytime between <b>National Open Scoring</b> (all 91 organizations) and <b>CYO National Championship Scoring</b> (10 Catholic diocesan &amp; parish programs).</p>
+    <p class="lede">Final race-eve analytical preview, 10,000-trial Monte Carlo simulation engine, and scouting database for tomorrow's <b>2,133-runner Ages 9–18 national championship</b> (8 championship divisions; young tier ages 8 &amp; under filtered out of the dashboard) at Cedarville University's Elvin R. King Cross Country Course. Switch anytime between <b>National Open Scoring</b> (all 90 organizations) and <b>CYO National Championship Scoring</b> (10 Catholic diocesan &amp; parish programs).</p>
     <div class="ctl" style="margin-bottom:0">
-      <a class="pill pill-dop" aria-pressed="true" href="diocese.html">Explore Pittsburgh CYO / Diocese Command Center (63 Runners) &#8594;</a>
-      <a class="pill" href="races.html">Interactive 11-Race Simulator &amp; Coach's Sandbox &#8594;</a>
-      <a class="pill" href="runners.html">Search All 2,616 Athlete Scouting Dossiers &#8594;</a>
+      <a class="pill pill-dop" aria-pressed="true" href="diocese.html">Explore Pittsburgh CYO Command Center (54 Runners) &#8594;</a>
+      <a class="pill" href="races.html">Interactive 8-Race Simulator &amp; Coach's Sandbox &#8594;</a>
+      <a class="pill" href="runners.html">Search All 2,133 Athlete Scouting Dossiers &#8594;</a>
       <a class="pill" href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">View Final Entry List PDF (31 Pages)</a>
     </div>
   </div>
@@ -43,10 +43,10 @@
 
   <section>
     <h2>Saturday race-day schedule &amp; Monte Carlo projected podiums</h2>
-    <p class="sub">All times Eastern Standard Time (Saturday, Nov 21, 2026). Note that CCCNYC awards <b>Top 3 Teams</b> per race plus <b>Top 25 Individual All-Americans per single birth-year age</b> (Ages 6, 7, 8, 9, 10, 11, 12, 13, 14, 15–16, and 17–18). Click any race card to open its full simulation.</p>
+    <p class="sub">All times Eastern Standard Time (Saturday, Nov 21, 2026). Showing all <b>8 championship divisions (Ages 9–18)</b>. Note that CCCNYC awards <b>Top 3 Teams</b> per race plus <b>Top 25 Individual All-Americans per birth-year award group</b> (Ages 9, 10, 11, 12, 13, 14, 15–16, and 17–18). Click any race card to open its full simulation.</p>
     <div class="ctl">
       <span class="ctl-label">Scoring Lens</span>
-      <button class="pill lens-btn" data-lens="nat" aria-pressed="true">National Open Field (All 91 Organizations)</button>
+      <button class="pill lens-btn" data-lens="nat" aria-pressed="true">National Open Field (All 90 Organizations)</button>
       <button class="pill pill-cyo lens-btn" data-lens="cyo" aria-pressed="false">CYO National Championship (10 Catholic / Diocesan Programs)</button>
     </div>
     <div class="sched-grid" id="hubScheduleGrid"></div>
@@ -57,13 +57,10 @@
     <p class="sub">Opened in 2006 on 150 acres of dedicated rolling grass at Cedarville University (host of NCAA DII Midwest Regionals, Atlantic-10, All-Ohio Intercollegiate, and NAIA/NCCAA Championships). Unlike tight wooded park courses, Cedarville features a massive 400m+ open grass starting straightaway before narrowing into rolling mid-race loops.</p>
     <div class="ctl" id="courseDistPills">
       <span class="ctl-label">Course Layout</span>
-      <button class="pill" data-cdist="2000" aria-pressed="false">2K (Ages 6–8)</button>
       <button class="pill" data-cdist="3000" aria-pressed="true">3K (Ages 9–12)</button>
       <button class="pill" data-cdist="4000" aria-pressed="false">4K (Ages 13–14)</button>
       <button class="pill" data-cdist="5000" aria-pressed="false">5K (Ages 15–18)</button>
       <span style="margin-left:auto;display:inline-flex;gap:6px;flex-wrap:wrap">
-        <a class="pill" href="data/pdfs/Cedarville_Course_1K_Map.pdf" target="_blank">1K Map PDF</a>
-        <a class="pill" href="data/pdfs/Cedarville_Course_2K_Map.pdf" target="_blank">2K Map PDF</a>
         <a class="pill" href="data/pdfs/Cedarville_Course_3K_Map.pdf" target="_blank">3K Map PDF</a>
         <a class="pill" href="data/pdfs/Cedarville_Course_4K_Map.pdf" target="_blank">4K Map PDF</a>
         <a class="pill" href="data/pdfs/Cedarville_Course_5K_Map.pdf" target="_blank">5K Map PDF</a>
@@ -83,13 +80,13 @@
     <div class="two">
       <div class="card">
         <h2>CCCNYC 4-year championship history &amp; returning veterans</h2>
-        <p class="sub">13,540 historical finishes parsed from 2022–2025 CCCNYC archives. <b>Over 960 athletes</b> entered tomorrow are returning CCCNYC veterans with prior national championship finishes.</p>
+        <p class="sub">13,540 historical finishes parsed from 2022–2025 CCCNYC archives. <b>878 Ages 9–18 athletes</b> entered tomorrow are returning CCCNYC veterans with prior national championship finishes.</p>
         <div id="histEditionsChart"></div>
         <p class="so" id="histEditionsSo"></p>
       </div>
       <div class="card">
         <h2>Entry list forensic audit &amp; registration anomalies</h2>
-        <p class="sub">Automated forensic cross-checks of the initial Drive draft (1,058 rows) vs the Final Nov 20 <code class="mono">Entry List.pdf</code> (2,617 entries across 31 pages) uncovered critical roster expansions and scoring impacts cleaned in our simulation:</p>
+        <p class="sub">Automated forensic cross-checks of the initial Drive draft vs the Final Nov 20 <code class="mono">Entry List.pdf</code> (filtered to Ages 9–18 for this dashboard; full 2,617-row archive intact in exports):</p>
         <div id="anomalyAuditList"></div>
       </div>
     </div>
@@ -99,7 +96,7 @@
   <footer class="foot">
     <div>
       <b>2026 Cross Country Coaches National Youth Championships (20th Edition) &amp; CYO Nationals</b> · Saturday, Nov 21, 2026 · Elvin R. King XC Course, Cedarville University, OH.<br>
-      Updated from the official <a href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">Final Entry List PDF (Nov 20 · 2,617 entries)</a>, cross-referenced against 2,226 empirical race histories (85.1% overall · 90.2% ages 9–14) across 20 states + Bermuda (10,000 Monte Carlo trials per race).
+      Dashboard scoped to <b>Ages 9–18 (8 championship races · 2,133 runners · 1,886 / 88.4% empirical seeds)</b> from the official <a href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">Final Entry List PDF (Nov 20)</a>; full 11-event archive preserved in downloadable CSV/JSON exports (10,000 Monte Carlo trials per race).
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
       <a class="pill" href="data/cccnyc_2026_runner_predictions.csv" download>Runner Predictions CSV</a>
@@ -110,7 +107,7 @@
 </div>
 
 <div id="d3Tooltip" class="d3-tip"></div>
-<script src="data/data.js?v=20261120-v3"></script>
-<script src="app.js?v=20261120-v3"></script>
+<script src="data/data.js?v=20261120-v4"></script>
+<script src="app.js?v=20261120-v4"></script>
 </body>
 </html>
