@@ -10,7 +10,7 @@ NAV_TEMPLATE = """<!doctype html>
 <title>2026 CCCNYC &amp; CYO Nationals · __PAGE_TITLE__</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261120-v3">
+<link rel="stylesheet" href="styles.css?v=20261120-v5">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body data-page="__PAGE_KEY__">
@@ -46,8 +46,9 @@ __BODY__
 </div>
 
 <div id="d3Tooltip" class="d3-tip"></div>
-<script src="data/data.js?v=20261120-v3"></script>
-<script src="app.js?v=20261120-v3"></script>
+<script src="data/data.js?v=20261120-v5"></script>
+<script src="data/us_states_geo.js?v=20261120-v5"></script>
+<script src="app.js?v=20261120-v5"></script>
 </body>
 </html>
 """
@@ -66,6 +67,18 @@ HUB_BODY = """
   </div>
 
   <div class="kpis" id="hubKpis"></div>
+
+  <section>
+    <div class="split-60-40">
+      <div class="card">
+        <h2>National field footprint · runners by state &amp; club home cities</h2>
+        <p class="sub">Darker states represent larger athlete delegations across all 20 US states (+ Bermuda inset); dots mark the home cities of all 91 clubs &amp; CYO programs (sized by runners). Hover any state or city dot for details, or click to explore.</p>
+        <div class="usa-map-wrap" id="hubUsaMapChart"></div>
+        <p class="so" id="hubUsaMapSo"></p>
+      </div>
+      <div class="card" id="officialScheduleCard"></div>
+    </div>
+  </section>
 
   <section>
     <h2>Saturday race-day schedule &amp; Monte Carlo projected podiums</h2>
@@ -318,6 +331,20 @@ CLUBS_BODY = """
     <select id="clubStateSel" class="sel"><option value="ALL">All States (20+)</option></select>
     <input type="search" id="clubSearchInp" class="search" placeholder="Search club or city..." style="margin-left:auto">
   </div>
+
+  <section>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+        <div>
+          <h2>USA runner density &amp; club home cities map</h2>
+          <p class="sub" style="margin-bottom:6px">States are shaded darker by total runner count; dots mark club &amp; CYO home cities across the country (★ = Cedarville, OH venue). Click any state to filter the directory below, or click any city dot to inspect its club.</p>
+        </div>
+        <button class="pill" id="clubsMapResetBtn" style="display:none">Clear State Filter</button>
+      </div>
+      <div class="usa-map-wrap" id="clubsUsaMapChart"></div>
+      <p class="so" id="clubsUsaMapSo"></p>
+    </div>
+  </section>
 
   <section>
     <div class="two">

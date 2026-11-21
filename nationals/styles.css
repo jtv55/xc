@@ -560,3 +560,120 @@ tbody tr.row-click { cursor: pointer; }
 
 .tab-pane { display: none; }
 .tab-pane.active { display: block; }
+
+/* Official Meet Schedule Card (EST) */
+.sched-est-banner {
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  color: var(--accent);
+  border-radius: 7px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.sched-official-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.sched-official-tbl th {
+  text-align: left;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  padding: 5px 6px;
+  border-bottom: 1.5px solid var(--line-strong);
+  background: transparent;
+  position: static;
+}
+.sched-official-tbl td {
+  padding: 5.5px 6px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.sched-official-tbl tr.sched-race-row {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.sched-official-tbl tr.sched-race-row:hover td {
+  background: var(--accent-soft);
+}
+.sched-official-tbl tr.sched-milestone td {
+  background: var(--surface2);
+  color: var(--fg2);
+  font-weight: 600;
+}
+.sched-time-cell {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--fg);
+  width: 72px;
+}
+.sched-dist-cell {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--fg2);
+}
+
+/* Interactive USA Choropleth & Club Cities Map */
+.usa-map-wrap {
+  position: relative;
+  width: 100%;
+}
+.usa-state {
+  transition: fill-opacity 0.14s ease, stroke-width 0.14s ease;
+  cursor: pointer;
+}
+.usa-state:hover {
+  stroke: var(--fg) !important;
+  stroke-width: 1.4px !important;
+}
+.usa-state.is-selected {
+  stroke: var(--dop) !important;
+  stroke-width: 2.1px !important;
+}
+.city-dot {
+  cursor: pointer;
+  transition: r 0.14s ease, stroke-width 0.14s ease;
+}
+.city-dot:hover {
+  stroke-width: 2.2px !important;
+}
+.map-legend-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  color: var(--fg2);
+}
+.map-legend-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.map-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--line-strong);
+  vertical-align: middle;
+  margin-right: 4px;
+}

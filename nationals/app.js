@@ -84,6 +84,8 @@
       curTheme = themes[(themes.indexOf(curTheme) + 1) % themes.length];
       localStorage.setItem("cccnyc_theme", curTheme);
       applyTheme();
+      if (pageKey === "hub") renderUsaMap("hubUsaMapChart", "hubUsaMapSo", { interactiveFilter: false });
+      if (pageKey === "clubs") renderUsaMap("clubsUsaMapChart", "clubsUsaMapSo", { interactiveFilter: true });
     });
   }
 
@@ -209,9 +211,378 @@
       `;
     }).join("");
 
+    renderUsaMap("hubUsaMapChart", "hubUsaMapSo", { interactiveFilter: false });
+    renderOfficialMeetSchedule();
     renderCourseChart(selectedCourseDist);
     renderHistEditionsChart();
     renderAnomalyAudit();
+  }
+
+  // =========================================================================
+  // OFFICIAL MEET SCHEDULE (EST) & INTERACTIVE USA CHOROPLETH + CITY DOTS MAP
+  // =========================================================================
+  const OFFICIAL_SCHEDULE_ROWS = [
+    { time: "8:15 AM", label: "Head Coaches Meeting", dist: "", milestone: true },
+    { time: "8:45 AM", label: "National Anthem", dist: "", milestone: true },
+    { time: "9:00 AM", label: "15–16 Girls & 17–18 Girls", dist: "5000 Meters", event_num: 1 },
+    { time: "9:30 AM", label: "15–16 Boys & 17–18 Boys", dist: "5000 Meters", event_num: 2 },
+    { time: "10:00 AM", label: "6–8 Girls", dist: "2000 Meters", event_num: 3 },
+    { time: "10:25 AM", label: "6–8 Boys", dist: "2000 Meters", event_num: 4 },
+    { time: "10:45 AM", label: "Race of the Americas (8 & Under)", dist: "1000 Meters", event_num: 5 },
+    { time: "10:45 AM", label: "Officials' Break", dist: "", milestone: true },
+    { time: "11:15 AM", label: "9–10 Girls", dist: "3000 Meters", event_num: 6 },
+    { time: "11:45 AM", label: "9–10 Boys", dist: "3000 Meters", event_num: 7 },
+    { time: "12:15 PM", label: "11–12 Girls", dist: "3000 Meters", event_num: 8 },
+    { time: "12:45 PM", label: "11–12 Boys", dist: "3000 Meters", event_num: 9 },
+    { time: "1:15 PM", label: "13–14 Girls", dist: "4000 Meters", event_num: 10 },
+    { time: "1:45 PM", label: "13–14 Boys", dist: "4000 Meters", event_num: 11 },
+  ];
+
+  function renderOfficialMeetSchedule() {
+    const box = document.getElementById("officialScheduleCard");
+    if (!box) return;
+    const rowsHtml = OFFICIAL_SCHEDULE_ROWS.map((r) => {
+      if (r.milestone) {
+        return `<tr class="sched-milestone"><td class="sched-time-cell">${r.time}</td><td colspan="2">${esc(r.label)}</td></tr>`;
+      }
+      const ev = EV_MAP[r.event_num];
+      const hasDop = ev && ev.dop_entries_count > 0;
+      return `<tr class="sched-race-row" onclick="window.location.href='races.html?event=${r.event_num}'" title="Open Event ${r.event_num} Monte Carlo simulation">
+        <td class="sched-time-cell">${r.time}</td>
+        <td><b>${esc(r.label)}</b> ${hasDop ? `<span class="badge b-dop" style="font-size:10px;padding:1px 5px;margin-left:4px">Pgh CYO (${ev.dop_entries_count})</span>` : ""}</td>
+        <td class="sched-dist-cell">${r.dist}</td>
+      </tr>`;
+    }).join("");
+
+    box.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px">
+        <h2 style="margin:0">Official Meet Schedule</h2>
+        <a class="pill" href="data/official_meet_schedule.jpg" target="_blank" style="font-size:11px;padding:2px 8px">Original Graphic &#8599;</a>
+      </div>
+      <div class="sched-est-banner">
+        <span>NOTE: All times are Eastern Standard Time (EST)</span>
+        <span class="mono">Sat, Nov 21</span>
+      </div>
+      <table class="sched-official-tbl">
+        <thead>
+          <tr><th>Time</th><th>Event</th><th style="text-align:right">Race Length</th></tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <p class="so" style="margin-top:8px">Click any race row to jump straight to its 10,000-trial simulation. Red badges indicate the 8 races featuring <b>Pittsburgh CYO</b> runners.</p>
+    `;
+  }
+
+  // Exact home city coordinates [lon, lat] for all 91 registered clubs & CYO programs
+  const CLUB_CITY_COORDS = {
+    "Brocaw Blazers": { city: "Overland Park, KS", lon: -94.671, lat: 38.982 },
+    "Team F.C.A. KS": { city: "Olathe, KS", lon: -94.819, lat: 38.881 },
+    "Girard Warriors": { city: "Girard, KS", lon: -94.838, lat: 37.511 },
+    "Phila. CYO": { city: "Philadelphia, PA", lon: -75.165, lat: 39.953 },
+    "Pittsburgh CYO": { city: "Pittsburgh, PA", lon: -79.996, lat: 40.441 },
+    "Diocese of Pittsburgh": { city: "Pittsburgh, PA", lon: -79.996, lat: 40.441 },
+    "Greensburg CYO": { city: "Greensburg, PA", lon: -79.539, lat: 40.301 },
+    "Nittany Track and Field": { city: "State College, PA", lon: -77.860, lat: 40.793 },
+    "Bishop McDevitt - CYO": { city: "Harrisburg, PA", lon: -76.887, lat: 40.273 },
+    "Central PA Speed": { city: "Mechanicsburg, PA", lon: -77.009, lat: 40.214 },
+    "Godspeed Track & Field": { city: "Lancaster, PA", lon: -76.306, lat: 40.038 },
+    "Louisville TigerSharks": { city: "Louisville, KY", lon: -85.758, lat: 38.253 },
+    "Louisville Fast Cats": { city: "Louisville, KY", lon: -85.758, lat: 38.253 },
+    "Bates Elementary": { city: "Louisville, KY", lon: -85.758, lat: 38.253 },
+    "Derby City": { city: "Louisville, KY", lon: -85.758, lat: 38.253 },
+    "Northeast Striders": { city: "Louisville, KY", lon: -85.758, lat: 38.253 },
+    "Thomson Training": { city: "Louisville, KY", lon: -85.758, lat: 38.253 },
+    "Team Kentucky": { city: "Lexington, KY", lon: -84.504, lat: 38.041 },
+    "Grassroots Running Club": { city: "Lexington, KY", lon: -84.504, lat: 38.041 },
+    "Shelby County Pacers": { city: "Shelbyville, KY", lon: -85.224, lat: 38.212 },
+    "Harmony Elementary School": { city: "Goshen, KY", lon: -85.574, lat: 38.404 },
+    "Eastern KY Striders": { city: "Ashland, KY", lon: -82.637, lat: 38.478 },
+    "Toledo CYO": { city: "Toledo, OH", lon: -83.538, lat: 41.653 },
+    "CRC Grasshoppers": { city: "Columbus, OH", lon: -82.999, lat: 39.961 },
+    "Columbus CYO": { city: "Columbus, OH", lon: -82.999, lat: 39.961 },
+    "Styn Strong Racing": { city: "Columbus, OH", lon: -82.999, lat: 39.961 },
+    "Buckeye Racers": { city: "Upper Sandusky, OH", lon: -83.281, lat: 40.827 },
+    "Hudson Youth Cross Country": { city: "Hudson, OH", lon: -81.441, lat: 41.240 },
+    "Copley Youth Cross Country": { city: "Copley, OH", lon: -81.640, lat: 41.096 },
+    "Cleveland Youth Running Club": { city: "Cleveland, OH", lon: -81.694, lat: 41.499 },
+    "Minster XC": { city: "Minster, OH", lon: -84.377, lat: 40.393 },
+    "Ohio Elite Cross Country": { city: "Mason, OH", lon: -84.310, lat: 39.360 },
+    "Golden Bear Run Club": { city: "Upper Arlington, OH", lon: -83.062, lat: 40.025 },
+    "North Union Intermdiate": { city: "Richwood, OH", lon: -83.297, lat: 40.427 },
+    "Hilliard Track Club": { city: "Hilliard, OH", lon: -83.158, lat: 40.033 },
+    "ALTIUS Track & Field": { city: "Dayton, OH", lon: -84.192, lat: 39.759 },
+    "Dresden Middle": { city: "Dresden, OH", lon: -82.011, lat: 40.122 },
+    "Threshold and Beyond": { city: "Cincinnati, OH", lon: -84.512, lat: 39.103 },
+    "Body in Training": { city: "Noblesville, IN", lon: -86.009, lat: 40.046 },
+    "HP Distance": { city: "Carmel, IN", lon: -86.118, lat: 39.978 },
+    "Green Wave": { city: "Westfield, IN", lon: -86.127, lat: 40.043 },
+    "Southern Indiana Runing Club": { city: "New Albany, IN", lon: -85.824, lat: 38.286 },
+    "Indiana Pathfinders": { city: "Columbus, IN", lon: -85.921, lat: 39.201 },
+    "Fishers Fire": { city: "Fishers, IN", lon: -86.013, lat: 39.957 },
+    "Shady Abes": { city: "Springfield, IL", lon: -89.650, lat: 39.782 },
+    "Belvidere Tornados": { city: "Belvidere, IL", lon: -88.844, lat: 42.264 },
+    "West Suburban Harriers": { city: "Naperville, IL", lon: -88.148, lat: 41.786 },
+    "Dixon Distance": { city: "Dixon, IL", lon: -89.479, lat: 41.839 },
+    "Chicago Rabbits": { city: "Chicago, IL", lon: -87.630, lat: 41.878 },
+    "Elgin Road Warriors": { city: "Elgin, IL", lon: -88.283, lat: 42.035 },
+    "Elgin Sharks": { city: "Elgin, IL", lon: -88.283, lat: 42.035 },
+    "Accelerators": { city: "Batavia, IL", lon: -88.313, lat: 41.850 },
+    "Staley Striders": { city: "Decatur, IL", lon: -88.955, lat: 39.840 },
+    "Monroe Milers": { city: "Monroe, MI", lon: -83.398, lat: 41.917 },
+    "Saline MS": { city: "Saline, MI", lon: -83.782, lat: 42.167 },
+    "Eagles Elite": { city: "Hartland, MI", lon: -83.753, lat: 42.656 },
+    "Ann Arbor Track Club": { city: "Ann Arbor, MI", lon: -83.743, lat: 42.281 },
+    "Comets Track Club": { city: "Kalamazoo, MI", lon: -85.587, lat: 42.292 },
+    "Michigan Cougars": { city: "Canton, MI", lon: -83.482, lat: 42.309 },
+    "Embrace Sportz": { city: "Detroit, MI", lon: -83.046, lat: 42.331 },
+    "St. Patrick": { city: "White Lake, MI", lon: -83.503, lat: 42.659 },
+    "St. Charles Club": { city: "Newport, MI", lon: -83.310, lat: 42.004 },
+    "Pinconning": { city: "Pinconning, MI", lon: -83.965, lat: 43.856 },
+    "Waza Track Club": { city: "Novi, MI", lon: -83.475, lat: 42.480 },
+    "Clinton Running Club": { city: "Clinton, MI", lon: -83.972, lat: 42.072 },
+    "LA-CYO": { city: "Los Angeles, CA", lon: -118.244, lat: 34.052 },
+    "Buffalo Chips Running Club": { city: "Sacramento, CA", lon: -121.494, lat: 38.582 },
+    "Delta Hawks Racing": { city: "West Sacramento, CA", lon: -121.530, lat: 38.580 },
+    "NorCal Distance": { city: "Folsom, CA", lon: -121.176, lat: 38.678 },
+    "St. Louis Blazers": { city: "St. Louis, MO", lon: -90.199, lat: 38.627 },
+    "CMAC All Stars": { city: "Columbia, MO", lon: -92.334, lat: 38.952 },
+    "Coyotes Cross Country": { city: "Littleton / Centennial, CO", lon: -104.971, lat: 39.590 },
+    "The Stead": { city: "Boulder, CO", lon: -105.271, lat: 40.015 },
+    "Olney Cross Country Club": { city: "Olney, MD", lon: -77.067, lat: 39.153 },
+    "Frederick Blaze": { city: "Frederick, MD", lon: -77.411, lat: 39.414 },
+    "Lightning Running Club": { city: "Frederick, MD", lon: -77.411, lat: 39.414 },
+    "Seven Locks Running Club": { city: "Bethesda / Potomac, MD", lon: -77.152, lat: 39.005 },
+    "Damascus Freedom": { city: "Damascus, MD", lon: -77.204, lat: 39.288 },
+    "Jenks America Track Club": { city: "Jenks / Tulsa, OK", lon: -95.968, lat: 36.023 },
+    "Edmond Thunder Cross Country &": { city: "Edmond, OK", lon: -97.478, lat: 35.653 },
+    "Accel Sports": { city: "Lebanon, TN", lon: -86.291, lat: 36.208 },
+    "Crimson Knights": { city: "Woodbridge, NJ", lon: -74.285, lat: 40.558 },
+    "Camden Clock Chasers": { city: "Camden, NJ", lon: -75.120, lat: 39.926 },
+    "Southern MN Youth XC": { city: "Owatonna, MN", lon: -93.226, lat: 44.084 },
+    "Seashore Striders": { city: "Lewes, DE", lon: -75.139, lat: 38.775 },
+    "NOVA Run Club": { city: "Fairfax / Northern VA", lon: -77.306, lat: 38.846 },
+    "Fox City": { city: "Fairfax / Northern VA", lon: -77.306, lat: 38.846 },
+    "Virginia CYO": { city: "Fairfax / Northern VA", lon: -77.306, lat: 38.846 },
+    "River Ridge Youth Track Club": { city: "Woodstock, GA", lon: -84.519, lat: 34.101 },
+    "REAL Distance Training Academy": { city: "Madison, AL", lon: -86.748, lat: 34.699 },
+    "Tailwind TC": { city: "White Plains, NY", lon: -73.763, lat: 41.034 },
+  };
+
+  function renderUsaMap(containerId, soId, opts = {}) {
+    const box = document.getElementById(containerId);
+    const geo = window.US_STATES_GEO;
+    if (!box || !geo) return;
+    box.innerHTML = "";
+
+    const isDark =
+      document.documentElement.getAttribute("data-theme") === "dark" ||
+      (!document.documentElement.getAttribute("data-theme") && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+    // Aggregate runner counts and clubs per state
+    const stateTotals = {};
+    const stateClubs = {};
+    CLUBS.forEach((c) => {
+      if (!c.state || c.state === "USA" || c.state === "INTL") return;
+      stateTotals[c.state] = (stateTotals[c.state] || 0) + c.runners_count;
+      (stateClubs[c.state] = stateClubs[c.state] || []).push(c);
+    });
+    const maxStateRunners = d3.max(Object.values(stateTotals)) || 1;
+
+    // Sequential shade scale: lighter = fewer runners, darker = more runners!
+    const colorScale = isDark
+      ? d3.scaleSequential((t) => d3.interpolateYlGnBu(0.18 + 0.80 * Math.pow(t, 0.58))).domain([0, maxStateRunners])
+      : d3.scaleSequential((t) => d3.interpolateBlues(0.16 + 0.80 * Math.pow(t, 0.55))).domain([0, maxStateRunners]);
+    const emptyStateFill = isDark ? "#20221e" : "#efede6";
+    const borderStroke = isDark ? "#383b34" : "#ffffff";
+
+    // Aggregate club cities into clean dot markers
+    const cityMap = {};
+    CLUBS.forEach((c) => {
+      if (c.org === "Unattached" || c.state === "INTL") return;
+      const coord = CLUB_CITY_COORDS[c.org];
+      if (!coord) return;
+      const key = coord.city;
+      const entry = (cityMap[key] = cityMap[key] || {
+        city: coord.city,
+        state: c.state,
+        lon: coord.lon,
+        lat: coord.lat,
+        runners: 0,
+        clubs: [],
+        hasDop: false,
+        hasCyo: false,
+      });
+      entry.runners += c.runners_count;
+      entry.clubs.push(c);
+      if (c.is_dop) entry.hasDop = true;
+      if (c.is_cyo) entry.hasCyo = true;
+    });
+    const cityPoints = Object.values(cityMap).sort((a, b) => b.runners - a.runners);
+    const maxCityRunners = d3.max(cityPoints, (d) => d.runners) || 1;
+    const dotRadius = d3.scaleSqrt().domain([1, maxCityRunners]).range([3.4, 11.5]);
+
+    const W = 820;
+    const H = 485;
+    const svg = d3.select(box).append("svg")
+      .attr("viewBox", `0 0 ${W} ${H}`)
+      .style("width", "100%")
+      .style("height", "auto")
+      .style("display", "block");
+
+    const projection = d3.geoAlbersUsa().fitExtent([[14, 10], [W - 14, H - 14]], geo);
+    const path = d3.geoPath().projection(projection);
+
+    // 1. State Choropleth Polygons
+    svg.append("g")
+      .selectAll("path")
+      .data(geo.features)
+      .enter()
+      .append("path")
+      .attr("class", (d) => `usa-state ${opts.interactiveFilter && clubStateFilter === d.properties.code ? "is-selected" : ""}`)
+      .attr("d", path)
+      .attr("fill", (d) => {
+        const cnt = stateTotals[d.properties.code] || 0;
+        return cnt > 0 ? colorScale(cnt) : emptyStateFill;
+      })
+      .attr("stroke", borderStroke)
+      .attr("stroke-width", 0.9)
+      .on("mousemove", (evt, d) => {
+        const st = d.properties.code;
+        const cnt = stateTotals[st] || 0;
+        const cl = (stateClubs[st] || []).slice().sort((a, b) => b.runners_count - a.runners_count);
+        const topList = cl.slice(0, 4).map((c) => `${esc(c.org)} (${c.runners_count})`).join("<br>");
+        showTip(evt,
+          `<b>${esc(d.properties.name)} (${st})</b><br>` +
+          (cnt > 0
+            ? `Runners: <b class="mono">${cnt}</b> across <b>${cl.length}</b> club${cl.length === 1 ? "" : "s"}<br><span style="color:var(--fg2)">${topList}${cl.length > 4 ? `<br>+${cl.length - 4} more…` : ""}</span>`
+            : `<span class="muted">0 club entries in 2026</span>`)
+        );
+      })
+      .on("mouseleave", hideTip)
+      .on("click", (_, d) => {
+        const st = d.properties.code;
+        if (!stateTotals[st]) return;
+        if (opts.interactiveFilter) {
+          clubStateFilter = clubStateFilter === st ? "ALL" : st;
+          const stSel = document.getElementById("clubStateSel");
+          if (stSel) stSel.value = clubStateFilter;
+          const rst = document.getElementById("clubsMapResetBtn");
+          if (rst) rst.style.display = clubStateFilter === "ALL" ? "none" : "inline-flex";
+          renderUsaMap(containerId, soId, opts);
+          renderClubsTable();
+        } else {
+          window.location.href = `clubs.html?state=${encodeURIComponent(st)}`;
+        }
+      });
+
+    // 2. Club City Dots
+    const dotG = svg.append("g");
+    cityPoints.forEach((pt) => {
+      const xy = projection([pt.lon, pt.lat]);
+      if (!xy) return;
+      const fillCol = pt.hasDop ? "#c43225" : pt.hasCyo ? "#7c3aed" : "#f59e0b";
+      dotG.append("circle")
+        .attr("class", "city-dot")
+        .attr("cx", xy[0])
+        .attr("cy", xy[1])
+        .attr("r", dotRadius(pt.runners))
+        .attr("fill", fillCol)
+        .attr("fill-opacity", 0.88)
+        .attr("stroke", isDark ? "#111210" : "#ffffff")
+        .attr("stroke-width", 1.35)
+        .on("mousemove", (evt) => {
+          const cLines = pt.clubs
+            .slice()
+            .sort((a, b) => b.runners_count - a.runners_count)
+            .map((c) => `• ${esc(c.org)}: <b class="mono">${c.runners_count}</b>`)
+            .join("<br>");
+          showTip(evt,
+            `<b>${esc(pt.city)}</b><br>` +
+            `Total City Delegation: <b class="mono">${pt.runners} runners</b><br>` +
+            `${cLines}`
+          );
+        })
+        .on("mouseleave", hideTip)
+        .on("click", (evt) => {
+          evt.stopPropagation();
+          const primary = pt.clubs.slice().sort((a, b) => b.runners_count - a.runners_count)[0];
+          if (!primary) return;
+          if (opts.interactiveFilter && typeof window.selectClub === "function") {
+            window.selectClub(primary.org);
+          } else {
+            window.location.href = `clubs.html?org=${encodeURIComponent(primary.org)}`;
+          }
+        });
+    });
+
+    // 3. Meet Venue Star Pin: Cedarville University, OH (-83.806, 39.741)
+    const cedXY = projection([-83.806, 39.741]);
+    if (cedXY) {
+      const starPath = d3.symbol().type(d3.symbolStar).size(150)();
+      svg.append("path")
+        .attr("d", starPath)
+        .attr("transform", `translate(${cedXY[0]},${cedXY[1]})`)
+        .attr("fill", "#ffd43b")
+        .attr("stroke", "#151513")
+        .attr("stroke-width", 1.4)
+        .style("cursor", "pointer")
+        .on("mousemove", (evt) => showTip(evt,
+          `<b>★ Cedarville University, OH</b><br>Elvin R. King Cross Country Course<br>2026 CCCNYC &amp; CYO Nationals Venue`
+        ))
+        .on("mouseleave", hideTip);
+    }
+
+    // 4. Bermuda International Inset (lower-right Atlantic corner)
+    const bermudaClub = CLUBS.find((c) => c.state === "INTL");
+    if (bermudaClub) {
+      const bx = W - 122, by = H - 62;
+      const bgG = svg.append("g").style("cursor", "pointer")
+        .on("mousemove", (evt) => showTip(evt, `<b>Hamilton, Bermuda (INTL)</b><br>• ${esc(bermudaClub.org)}: <b class="mono">${bermudaClub.runners_count} runners</b>`))
+        .on("mouseleave", hideTip)
+        .on("click", () => {
+          if (opts.interactiveFilter && typeof window.selectClub === "function") window.selectClub(bermudaClub.org);
+          else window.location.href = `clubs.html?org=${encodeURIComponent(bermudaClub.org)}`;
+        });
+      bgG.append("rect")
+        .attr("x", bx).attr("y", by).attr("width", 108).attr("height", 44).attr("rx", 7)
+        .attr("fill", isDark ? "#1e201c" : "#f3f1ea")
+        .attr("stroke", "var(--line-strong)").attr("stroke-dasharray", "3,2");
+      bgG.append("circle").attr("cx", bx + 18).attr("cy", by + 22).attr("r", 4.5)
+        .attr("fill", "#f59e0b").attr("stroke", isDark ? "#111210" : "#ffffff").attr("stroke-width", 1.2);
+      bgG.append("text").attr("x", bx + 30).attr("y", by + 19).attr("font-size", 10.5).attr("font-weight", 700).attr("fill", "var(--fg)").text("Bermuda");
+      bgG.append("text").attr("x", bx + 30).attr("y", by + 33).attr("font-size", 10).style("font-family", "var(--font-mono)").attr("fill", "var(--muted)").text(`${bermudaClub.runners_count} rnrs (INTL)`);
+    }
+
+    // 5. Legend bar (State Color Ramp + City Dot Legend)
+    const gradStops = [0, 0.2, 0.4, 0.6, 0.8, 1.0].map((t) => colorScale(t * maxStateRunners)).join(", ");
+    const legDiv = document.createElement("div");
+    legDiv.className = "map-legend-bar";
+    legDiv.innerHTML = `
+      <div class="map-legend-group">
+        <span style="font-weight:600">State Runners:</span>
+        <span class="mono" style="font-size:11px">0</span>
+        <span style="display:inline-block;width:11px;height:11px;border-radius:2px;background:${emptyStateFill};border:1px solid var(--line-strong)"></span>
+        <span class="mono" style="font-size:11px">1</span>
+        <span style="display:inline-block;width:110px;height:11px;border-radius:3px;background:linear-gradient(90deg, ${gradStops});border:1px solid var(--line-strong)"></span>
+        <span class="mono" style="font-size:11px">${maxStateRunners}</span>
+      </div>
+      <div class="map-legend-group">
+        <span><span class="map-swatch" style="background:#f59e0b"></span>Youth/School Club City</span>
+        <span><span class="map-swatch" style="background:#7c3aed"></span>CYO City</span>
+        <span><span class="map-swatch" style="background:#c43225"></span>Pittsburgh CYO</span>
+        <span><b style="color:#d49b00">&#9733;</b> Cedarville Venue</span>
+      </div>
+    `;
+    box.appendChild(legDiv);
+
+    // 6. Takeaway caption
+    const soEl = document.getElementById(soId);
+    if (soEl) {
+      const topStates = Object.entries(stateTotals).sort((a, b) => b[1] - a[1]);
+      const top5Txt = topStates.slice(0, 5).map(([st, cnt]) => `<b>${st} (${cnt})</b>`).join(", ");
+      soEl.innerHTML =
+        `<b>Coast-to-Coast Draw (${topStates.length} States + Bermuda · ${cityPoints.length} Cities):</b> Top delegations come from ${top5Txt}, with national travelers stretching from <b>California (${stateTotals.CA || 0})</b> and <b>Colorado (${stateTotals.CO || 0})</b> to <b>New Jersey (${stateTotals.NJ || 0})</b>, <b>Delaware (${stateTotals.DE || 0})</b>, and <b>Bermuda (2)</b>.`;
+    }
   }
 
   function renderCourseChart(distM) {
@@ -1153,7 +1524,7 @@
   // PAGE 4: CLUBS & SCHOOLS (clubs.html)
   // =========================================================================
   let clubCatFilter = "ALL";
-  let clubStateFilter = "ALL";
+  let clubStateFilter = urlParams.get("state") || "ALL";
   let clubQuery = "";
   let selectedClubOrg = urlParams.get("org") || (CLUBS.find((c) => c.is_dop)?.org || "Pittsburgh CYO");
 
@@ -1163,6 +1534,22 @@
     const states = Array.from(new Set(realClubs.map((c) => c.state))).sort();
     stSel.innerHTML = `<option value="ALL">All States (${states.length})</option>` +
       states.map((s) => `<option value="${s}">${s}</option>`).join("");
+    if (clubStateFilter !== "ALL" && states.includes(clubStateFilter)) {
+      stSel.value = clubStateFilter;
+    } else {
+      clubStateFilter = "ALL";
+    }
+    const mapRstBtn = document.getElementById("clubsMapResetBtn");
+    if (mapRstBtn) {
+      mapRstBtn.style.display = clubStateFilter === "ALL" ? "none" : "inline-flex";
+      mapRstBtn.addEventListener("click", () => {
+        clubStateFilter = "ALL";
+        stSel.value = "ALL";
+        mapRstBtn.style.display = "none";
+        renderUsaMap("clubsUsaMapChart", "clubsUsaMapSo", { interactiveFilter: true });
+        renderClubsTable();
+      });
+    }
 
     document.querySelectorAll("#clubFiltersBar button[data-ccat]").forEach((b) => {
       b.addEventListener("click", () => {
@@ -1171,12 +1558,18 @@
         renderClubsTable();
       });
     });
-    stSel.addEventListener("change", () => { clubStateFilter = stSel.value; renderClubsTable(); });
+    stSel.addEventListener("change", () => {
+      clubStateFilter = stSel.value;
+      if (mapRstBtn) mapRstBtn.style.display = clubStateFilter === "ALL" ? "none" : "inline-flex";
+      renderUsaMap("clubsUsaMapChart", "clubsUsaMapSo", { interactiveFilter: true });
+      renderClubsTable();
+    });
     document.getElementById("clubSearchInp").addEventListener("input", (e) => {
       clubQuery = e.target.value.trim().toLowerCase();
       renderClubsTable();
     });
 
+    renderUsaMap("clubsUsaMapChart", "clubsUsaMapSo", { interactiveFilter: true });
     renderClubBubbleChart(realClubs);
     renderCyoOmnium(realClubs);
     renderClubHeatmap(realClubs);
