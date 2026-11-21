@@ -18,6 +18,7 @@ NAV_TEMPLATE = """<!doctype html>
 <nav class="sitenav">
   <span class="nav-brand">&#9670; CCCNYC / CYO '26</span>
   <a href="index.html" __CUR_HUB__>Meet Hub &amp; Course</a>
+  <a href="results.html" __CUR_RESULTS__>Actuals vs. Pred</a>
   <a href="races.html" __CUR_RACES__>Race Simulator (11)</a>
   <a href="diocese.html" __CUR_DIOCESE__>Pittsburgh CYO (64)</a>
   <a href="clubs.html" __CUR_CLUBS__>Schools &amp; Clubs (91)</a>
@@ -48,7 +49,7 @@ __BODY__
 <div id="d3Tooltip" class="d3-tip"></div>
 <script src="data/data.js?v=20261121-raceday"></script>
 <script src="data/us_states_geo.js?v=20261121-raceday"></script>
-<script src="app.js?v=20261121-raceday"></script>
+<script src="app.js?v=20261121-raceday"></script>__EXTRA_SCRIPTS__
 </body>
 </html>
 """
@@ -59,11 +60,11 @@ HUB_BODY = """
     <h1>2026 CCCNYC &amp; CYO National Championship Intelligence</h1>
     <p class="lede">Pre-race analytical forecast, 10,000-trial Monte Carlo simulation engine, and scouting database for today's 2,617-runner national championship at Cedarville University's Elvin R. King Cross Country Course. Switch anytime between <b>National Open Scoring</b> (all 91 organizations) and <b>CYO National Championship Scoring</b> (10 Catholic diocesan &amp; parish programs).</p>
     <div class="ctl" style="margin-bottom:0">
-      <a class="pill pill-dop" aria-pressed="true" href="diocese.html">Explore Pittsburgh CYO / Diocese Command Center (64 Runners) &#8594;</a>
-      <a class="pill" href="races.html">Interactive 11-Race Simulator &amp; Coach's Sandbox &#8594;</a>
-      <a class="pill" href="runners.html">Search All 2,617 Athlete Scouting Dossiers &#8594;</a>
-      <a class="pill" href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">View Final Entry List PDF (31 Pages)</a>
-      <a class="pill pill-dop" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Download Pittsburgh CYO Race-Day Packet PDF (15 Pages)</a>
+      <a class="pill pill-dop" aria-pressed="true" href="results.html">2026 Actuals vs. Predictions &amp; Aquinas Breakdown &#8594;</a>
+      <a class="pill pill-cyo" href="data/pdfs/Aquinas_Academy_2026_CCCNYC_Post_Race_Report.pdf" target="_blank">Download Aquinas Academy Post-Race PDF (6 Pages)</a>
+      <a class="pill" href="diocese.html">Pittsburgh CYO Command Center (64 Runners) &#8594;</a>
+      <a class="pill" href="races.html">11-Race Simulator &#8594;</a>
+      <a class="pill" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Pre-Race Briefing PDF (15 Pages)</a>
     </div>
   </div>
 
@@ -252,7 +253,9 @@ DIOCESE_BODY = """
     <h1>Pittsburgh CYO (Diocese of Pittsburgh) Command Center</h1>
     <p class="lede">Every single one of the <b>64 Diocese of Pittsburgh athletes</b> (officially listed as <b>Pittsburgh CYO</b>, including late race-day Boys 6–8 addition <b>Diego Victor</b>) was matched to their complete 2026 Western PA Cross Country season resume (averaging 6.2 races per athlete) and Oct 17 Diocesan Championship split—unlocking exact parish feeder pipelines, 10 complete scoring squads across all 8 youth divisions, CYO title odds against Philadelphia, Toledo, LA &amp; Columbus CYO, and single-year birth-age All-American projections.</p>
     <div class="ctl" style="margin-bottom:0">
-      <a class="pill pill-dop" aria-pressed="true" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Download Print-Ready 15-Page Coaches' Race-Day Packet PDF &#8599;</a>
+      <a class="pill pill-dop" aria-pressed="true" href="results.html">View 2026 Actuals vs. Predictions (15 Pgh CYO All-Americans!) &#8594;</a>
+      <a class="pill pill-cyo" href="data/pdfs/Aquinas_Academy_2026_CCCNYC_Post_Race_Report.pdf" target="_blank">Download Aquinas Academy Post-Race PDF (6 Pages) &#8599;</a>
+      <a class="pill" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Pre-Race Briefing PDF (15 Pages) &#8599;</a>
     </div>
   </div>
 
@@ -482,25 +485,146 @@ RUNNERS_BODY = """
   </section>
 """
 
+RESULTS_BODY = """
+  <div class="hero">
+    <div class="eyebrow">Official FinishTiming Results (Meet #10720716) vs. Frozen Pre-Race Snapshot (pre-race-2026-11-21)</div>
+    <h1>2026 Cedarville Actuals vs. Predictions &amp; Aquinas Academy Breakdown</h1>
+    <p class="lede">Auditing our 10,000-trial pre-race Monte Carlo forecast against all <b>2,441 official Cedarville finishers</b> (<b>2,424 matched · 99.3%</b>). Highlighting <b>Aquinas Academy's 11/11 finishers</b> (3 National All-Americans, <b>-24.0s</b> median beat!), <b>Diego Victor's #9 Age-6 All-American medal &amp; CYO Trophy finish</b>, <b>Marcela Victor's -24.0s / +35-place 3K breakthrough</b>, and our <b>8-for-8 (100%) CYO National Team Champion</b> call!</p>
+    <div class="ctl" style="margin-bottom:0">
+      <a class="pill pill-dop" aria-pressed="true" href="data/pdfs/Aquinas_Academy_2026_CCCNYC_Post_Race_Report.pdf" target="_blank">Download Aquinas Academy Post-Race PDF Report (6 Pages) &#8599;</a>
+      <a class="pill" href="https://finishtiming.trackscoreboard.com/meets/10720716/events" target="_blank">Official FinishTiming Results &#8599;</a>
+      <a class="pill" href="data/actuals_2026/predicted_vs_actual_2026.json" download>Download Full Actuals vs. Pred JSON</a>
+    </div>
+  </div>
+
+  <div class="kpis" id="resKpis"></div>
+
+  <section>
+    <h2>Diego &amp; Marcela Victor — 2026 season progression into Cedarville Nationals</h2>
+    <p class="sub">Hover any meet dot to inspect exact date, distance, time, pace, and finish. Green circle marks today's Cedarville National Championship PR; dashed blue line shows our frozen pre-race forecast with P10–P90 band.</p>
+    <div class="two">
+      <div class="card">
+        <h3>Diego Victor (Age 6 · Boys 6–8 2K) · <span class="dop-txt">#9 National All-American!</span></h3>
+        <p class="sub"><b>9:22.4 (7:33/mi)</b> · <b>-23.9s faster than forecast</b> · <b>-18.5s 2K PR</b> · Age-6 <b>#9 / 36</b> (#3 CYO Age-6) · Completed Pittsburgh CYO's 5-runner squad for a <b>56–56 tie for 2nd / #3 CYO Trophy!</b></p>
+        <div id="diegoPaceChart"></div>
+      </div>
+      <div class="card">
+        <h3>Marcela Victor (Age 9 · Girls 9–10 3K) · <span style="color:var(--up)">-24.0s &amp; +35-Place Surge!</span></h3>
+        <p class="sub"><b>14:37.7 (7:51/mi)</b> · <b>-24.0s faster than forecast</b> · <b>-1:05.3 3K PR</b> (vs 15:43 Sept 12) · Ov <b>#144 / 244</b> (up +35.1 places!) · Age-9 <b>#57 / 104</b> (#14 CYO Age-9) · Displaced Toledo A #5–7!</p>
+        <div id="marcelaPaceChart"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Aquinas Academy (all 11 finishers) — forecast beat chart</h2>
+    <p class="sub">Negative bars = ran <b>faster</b> than our pre-race projection. Notice how 9 of 11 Aquinas runners crushed their forecast by a median of <b>-24.0 seconds</b> while the rest of the nation ran <b>+8.6s slower</b>! Hover any bar for full Pred vs. Actual breakdown.</p>
+    <div class="card">
+      <div id="aqBeatChart"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="two">
+      <div class="card">
+        <h2>All 2,424 matched finishers · predicted vs. actual scatter</h2>
+        <div class="ctl" id="scatGroupPills" style="margin-bottom:8px">
+          <button class="pill" data-grp="ALL" aria-pressed="true">All 2,424</button>
+          <button class="pill pill-dop" data-grp="AQ" aria-pressed="false">Aquinas (11)</button>
+          <button class="pill pill-dop" data-grp="DOP" aria-pressed="false">Pgh CYO (63)</button>
+          <button class="pill pill-cyo" data-grp="CYO" aria-pressed="false">All CYO</button>
+          <button class="pill" data-grp="AA" aria-pressed="false">All-Americans</button>
+          <select id="scatEventSel" class="sel" style="margin-left:auto"></select>
+        </div>
+        <div id="pvaScatterChart"></div>
+        <p class="so" id="pvaScatterSo"></p>
+      </div>
+      <div class="card">
+        <h2>The Western PA hill-strength effect · residual density</h2>
+        <p class="sub">Comparing Actual minus Predicted finish times (seconds) across the Rest of the Nation (<b>+8.6s</b>), Pittsburgh CYO (<b>-18.7s</b>), and Aquinas Academy (<b>-24.0s</b>) — a <b>32.6-second swing</b> proving Western PA's hilly XC courses forged fast grass racers!</p>
+        <div id="wpaResidualChart"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>8-for-8 CYO National Champions &amp; all 10 Pittsburgh CYO squads</h2>
+    <p class="sub">Every single one of Pittsburgh CYO's 10 squads beat its National Open rank projection, 9 of 10 earned CYO National Top-3 Podiums (including 2 CYO National Championships!), and our pre-race model nailed <b>8 of 8 CYO National Team Champions</b>.</p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Division</th>
+            <th>Pittsburgh CYO Squad</th>
+            <th class="num">National Open (Pred &#8594; Act)</th>
+            <th class="num">CYO National (Pred &#8594; Act)</th>
+            <th class="num">CYO Result</th>
+            <th>CYO Champion (Pred = Act)</th>
+          </tr>
+        </thead>
+        <tbody id="cyoAuditTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Searchable Predicted vs. Actual results explorer</h2>
+    <div class="ctl-bar">
+      <div id="tblScopePills" style="display:inline-flex;gap:5px;flex-wrap:wrap">
+        <button class="pill pill-dop" data-scope="AQ" aria-pressed="true">Aquinas Academy (11)</button>
+        <button class="pill pill-dop" data-scope="DOP" aria-pressed="false">Pittsburgh CYO (63)</button>
+        <button class="pill" data-scope="AA" aria-pressed="false">All-Americans</button>
+        <button class="pill" data-scope="ALL" aria-pressed="false">All 2,424 Finishers</button>
+      </div>
+      <select id="tblEventSel" class="sel"></select>
+      <input type="search" id="pvaSearchInp" class="search" placeholder="Search runner, club, or school..." style="margin-left:auto">
+    </div>
+    <p class="sub" id="pvaTableCount"></p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Runner</th>
+            <th>Race</th>
+            <th class="num">Age</th>
+            <th>Club / Team</th>
+            <th>School</th>
+            <th class="num">Pred Time</th>
+            <th class="num">Act Time (Pace)</th>
+            <th class="num">Δt</th>
+            <th class="num">Overall Pl</th>
+            <th class="num">Age Pl</th>
+          </tr>
+        </thead>
+        <tbody id="pvaTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+"""
+
 pages = [
-    ("index.html", "hub", "Meet Hub & Predictions", HUB_BODY),
-    ("races.html", "races", "Race Simulator (11 Divisions)", RACES_BODY),
-    ("diocese.html", "diocese", "Diocese of Pittsburgh Command Center", DIOCESE_BODY),
-    ("clubs.html", "clubs", "Schools, Clubs & CYO Standings", CLUBS_BODY),
-    ("runners.html", "runners", "Runner Scouting Dossiers", RUNNERS_BODY),
+    ("index.html", "hub", "Meet Hub & Predictions", HUB_BODY, ""),
+    ("results.html", "results", "2026 Actuals vs. Predictions & Aquinas Breakdown", RESULTS_BODY,
+     '\n<script src="data/actuals_2026/actuals_data.js?v=20261121-actuals"></script>\n<script src="results.js?v=20261121-actuals"></script>'),
+    ("races.html", "races", "Race Simulator (11 Divisions)", RACES_BODY, ""),
+    ("diocese.html", "diocese", "Diocese of Pittsburgh Command Center", DIOCESE_BODY, ""),
+    ("clubs.html", "clubs", "Schools, Clubs & CYO Standings", CLUBS_BODY, ""),
+    ("runners.html", "runners", "Runner Scouting Dossiers", RUNNERS_BODY, ""),
 ]
 
-for fname, key, title, body in pages:
+for fname, key, title, body, extra in pages:
     html = (
         NAV_TEMPLATE
         .replace("__PAGE_TITLE__", title)
         .replace("__PAGE_KEY__", key)
         .replace("__CUR_HUB__", 'aria-current="page"' if key == "hub" else "")
+        .replace("__CUR_RESULTS__", 'aria-current="page"' if key == "results" else "")
         .replace("__CUR_RACES__", 'aria-current="page"' if key == "races" else "")
         .replace("__CUR_DIOCESE__", 'aria-current="page"' if key == "diocese" else "")
         .replace("__CUR_CLUBS__", 'aria-current="page"' if key == "clubs" else "")
         .replace("__CUR_RUNNERS__", 'aria-current="page"' if key == "runners" else "")
         .replace("__BODY__", body)
+        .replace("__EXTRA_SCRIPTS__", extra)
     )
     with open(os.path.join(SITE_DIR, fname), "w", encoding="utf-8") as f:
         f.write(html)
