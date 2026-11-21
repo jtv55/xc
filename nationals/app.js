@@ -344,16 +344,19 @@
   function renderAnomalyAudit() {
     const box = document.getElementById("anomalyAuditList");
     if (!box) return;
+    const dupList = DATA.athletes.filter((a) => a.is_duplicate_ghost);
+    const ev4Dop = ATHLETES.filter((a) => a.event_num === 4 && a.is_dop);
+    const cyoOrgs = CLUBS.filter((c) => c.is_cyo).sort((a, b) => b.runners_count - a.runners_count);
     box.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:9px;font-size:13px">
-        <div class="callout callout-warn" style="margin:0;padding:9px 12px">
-          <b>1. Delta Hawks Racing Ghost Duplicates (10 Rows Removed):</b> In Events 6, 8, 9 &amp; 10, Delta Hawks Racing registered every athlete twice with swapped First/Last names (e.g., <span class="mono">Connelly, Cypress</span> &amp; <span class="mono">Cypress, Connelly</span>). Removing the 10 mirror rows drops Delta Hawks from 6 to <b>3 actual runners</b> in Girls 9–10 and Girls 13–14—disqualifying two phantom 5-runner "teams" from the team standings!
+        <div class="callout callout-up" style="margin:0;padding:9px 12px">
+          <b>1. Final Nov 20 Entry List Update (${fmtInt(DATA.meta.raw_pdf_entries)} Entries · 31 Pages):</b> Expanded by <b>+${fmtInt(DATA.meta.raw_pdf_entries - DATA.meta.drive_pdf_entries)} late entries</b> over the initial Drive draft—adding national dynasties (<b>Brocaw Blazers</b>, <b>Louisville TigerSharks</b>, <b>Body in Training</b>, <b>HP Distance</b>, <b>Belvidere Tornados</b>) and major CYO delegations (<b>Phila. CYO</b>, <b>Toledo CYO</b>, <b>LA-CYO</b>). Meet Manager also resolved all prior Delta Hawks swapped-name duplicates!
         </div>
         <div class="callout callout-dop" style="margin:0;padding:9px 12px">
-          <b>2. Diocese of Pittsburgh Boys 6–8 Roster Alert (4 Runners):</b> Event 4 lists 4 Pittsburgh boys (<span class="mono">Vincenzo Fox, Linus Gruber, Owen Nowinski, Raymond Rush</span>). Under CCCNYC Rule B.5, 5 finishers are required for a team score—yet those 4 project so high (3 in the top 22 overall!) that adding a 5th runner would immediately vault Pittsburgh into National Trophy contention.
+          <b>2. Pittsburgh CYO (Diocese of Pittsburgh) Boys 6–8 Roster Alert (${ev4Dop.length} Runners):</b> Officially listed as <b>Pittsburgh CYO</b> (${DATA.meta.dop_runners}/63 intact across 13 feeder schools). Event 4 still lists <b>${ev4Dop.length} boys</b> (<span class="mono">${ev4Dop.map((a) => esc(a.display_name)).join(", ")}</span>)—1 short of Rule B.5's 5-runner team minimum. Test adding a 5th runner in the <a href="races.html?event=4">Event 4 Sandbox</a>!
         </div>
-        <div class="callout" style="margin:0;padding:9px 12px">
-          <b>3. Event 3 Dual-Entry (<span class="mono">Elaine Gerko</span>) &amp; Late Web Update (+15 Runners):</b> <span class="mono">Gerko, Elaine (8)</span> appears on both <b>Columbus CYO</b> (#5 runner!) and <b>Unattached</b> in Girls 6–8 2K. Meanwhile, Saturday's 10:00 PM web update added <b>15 Embrace Sportz</b> boys across Events 4 &amp; 7, creating two Top-3 trophy contenders!
+        <div class="callout callout-warn" style="margin:0;padding:9px 12px">
+          <b>3. Final-PDF Dual-Entry Audit (${dupList.length} Neutralized) &amp; CYO Expansion:</b> ${dupList.length ? dupList.map((d) => `<span class="mono">${esc(d.display_name)}</span> (Ev ${d.event_num}, ${esc(d.anomaly_note || "duplicate")})`).join("; ") : "Zero duplicate registrations remain"}. The CYO National Cup now features <b>${cyoOrgs.length} Catholic dioceses/parishes</b> totaling <b>${fmtInt(cyoOrgs.reduce((s, c) => s + c.runners_count, 0))} runners</b>!
         </div>
       </div>
     `;
@@ -674,7 +677,7 @@
     let html = `<div style="overflow-x:auto"><table style="font-size:12px"><thead><tr><th>Row beats Col %</th>` +
       teams.map((t, i) => `<th class="num" title="${esc(t)}">#${i + 1}</th>`).join("") + `</tr></thead><tbody>`;
     mat.forEach((r, i) => {
-      const cls = r.team.includes("Diocese of Pittsburgh") ? "dop-txt" : "";
+      const cls = (r.team.includes("Pittsburgh CYO") || r.team.includes("Diocese of Pittsburgh")) ? "dop-txt" : "";
       html += `<tr><td class="${cls}" style="white-space:nowrap"><b>#${i + 1}</b> ${esc(r.team.length > 20 ? r.team.slice(0, 19) + "…" : r.team)}</td>`;
       teams.forEach((colT) => {
         const v = r.vs[colT];
@@ -754,7 +757,7 @@
       const origT = TEAMS.find((x) => x.event_num === curRaceEv && x.team === t);
       return {
         team: t,
-        is_dop: t.includes("Diocese of Pittsburgh"),
+        is_dop: (t.includes("Pittsburgh CYO") || t.includes("Diocese of Pittsburgh")),
         is_target: t === targetTeam,
         score,
         sixth,
@@ -964,14 +967,15 @@
 
     const svg = d3.select(box).append("svg").attr("viewBox", `0 0 ${W} ${H}`).style("width", "100%");
     const x = d3.scaleLinear().domain([0, 100]).range([m.l, W - m.r]);
-    const y = d3.scaleBand().domain(rows.map((d) => `${d.event_short} · ${d.team.replace("Diocese of Pittsburgh", "DoP")}`)).range([m.t, H - m.b]).padding(0.28);
+    const shortDop = (t) => t.replace("Pittsburgh CYO", "Pgh CYO").replace("Diocese of Pittsburgh", "DoP");
+    const y = d3.scaleBand().domain(rows.map((d) => `${d.event_short} · ${shortDop(d.team)}`)).range([m.t, H - m.b]).padding(0.28);
 
     svg.append("g").attr("transform", `translate(0,${H - m.b})`)
       .call(d3.axisBottom(x).ticks(5).tickFormat((d) => `${d}%`))
       .call((g) => g.selectAll("text").attr("fill", "var(--muted)").style("font-family", "var(--font-mono)"));
 
     rows.forEach((r) => {
-      const lbl = `${r.event_short} · ${r.team.replace("Diocese of Pittsburgh", "DoP")}`;
+      const lbl = `${r.event_short} · ${shortDop(r.team)}`;
       const yy = y(lbl);
       const hHalf = y.bandwidth() / 2;
 
@@ -1003,8 +1007,15 @@
         .text(`${r.nat.podium_prob.toFixed(0)}%P / ${r.cyo.win_prob.toFixed(0)}%CYO`);
     });
 
+    const topCyo = rows.filter((r) => r.scores_official_team && r.cyo)
+      .slice().sort((a, b) => b.cyo.win_prob - a.cyo.win_prob).slice(0, 4);
+    const topNat = rows.filter((r) => r.scores_official_team && r.nat)
+      .slice().sort((a, b) => b.nat.podium_prob - a.nat.podium_prob).slice(0, 3);
     document.getElementById("dopSquadDualSo").innerHTML =
-      `<b>Red = Open National Top-3 Trophy % · Purple = CYO National Championship Win %:</b> Best Open Trophy shots are <b>6–8 Girls (100%)</b>, <b>13–14 Boys (71.5%)</b>, <b>11–12 Boys (42.8%)</b>, and <b>9–10 Girls A (35.0%)</b>.`;
+      `<b>Red = Open National Top-3 Trophy % · Purple = CYO National Championship Win %:</b> Top CYO Title shots: ` +
+      topCyo.map((r) => `<b>${r.event_short} (${r.cyo.win_prob.toFixed(1)}%)</b>`).join(", ") +
+      ` · Top National Open Trophy shots: ` +
+      topNat.map((r) => `<b>${r.event_short} (${r.nat.podium_prob.toFixed(1)}%)</b>`).join(", ") + `.`;
   }
 
   function renderDopPackLadderChart(dopTeams) {
@@ -1020,14 +1031,15 @@
     const allAths = rows.flatMap((t) => t.runner_ids.map((id) => ATH_MAP[id]));
     const paces = allAths.map((a) => a.proj_time_sec / (EV_MAP[a.event_num].dist_m / 1609.344));
     const x = d3.scaleLinear().domain([d3.min(paces) - 12, d3.max(paces) + 15]).range([m.l, W - m.r]);
-    const y = d3.scaleBand().domain(rows.map((r) => `${r.event_short} · ${r.team.replace("Diocese of Pittsburgh", "DoP")}`)).range([m.t, H - m.b]).padding(0.3);
+    const shortDop2 = (t) => t.replace("Pittsburgh CYO", "Pgh CYO").replace("Diocese of Pittsburgh", "DoP");
+    const y = d3.scaleBand().domain(rows.map((r) => `${r.event_short} · ${shortDop2(r.team)}`)).range([m.t, H - m.b]).padding(0.3);
 
     svg.append("g").attr("transform", `translate(0,${H - m.b})`)
       .call(d3.axisBottom(x).ticks(7).tickFormat((s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}/mi`))
       .call((g) => g.selectAll("text").attr("fill", "var(--muted)").style("font-family", "var(--font-mono)"));
 
     rows.forEach((r) => {
-      const lbl = `${r.event_short} · ${r.team.replace("Diocese of Pittsburgh", "DoP")}`;
+      const lbl = `${r.event_short} · ${shortDop2(r.team)}`;
       const cy = y(lbl) + y.bandwidth() / 2;
       const aths = r.runner_ids.map((id) => ATH_MAP[id]).sort((a, b) => a.proj_time_sec - b.proj_time_sec);
       const ps = aths.map((a) => a.proj_time_sec / (r.dist_m / 1609.344));
@@ -1119,7 +1131,7 @@
       return `
         <tr class="row-click" onclick="window.location.href='runners.html?id=${a.id}'">
           <td><b>${esc(a.display_name)}</b></td>
-          <td class="mono">${esc(a.team.replace("Diocese of Pittsburgh", "DoP"))}</td>
+          <td class="mono">${esc(a.team.replace("Pittsburgh CYO", "Pgh CYO").replace("Diocese of Pittsburgh", "DoP"))}</td>
           <td>${esc(EV_MAP[a.event_num].short)}</td>
           <td class="num">${a.age}</td>
           <td>${esc(a.home_school || "—")}</td>
@@ -1142,7 +1154,7 @@
   let clubCatFilter = "ALL";
   let clubStateFilter = "ALL";
   let clubQuery = "";
-  let selectedClubOrg = urlParams.get("org") || "Diocese of Pittsburgh";
+  let selectedClubOrg = urlParams.get("org") || (CLUBS.find((c) => c.is_dop)?.org || "Pittsburgh CYO");
 
   function initClubsPage() {
     const realClubs = CLUBS.filter((c) => c.org !== "Unattached");
@@ -1204,7 +1216,7 @@
       .on("click", (_, d) => { selectedClubOrg = d.org; renderClubInspector(d.org); document.getElementById("clubDetailSection").scrollIntoView({ behavior: "smooth" }); });
 
     // Direct labels for largest / top clubs
-    realClubs.filter((d) => d.runners_count >= 25 || d.exp_age_all_americans >= 12 || d.is_dop).forEach((d) => {
+    realClubs.filter((d) => d.runners_count >= 52 || d.exp_age_all_americans >= 18 || d.is_dop).forEach((d) => {
       svg.append("text")
         .attr("x", x(d.runners_count))
         .attr("y", y(d.exp_age_all_americans) - r(d.exp_national_podiums) - 4)
@@ -1213,28 +1225,32 @@
         .text(d.org.length > 18 ? d.org.slice(0, 17) + "…" : d.org);
     });
 
+    const top4 = realClubs.slice(0, 4);
     document.getElementById("clubBubbleSo").innerHTML =
-      `<b>Delegation Giants:</b> <b>CRC Grasshoppers (66)</b>, <b>Diocese of Pittsburgh (63)</b>, <b>Buckeye Racers (54)</b>, and <b>Columbus CYO (47)</b> bring the four largest national delegations.`;
+      `<b>Delegation Giants:</b> ` + top4.map((c) => `<b>${esc(c.org)} (${c.runners_count})</b>`).join(", ") +
+      ` headline the ${realClubs.length}-organization national field, with <b>Pittsburgh CYO (${DATA.meta.dop_runners})</b> anchoring the Western PA Catholic delegation.`;
   }
 
   function renderCyoOmnium(realClubs) {
     const box = document.getElementById("cyoOmniumWrap");
     const cyoOrgs = realClubs.filter((c) => c.is_cyo).sort((a, b) => b.runners_count - a.runners_count);
+    const cyoWithTitles = cyoOrgs.map((c) => ({
+      ...c,
+      cyoWins: TEAMS.filter((t) => t.base_org === c.org && t.scores_official_team && t.cyo)
+        .reduce((s, t) => s + t.cyo.win_prob / 100, 0),
+    })).sort((a, b) => b.cyoWins - a.cyoWins || b.runners_count - a.runners_count);
     box.innerHTML = `<div class="tablewrap"><table><thead><tr>
       <th>CYO / Catholic Program</th><th>State</th><th class="num">Runners</th><th class="num">Squads</th><th class="num">Proj CYO Titles</th><th class="num">Exp Age AAs</th>
-    </tr></thead><tbody>` + cyoOrgs.map((c) => {
-      const cyoWins = TEAMS.filter((t) => t.base_org === c.org && t.scores_official_team && t.cyo)
-        .reduce((s, t) => s + t.cyo.win_prob / 100, 0);
-      return `<tr class="row-click ${c.is_dop ? "row-dop" : ""}" onclick="window.selectClub('${esc(c.org)}')">
+    </tr></thead><tbody>` + cyoWithTitles.map((c) => `
+      <tr class="row-click ${c.is_dop ? "row-dop" : ""}" onclick="window.selectClub('${esc(c.org)}')">
         <td><b>${esc(c.org)}</b></td>
         <td>${c.state}</td>
         <td class="num"><b>${c.runners_count}</b></td>
         <td class="num">${c.scoring_squads}</td>
-        <td class="num"><b>${cyoWins.toFixed(2)}</b></td>
+        <td class="num"><b>${c.cyoWins.toFixed(2)}</b></td>
         <td class="num">${c.exp_age_all_americans.toFixed(1)}</td>
-      </tr>`;
-    }).join("") + `</tbody></table></div>
-    <p class="so"><b>Pittsburgh vs. Columbus CYO Showdown:</b> Diocese of Pittsburgh (63 runners, 9 scoring squads) and Columbus CYO (47 runners, 6 scoring squads) clash head-to-head in 5 divisions, with their tightest duel in <b>Boys 11–12 3K</b> (Columbus CYO 57% vs. Pittsburgh 36% vs. Greensburg CYO 7%).</p>`;
+      </tr>`).join("") + `</tbody></table></div>
+    <p class="so"><b>CYO National Cup Showdown:</b> <b>${cyoOrgs.length} Catholic dioceses &amp; parishes</b> bring <b>${fmtInt(cyoOrgs.reduce((s, c) => s + c.runners_count, 0))} runners</b>, led by ${cyoWithTitles.slice(0, 3).map((c) => `<b>${esc(c.org)} (${c.cyoWins.toFixed(2)} exp titles · ${c.runners_count} rnrs)</b>`).join(", ")}.</p>`;
   }
 
   function renderClubHeatmap(realClubs) {
