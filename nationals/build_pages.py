@@ -61,7 +61,7 @@ HUB_BODY = """
     <p class="lede">Pre-race analytical forecast, 10,000-trial Monte Carlo simulation engine, and scouting database for today's 2,617-runner national championship at Cedarville University's Elvin R. King Cross Country Course. Switch anytime between <b>National Open Scoring</b> (all 91 organizations) and <b>CYO National Championship Scoring</b> (10 Catholic diocesan &amp; parish programs).</p>
     <div class="ctl" style="margin-bottom:0">
       <a class="pill pill-dop" aria-pressed="true" href="results.html">2026 Actuals vs. Predictions &amp; Aquinas Breakdown &#8594;</a>
-      <a class="pill pill-cyo" href="data/pdfs/Aquinas_Academy_2026_CCCNYC_Post_Race_Report.pdf" target="_blank">Download Aquinas Academy Post-Race PDF (6 Pages)</a>
+      <a class="pill pill-cyo" href="data/pdfs/Aquinas_Academy_2026_CCCNYC_Post_Race_Report.pdf" target="_blank">Download Aquinas Academy Post-Race PDF (15 Pages)</a>
       <a class="pill" href="diocese.html">Pittsburgh CYO Command Center (64 Runners) &#8594;</a>
       <a class="pill" href="races.html">11-Race Simulator &#8594;</a>
       <a class="pill" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Pre-Race Briefing PDF (15 Pages)</a>
@@ -254,7 +254,7 @@ DIOCESE_BODY = """
     <p class="lede">Every single one of the <b>64 Diocese of Pittsburgh athletes</b> (officially listed as <b>Pittsburgh CYO</b>, including late race-day Boys 6–8 addition <b>Diego Victor</b>) was matched to their complete 2026 Western PA Cross Country season resume (averaging 6.2 races per athlete) and Oct 17 Diocesan Championship split—unlocking exact parish feeder pipelines, 10 complete scoring squads across all 8 youth divisions, CYO title odds against Philadelphia, Toledo, LA &amp; Columbus CYO, and single-year birth-age All-American projections.</p>
     <div class="ctl" style="margin-bottom:0">
       <a class="pill pill-dop" aria-pressed="true" href="results.html">View 2026 Actuals vs. Predictions (15 Pgh CYO All-Americans!) &#8594;</a>
-      <a class="pill pill-cyo" href="data/pdfs/Aquinas_Academy_2026_CCCNYC_Post_Race_Report.pdf" target="_blank">Download Aquinas Academy Post-Race PDF (6 Pages) &#8599;</a>
+      <a class="pill pill-cyo" href="data/pdfs/Aquinas_Academy_2026_CCCNYC_Post_Race_Report.pdf" target="_blank">Download Aquinas Academy Post-Race PDF (15 Pages) &#8599;</a>
       <a class="pill" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Pre-Race Briefing PDF (15 Pages) &#8599;</a>
     </div>
   </div>
@@ -491,7 +491,7 @@ RESULTS_BODY = """
     <h1>2026 Cedarville Actuals vs. Predictions &amp; Aquinas Academy Breakdown</h1>
     <p class="lede">Auditing our 10,000-trial pre-race Monte Carlo forecast against all <b>2,441 official Cedarville finishers</b> (<b>2,424 matched · 99.3%</b>). Highlighting <b>Aquinas Academy's 11/11 finishers</b> (3 National All-Americans, <b>-24.0s</b> median beat!), <b>Diego Victor's #9 Age-6 All-American medal &amp; CYO Trophy finish</b>, <b>Marcela Victor's -24.0s / +35-place 3K breakthrough</b>, and our <b>8-for-8 (100%) CYO National Team Champion</b> call!</p>
     <div class="ctl" style="margin-bottom:0">
-      <a class="pill pill-dop" aria-pressed="true" href="data/pdfs/Aquinas_Academy_2026_CCCNYC_Post_Race_Report.pdf" target="_blank">Download Aquinas Academy Post-Race PDF Report (6 Pages) &#8599;</a>
+      <a class="pill pill-dop" aria-pressed="true" href="data/pdfs/Aquinas_Academy_2026_CCCNYC_Post_Race_Report.pdf" target="_blank">Download Aquinas Academy Post-Race PDF Report (15 Pages) &#8599;</a>
       <a class="pill" href="https://finishtiming.trackscoreboard.com/meets/10720716/events" target="_blank">Official FinishTiming Results &#8599;</a>
       <a class="pill" href="data/actuals_2026/predicted_vs_actual_2026.json" download>Download Full Actuals vs. Pred JSON</a>
     </div>
