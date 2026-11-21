@@ -368,10 +368,15 @@
     "Tailwind TC": { city: "White Plains, NY", lon: -73.763, lat: 41.034 },
   };
 
+  const usaMapState = {}; // containerId -> { view: 'usa' | 'core', selected: null | { type, title, subtitle, html, actionHref, actionLabel, accent } }
+  const CORE_ZOOM_STATES = new Set(["KS","OK","MO","MN","IA","WI","IL","IN","MI","OH","KY","TN","AL","GA","PA","NY","NJ","MD","DE","VA","WV","DC","NC","SC","AR","NE"]);
+  const STATE_LABEL_SKIP = new Set(["DE","MD","NJ","DC","RI","CT","MA","VT","NH"]);
+
   function renderUsaMap(containerId, soId, opts = {}) {
     const box = document.getElementById(containerId);
     const geo = window.US_STATES_GEO;
     if (!box || !geo) return;
+    const stObj = (usaMapState[containerId] = usaMapState[containerId] || { view: "usa", selected: null });
     box.innerHTML = "";
 
     const isDark =
@@ -387,13 +392,32 @@
       (stateClubs[c.state] = stateClubs[c.state] || []).push(c);
     });
     const maxStateRunners = d3.max(Object.values(stateTotals)) || 1;
+    const bermudaClub = CLUBS.find((c) => c.state === "INTL");
 
     // Sequential shade scale: lighter = fewer runners, darker = more runners!
     const colorScale = isDark
-      ? d3.scaleSequential((t) => d3.interpolateYlGnBu(0.18 + 0.80 * Math.pow(t, 0.58))).domain([0, maxStateRunners])
-      : d3.scaleSequential((t) => d3.interpolateBlues(0.16 + 0.80 * Math.pow(t, 0.55))).domain([0, maxStateRunners]);
-    const emptyStateFill = isDark ? "#20221e" : "#efede6";
+      ? d3.scaleSequential((t) => d3.interpolateYlGnBu(0.20 + 0.78 * Math.pow(t, 0.56))).domain([0, maxStateRunners])
+      : d3.scaleSequential((t) => d3.interpolateBlues(0.18 + 0.78 * Math.pow(t, 0.55))).domain([0, maxStateRunners]);
+    const emptyStateFill = isDark ? "#20221e" : "#eeece4";
     const borderStroke = isDark ? "#383b34" : "#ffffff";
+
+    // Top map controls: Full USA vs Midwest & East Focus + Bermuda pill
+    const ctlRow = document.createElement("div");
+    ctlRow.className = "map-ctl-row";
+    ctlRow.innerHTML = `
+      <div style="display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <button class="pill" data-mview="usa" aria-pressed="${stObj.view === "usa"}">Full USA (20 States)</button>
+        <button class="pill" data-mview="core" aria-pressed="${stObj.view === "core"}">Zoom: Midwest &amp; East</button>
+      </div>
+      ${bermudaClub ? `<button class="pill" id="${containerId}_bermudaBtn" style="font-size:11.5px;padding:3px 10px" title="International delegation">&#127758; Bermuda (${bermudaClub.runners_count} rnrs)</button>` : ""}
+    `;
+    box.appendChild(ctlRow);
+    ctlRow.querySelectorAll("button[data-mview]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        stObj.view = btn.dataset.mview;
+        renderUsaMap(containerId, soId, opts);
+      });
+    });
 
     // Aggregate club cities into clean dot markers
     const cityMap = {};
@@ -417,22 +441,112 @@
       if (c.is_dop) entry.hasDop = true;
       if (c.is_cyo) entry.hasCyo = true;
     });
-    const cityPoints = Object.values(cityMap).sort((a, b) => b.runners - a.runners);
-    const maxCityRunners = d3.max(cityPoints, (d) => d.runners) || 1;
-    const dotRadius = d3.scaleSqrt().domain([1, maxCityRunners]).range([3.4, 11.5]);
+    const isCore = stObj.view === "core";
+    const cityPoints = Object.values(cityMap)
+      .filter((pt) => !isCore || CORE_ZOOM_STATES.has(pt.state))
+      .sort((a, b) => b.runners - a.runners);
+    const maxCityRunners = d3.max(Object.values(cityMap), (d) => d.runners) || 1;
+    const dotRadius = d3.scaleSqrt().domain([1, maxCityRunners]).range(isCore ? [3.4, 8.6] : [2.5, 6.8]);
 
     const W = 820;
-    const H = 485;
-    const svg = d3.select(box).append("svg")
-      .attr("viewBox", `0 0 ${W} ${H}`)
-      .style("width", "100%")
-      .style("height", "auto")
-      .style("display", "block");
-
-    const projection = d3.geoAlbersUsa().fitExtent([[14, 10], [W - 14, H - 14]], geo);
+    const H = 490;
+    const fitGeo = isCore
+      ? { type: "FeatureCollection", features: geo.features.filter((f) => CORE_ZOOM_STATES.has(f.properties.code)) }
+      : geo;
+    const projection = d3.geoAlbers().fitExtent([[14, 12], [W - 14, H - 12]], fitGeo);
     const path = d3.geoPath().projection(projection);
 
-    // 1. State Choropleth Polygons
+    const svg = d3.select(box).append("svg")
+      .attr("class", "usa-map-svg")
+      .attr("viewBox", `0 0 ${W} ${H}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+
+    // Helper to update tap-to-inspect card cleanly (ideal for mobile touch + desktop click)
+    const tapBox = document.createElement("div");
+    const renderTapCard = () => {
+      const sel = stObj.selected;
+      if (!sel) {
+        tapBox.innerHTML = "";
+        return;
+      }
+      tapBox.innerHTML = `
+        <div class="map-tap-card ${sel.accent || ""}">
+          <div style="min-width:0;flex:1 1 210px">
+            <div style="font-weight:700;color:var(--fg)">${sel.title} <span class="mono muted" style="font-weight:500">${sel.subtitle}</span></div>
+            <div style="color:var(--fg2);margin-top:2px;font-size:12px">${sel.html}</div>
+          </div>
+          ${sel.actionHtml || ""}
+        </div>
+      `;
+    };
+
+    const selectState = (d) => {
+      const st = d.properties.code;
+      const cnt = stateTotals[st] || 0;
+      if (!cnt) return;
+      const cl = (stateClubs[st] || []).slice().sort((a, b) => b.runners_count - a.runners_count);
+      const topTxt = cl.slice(0, 5).map((c) => `<b>${esc(c.org)}</b> (${c.runners_count})`).join(" · ") + (cl.length > 5 ? ` · +${cl.length - 5} more` : "");
+      if (opts.interactiveFilter) {
+        clubStateFilter = clubStateFilter === st ? "ALL" : st;
+        const stSel = document.getElementById("clubStateSel");
+        if (stSel) stSel.value = clubStateFilter;
+        const rst = document.getElementById("clubsMapResetBtn");
+        if (rst) rst.style.display = clubStateFilter === "ALL" ? "none" : "inline-flex";
+        stObj.selected = clubStateFilter === "ALL" ? null : {
+          title: `${esc(d.properties.name)} (${st})`,
+          subtitle: `· ${cnt} runners · ${cl.length} club${cl.length === 1 ? "" : "s"}`,
+          html: topTxt,
+          actionHtml: `<span class="badge b-accent">Filtered Below</span>`,
+        };
+        renderUsaMap(containerId, soId, opts);
+        renderClubsTable();
+      } else {
+        stObj.selected = {
+          title: `${esc(d.properties.name)} (${st})`,
+          subtitle: `· ${cnt} runners · ${cl.length} club${cl.length === 1 ? "" : "s"}`,
+          html: topTxt,
+          actionHtml: `<a class="pill" href="clubs.html?state=${encodeURIComponent(st)}" style="white-space:nowrap">View ${st} Clubs &#8594;</a>`,
+        };
+        renderTapCard();
+      }
+    };
+
+    const selectCity = (pt) => {
+      const sortedC = pt.clubs.slice().sort((a, b) => b.runners_count - a.runners_count);
+      const primary = sortedC[0];
+      const cTxt = sortedC.map((c) => `<b>${esc(c.org)}</b> (${c.runners_count})`).join(" · ");
+      stObj.selected = {
+        title: esc(pt.city),
+        subtitle: `· ${pt.runners} runners`,
+        html: cTxt,
+        accent: pt.hasDop ? "is-dop" : pt.hasCyo ? "is-cyo" : "",
+        actionHtml: opts.interactiveFilter
+          ? `<button class="pill" onclick="window.selectClub('${esc(primary.org)}')" style="white-space:nowrap">Inspect ${esc(primary.org)} &#8594;</button>`
+          : `<a class="pill" href="clubs.html?org=${encodeURIComponent(primary.org)}" style="white-space:nowrap">Club Dossier &#8594;</a>`,
+      };
+      renderTapCard();
+      if (opts.interactiveFilter && primary && typeof window.selectClub === "function") {
+        selectedClubOrg = primary.org;
+        renderClubInspector(primary.org);
+      }
+    };
+
+    if (bermudaClub) {
+      const bBtn = document.getElementById(`${containerId}_bermudaBtn`);
+      if (bBtn) {
+        bBtn.addEventListener("click", () => {
+          stObj.selected = {
+            title: "Hamilton, Bermuda (INTL)",
+            subtitle: `· ${bermudaClub.runners_count} runners`,
+            html: `<b>${esc(bermudaClub.org)}</b> (${bermudaClub.runners_count})`,
+            actionHtml: `<a class="pill" href="clubs.html?org=${encodeURIComponent(bermudaClub.org)}" style="white-space:nowrap">Club Dossier &#8594;</a>`,
+          };
+          renderTapCard();
+        });
+      }
+    }
+
+    // 1. State Choropleth Polygons (clipped cleanly to viewport)
     svg.append("g")
       .selectAll("path")
       .data(geo.features)
@@ -445,8 +559,9 @@
         return cnt > 0 ? colorScale(cnt) : emptyStateFill;
       })
       .attr("stroke", borderStroke)
-      .attr("stroke-width", 0.9)
+      .attr("stroke-width", isCore ? 1.15 : 0.95)
       .on("mousemove", (evt, d) => {
+        if (evt.pointerType === "touch") return;
         const st = d.properties.code;
         const cnt = stateTotals[st] || 0;
         const cl = (stateClubs[st] || []).slice().sort((a, b) => b.runners_count - a.runners_count);
@@ -459,38 +574,72 @@
         );
       })
       .on("mouseleave", hideTip)
-      .on("click", (_, d) => {
-        const st = d.properties.code;
-        if (!stateTotals[st]) return;
-        if (opts.interactiveFilter) {
-          clubStateFilter = clubStateFilter === st ? "ALL" : st;
-          const stSel = document.getElementById("clubStateSel");
-          if (stSel) stSel.value = clubStateFilter;
-          const rst = document.getElementById("clubsMapResetBtn");
-          if (rst) rst.style.display = clubStateFilter === "ALL" ? "none" : "inline-flex";
-          renderUsaMap(containerId, soId, opts);
-          renderClubsTable();
-        } else {
-          window.location.href = `clubs.html?state=${encodeURIComponent(st)}`;
-        }
-      });
+      .on("click", (_, d) => selectState(d));
 
-    // 2. Club City Dots
+    // 2. Clean State Code Labels on Active States (readable at a glance on mobile!)
+    const lblG = svg.append("g").style("pointer-events", "none");
+    geo.features.forEach((f) => {
+      const st = f.properties.code;
+      const cnt = stateTotals[st] || 0;
+      if (!cnt || (!isCore && STATE_LABEL_SKIP.has(st))) return;
+      const cXY = path.centroid(f);
+      if (!cXY || isNaN(cXY[0]) || isNaN(cXY[1]) || cXY[0] < 12 || cXY[0] > W - 12 || cXY[1] < 12 || cXY[1] > H - 12) return;
+      const darkBg = isDark ? cnt < maxStateRunners * 0.35 : cnt >= maxStateRunners * 0.32;
+      lblG.append("text")
+        .attr("x", cXY[0])
+        .attr("y", cXY[1] + 4)
+        .attr("text-anchor", "middle")
+        .attr("font-size", isCore ? 12.5 : 10.5)
+        .attr("font-weight", 700)
+        .style("font-family", "var(--font-mono)")
+        .attr("fill", darkBg ? "rgba(255,255,255,0.88)" : "rgba(21,21,19,0.72)")
+        .text(st);
+    });
+
+    // 3. Club City Dots with lightweight overlap-separation pass so suburban clusters stay crisp!
+    const projectedDots = cityPoints
+      .map((pt) => {
+        const xy = projection([pt.lon, pt.lat]);
+        if (!xy || xy[0] < 6 || xy[0] > W - 6 || xy[1] < 6 || xy[1] > H - 6) return null;
+        return { ...pt, x: xy[0], y: xy[1], ox: xy[0], oy: xy[1], r: dotRadius(pt.runners) };
+      })
+      .filter(Boolean);
+
+    for (let iter = 0; iter < 12; iter++) {
+      for (let i = 0; i < projectedDots.length; i++) {
+        for (let j = i + 1; j < projectedDots.length; j++) {
+          const a = projectedDots[i], b = projectedDots[j];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy) || 0.01;
+          const minD = a.r + b.r + 1.1;
+          if (dist < minD) {
+            const push = (minD - dist) * 0.38;
+            const ux = dx / dist, uy = dy / dist;
+            a.x -= ux * push * 0.45; a.y -= uy * push * 0.45;
+            b.x += ux * push * 0.55; b.y += uy * push * 0.55;
+          }
+        }
+        // Keep softly tethered near real home city
+        const d = projectedDots[i];
+        d.x += (d.ox - d.x) * 0.14;
+        d.y += (d.oy - d.y) * 0.14;
+      }
+    }
+
     const dotG = svg.append("g");
-    cityPoints.forEach((pt) => {
-      const xy = projection([pt.lon, pt.lat]);
-      if (!xy) return;
+    projectedDots.forEach((pt) => {
       const fillCol = pt.hasDop ? "#c43225" : pt.hasCyo ? "#7c3aed" : "#f59e0b";
       dotG.append("circle")
         .attr("class", "city-dot")
-        .attr("cx", xy[0])
-        .attr("cy", xy[1])
-        .attr("r", dotRadius(pt.runners))
+        .attr("cx", pt.x)
+        .attr("cy", pt.y)
+        .attr("r", pt.r)
         .attr("fill", fillCol)
-        .attr("fill-opacity", 0.88)
+        .attr("fill-opacity", 0.90)
         .attr("stroke", isDark ? "#111210" : "#ffffff")
-        .attr("stroke-width", 1.35)
+        .attr("stroke-width", isCore ? 1.35 : 1.05)
         .on("mousemove", (evt) => {
+          if (evt.pointerType === "touch") return;
           const cLines = pt.clubs
             .slice()
             .sort((a, b) => b.runners_count - a.runners_count)
@@ -505,72 +654,58 @@
         .on("mouseleave", hideTip)
         .on("click", (evt) => {
           evt.stopPropagation();
-          const primary = pt.clubs.slice().sort((a, b) => b.runners_count - a.runners_count)[0];
-          if (!primary) return;
-          if (opts.interactiveFilter && typeof window.selectClub === "function") {
-            window.selectClub(primary.org);
-          } else {
-            window.location.href = `clubs.html?org=${encodeURIComponent(primary.org)}`;
-          }
+          selectCity(pt);
         });
     });
 
-    // 3. Meet Venue Star Pin: Cedarville University, OH (-83.806, 39.741)
+    // 4. Meet Venue Star Pin: Cedarville University, OH (-83.806, 39.741)
     const cedXY = projection([-83.806, 39.741]);
     if (cedXY) {
-      const starPath = d3.symbol().type(d3.symbolStar).size(150)();
+      const starPath = d3.symbol().type(d3.symbolStar).size(isCore ? 175 : 130)();
       svg.append("path")
         .attr("d", starPath)
         .attr("transform", `translate(${cedXY[0]},${cedXY[1]})`)
         .attr("fill", "#ffd43b")
         .attr("stroke", "#151513")
-        .attr("stroke-width", 1.4)
+        .attr("stroke-width", 1.3)
         .style("cursor", "pointer")
         .on("mousemove", (evt) => showTip(evt,
           `<b>★ Cedarville University, OH</b><br>Elvin R. King Cross Country Course<br>2026 CCCNYC &amp; CYO Nationals Venue`
         ))
-        .on("mouseleave", hideTip);
-    }
-
-    // 4. Bermuda International Inset (lower-right Atlantic corner)
-    const bermudaClub = CLUBS.find((c) => c.state === "INTL");
-    if (bermudaClub) {
-      const bx = W - 122, by = H - 62;
-      const bgG = svg.append("g").style("cursor", "pointer")
-        .on("mousemove", (evt) => showTip(evt, `<b>Hamilton, Bermuda (INTL)</b><br>• ${esc(bermudaClub.org)}: <b class="mono">${bermudaClub.runners_count} runners</b>`))
         .on("mouseleave", hideTip)
-        .on("click", () => {
-          if (opts.interactiveFilter && typeof window.selectClub === "function") window.selectClub(bermudaClub.org);
-          else window.location.href = `clubs.html?org=${encodeURIComponent(bermudaClub.org)}`;
+        .on("click", (evt) => {
+          evt.stopPropagation();
+          stObj.selected = {
+            title: "★ Cedarville University, OH",
+            subtitle: "· Championship Host Venue",
+            html: "Elvin R. King Cross Country Course · 251 N. Main St., Cedarville, OH",
+            actionHtml: "",
+          };
+          renderTapCard();
         });
-      bgG.append("rect")
-        .attr("x", bx).attr("y", by).attr("width", 108).attr("height", 44).attr("rx", 7)
-        .attr("fill", isDark ? "#1e201c" : "#f3f1ea")
-        .attr("stroke", "var(--line-strong)").attr("stroke-dasharray", "3,2");
-      bgG.append("circle").attr("cx", bx + 18).attr("cy", by + 22).attr("r", 4.5)
-        .attr("fill", "#f59e0b").attr("stroke", isDark ? "#111210" : "#ffffff").attr("stroke-width", 1.2);
-      bgG.append("text").attr("x", bx + 30).attr("y", by + 19).attr("font-size", 10.5).attr("font-weight", 700).attr("fill", "var(--fg)").text("Bermuda");
-      bgG.append("text").attr("x", bx + 30).attr("y", by + 33).attr("font-size", 10).style("font-family", "var(--font-mono)").attr("fill", "var(--muted)").text(`${bermudaClub.runners_count} rnrs (INTL)`);
     }
 
-    // 5. Legend bar (State Color Ramp + City Dot Legend)
+    // 5. Tap-to-Inspect Card container + Legend Bar
+    box.appendChild(tapBox);
+    renderTapCard();
+
     const gradStops = [0, 0.2, 0.4, 0.6, 0.8, 1.0].map((t) => colorScale(t * maxStateRunners)).join(", ");
     const legDiv = document.createElement("div");
     legDiv.className = "map-legend-bar";
     legDiv.innerHTML = `
       <div class="map-legend-group">
         <span style="font-weight:600">State Runners:</span>
-        <span class="mono" style="font-size:11px">0</span>
-        <span style="display:inline-block;width:11px;height:11px;border-radius:2px;background:${emptyStateFill};border:1px solid var(--line-strong)"></span>
-        <span class="mono" style="font-size:11px">1</span>
-        <span style="display:inline-block;width:110px;height:11px;border-radius:3px;background:linear-gradient(90deg, ${gradStops});border:1px solid var(--line-strong)"></span>
-        <span class="mono" style="font-size:11px">${maxStateRunners}</span>
+        <span class="mono" style="font-size:10.5px">0</span>
+        <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${emptyStateFill};border:1px solid var(--line-strong)"></span>
+        <span class="mono" style="font-size:10.5px">1</span>
+        <span style="display:inline-block;width:92px;height:10px;border-radius:3px;background:linear-gradient(90deg, ${gradStops});border:1px solid var(--line-strong)"></span>
+        <span class="mono" style="font-size:10.5px">${maxStateRunners}</span>
       </div>
       <div class="map-legend-group">
-        <span><span class="map-swatch" style="background:#f59e0b"></span>Youth/School Club City</span>
+        <span><span class="map-swatch" style="background:#f59e0b"></span>Club City</span>
         <span><span class="map-swatch" style="background:#7c3aed"></span>CYO City</span>
-        <span><span class="map-swatch" style="background:#c43225"></span>Pittsburgh CYO</span>
-        <span><b style="color:#d49b00">&#9733;</b> Cedarville Venue</span>
+        <span><span class="map-swatch" style="background:#c43225"></span>Pgh CYO</span>
+        <span><b style="color:#d49b00">&#9733;</b> Cedarville</span>
       </div>
     `;
     box.appendChild(legDiv);
@@ -581,7 +716,7 @@
       const topStates = Object.entries(stateTotals).sort((a, b) => b[1] - a[1]);
       const top5Txt = topStates.slice(0, 5).map(([st, cnt]) => `<b>${st} (${cnt})</b>`).join(", ");
       soEl.innerHTML =
-        `<b>Coast-to-Coast Draw (${topStates.length} States + Bermuda · ${cityPoints.length} Cities):</b> Top delegations come from ${top5Txt}, with national travelers stretching from <b>California (${stateTotals.CA || 0})</b> and <b>Colorado (${stateTotals.CO || 0})</b> to <b>New Jersey (${stateTotals.NJ || 0})</b>, <b>Delaware (${stateTotals.DE || 0})</b>, and <b>Bermuda (2)</b>.`;
+        `<b>Coast-to-Coast Draw (${topStates.length} States + Bermuda · ${Object.keys(cityMap).length} Cities):</b> Top delegations come from ${top5Txt}. Tap any state or dot to inspect clubs, or switch to <b>Zoom: Midwest &amp; East</b> on mobile.`;
     }
   }
 
