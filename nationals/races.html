@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>2026 CCCNYC &amp; CYO Nationals · Race Simulator (8 Divisions)</title>
+<title>2026 CCCNYC &amp; CYO Nationals · Race Simulator (11 Divisions)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261120-v4">
+<link rel="stylesheet" href="styles.css?v=20261120-v3">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body data-page="races">
@@ -14,10 +14,10 @@
 <nav class="sitenav">
   <span class="nav-brand">&#9670; CCCNYC / CYO '26</span>
   <a href="index.html" >Meet Hub &amp; Course</a>
-  <a href="races.html" aria-current="page">Race Simulator (8)</a>
-  <a href="diocese.html" >Pittsburgh CYO (54)</a>
-  <a href="clubs.html" >Schools &amp; Clubs (90)</a>
-  <a href="runners.html" >Runners &amp; Dossiers (2,133)</a>
+  <a href="races.html" aria-current="page">Race Simulator (11)</a>
+  <a href="diocese.html" >Pittsburgh CYO (63)</a>
+  <a href="clubs.html" >Schools &amp; Clubs (91)</a>
+  <a href="runners.html" >Runners &amp; Dossiers (2,616)</a>
   <span class="nav-right">
     <button id="globalScoringBtn" class="pill pill-cyo" aria-pressed="false" title="Toggle between Full National Open scoring and CYO Catholic/Diocesan scoring">Lens: National Open</button>
     <button id="themeBtn" class="pill" style="font-size:11.5px;padding:3px 9px">Theme: auto</button>
@@ -27,9 +27,9 @@
 
 <div class="wrap">
 
-  <div class="eyebrow">10,000-Trial Monte Carlo Engine · Ages 9–18 (8 Championship Races) · Team Score Fans, Ridgelines &amp; Sandbox</div>
+  <div class="eyebrow">10,000-Trial Monte Carlo Engine · Team Score Fans, Ridgelines, S-Curves &amp; What-If Sandbox</div>
   <h1>Race-by-Race Simulator &amp; Tactical Breakdown</h1>
-  <p class="lede">Select any of the 8 Ages 9–18 championship races to inspect team win &amp; trophy probabilities, scoring pack mile-pace ridgelines, full-field rank-vs-time S-curves, pairwise head-to-head matrices, and an interactive Coach's What-If Sandbox.</p>
+  <p class="lede">Select any of the 11 championship races to inspect team win &amp; trophy probabilities, scoring pack mile-pace ridgelines, full-field rank-vs-time S-curves, pairwise head-to-head matrices, and an interactive Coach's What-If Sandbox.</p>
 
   <div class="ctl-bar">
     <span class="ctl-label">Select Race</span>
@@ -62,7 +62,7 @@
     <div class="two">
       <div class="card">
         <h2 id="scurveRaceTitle">Projected finish S-curve &amp; traffic density</h2>
-        <p class="sub">Every runner plotted by Expected Place (X) vs Projected Finish Time (Y) with P10–P90 uncertainty whiskers. Red dots highlight Pittsburgh CYO; purple dots mark other CYO runners.</p>
+        <p class="sub">Every runner plotted by Expected Place (X) vs Projected Finish Time (Y) with P10–P90 uncertainty whiskers. Red dots highlight Diocese of Pittsburgh; purple dots mark other CYO runners.</p>
         <div id="raceScurveChart"></div>
         <p class="so" id="raceScurveSo"></p>
       </div>
@@ -91,7 +91,7 @@
         </div>
         <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
           <input type="checkbox" id="sandboxAdd5thChk">
-          <span>Simulate 5th scorer if roster has 4 runners</span>
+          <span>Simulate 5th scorer if roster has 4 runners (e.g. DoP Boys 6–8)</span>
         </label>
         <button class="pill" id="sandboxResetBtn">Reset Sandbox</button>
       </div>
@@ -139,7 +139,7 @@
   <footer class="foot">
     <div>
       <b>2026 Cross Country Coaches National Youth Championships (20th Edition) &amp; CYO Nationals</b> · Saturday, Nov 21, 2026 · Elvin R. King XC Course, Cedarville University, OH.<br>
-      Dashboard scoped to <b>Ages 9–18 (8 championship races · 2,133 runners · 1,886 / 88.4% empirical seeds)</b> from the official <a href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">Final Entry List PDF (Nov 20)</a>; full 11-event archive preserved in downloadable CSV/JSON exports (10,000 Monte Carlo trials per race).
+      Updated from the official <a href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">Final Entry List PDF (Nov 20 · 2,617 entries)</a>, cross-referenced against 2,226 empirical race histories (85.1% overall · 90.2% ages 9–14) across 20 states + Bermuda (10,000 Monte Carlo trials per race).
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
       <a class="pill" href="data/cccnyc_2026_runner_predictions.csv" download>Runner Predictions CSV</a>
@@ -150,7 +150,7 @@
 </div>
 
 <div id="d3Tooltip" class="d3-tip"></div>
-<script src="data/data.js?v=20261120-v4"></script>
-<script src="app.js?v=20261120-v4"></script>
+<script src="data/data.js?v=20261120-v3"></script>
+<script src="app.js?v=20261120-v3"></script>
 </body>
 </html>
