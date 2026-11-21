@@ -22,6 +22,29 @@
   const urlParams = new URLSearchParams(window.location.search);
 
   // Helpers
+  const TEAM_STATE_MAP = {};
+  CLUBS.forEach((c) => { if (c.org && c.state) TEAM_STATE_MAP[c.org] = c.state; });
+  TEAMS.forEach((t) => { if (t.team && t.state) TEAM_STATE_MAP[t.team] = t.state; });
+  ATHLETES.forEach((a) => { if (a.team && a.club_state) TEAM_STATE_MAP[a.team] = a.club_state; });
+  const fmtClub = (name, state) => {
+    if (!name || name === "Unattached") return name || "";
+    const st = state || TEAM_STATE_MAP[name] || "";
+    if (!st || st === "USA") return name;
+    const tag = st === "INTL" ? "BM" : st;
+    if (name.endsWith(`(${tag})`) || name.endsWith(`(${st})`)) return name;
+    return `${name} (${tag})`;
+  };
+  const fmtClubTrunc = (name, state, maxLen = 24) => {
+    if (!name || name === "Unattached") return name || "";
+    const st = state || TEAM_STATE_MAP[name] || "";
+    const tag = st === "INTL" ? "BM" : st;
+    const suf = (tag && tag !== "USA") ? ` (${tag})` : "";
+    const full = suf && !name.endsWith(suf) ? `${name}${suf}` : name;
+    if (full.length <= maxLen) return full;
+    if (!suf) return full.slice(0, maxLen - 1) + "…";
+    const baseMax = Math.max(7, maxLen - suf.length - 1);
+    return `${name.slice(0, baseMax)}…${suf}`;
+  };
   const fmtInt = (n) => (n == null || isNaN(n) ? "—" : Number(n).toLocaleString());
   const fmtTime = (sec) => {
     if (sec == null || isNaN(sec)) return "—";
@@ -180,7 +203,7 @@
           const st = t[scoringLens];
           const medal = idx === 0 ? "&#129351;" : idx === 1 ? "&#129352;" : "&#129353;";
           const cls = t.is_dop ? "dop-txt" : t.is_cyo ? "cyo-txt" : "";
-          return `<div class="ev-pod-line"><span class="${cls}" style="overflow:hidden;text-overflow:ellipsis">${medal} ${esc(t.team)}</span><span class="mono">${st.exp_score}p (${st.win_prob}%W)</span></div>`;
+          return `<div class="ev-pod-line"><span class="${cls}" style="overflow:hidden;text-overflow:ellipsis">${medal} ${esc(fmtClub(t.team, t.state))}</span><span class="mono">${st.exp_score}p (${st.win_prob}%W)</span></div>`;
         }).join("");
       }
 
@@ -205,7 +228,7 @@
           </div>
           <div class="ev-title">${esc(ev.name)}</div>
           <div style="border-top:1px solid var(--line);padding-top:6px">${teamLines}</div>
-          ${favAth ? `<div style="font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:5px">Indiv Fav: <b style="color:var(--fg)">${esc(favAth.display_name)}</b> (${esc(favAth.team)}) · <span class="mono">${favAth.proj_time_str}</span></div>` : ""}
+          ${favAth ? `<div style="font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:5px">Indiv Fav: <b style="color:var(--fg)">${esc(favAth.display_name)}</b> · ${esc(fmtClub(favAth.team, favAth.club_state))} · <span class="mono">${favAth.proj_time_str}</span></div>` : ""}
           ${dopNote}
         </div>
       `;
@@ -485,7 +508,7 @@
       const cnt = stateTotals[st] || 0;
       if (!cnt) return;
       const cl = (stateClubs[st] || []).slice().sort((a, b) => b.runners_count - a.runners_count);
-      const topTxt = cl.slice(0, 5).map((c) => `<b>${esc(c.org)}</b> (${c.runners_count})`).join(" · ") + (cl.length > 5 ? ` · +${cl.length - 5} more` : "");
+      const topTxt = cl.slice(0, 5).map((c) => `<b>${esc(fmtClub(c.org, c.state))}</b> · ${c.runners_count}`).join(" · ") + (cl.length > 5 ? ` · +${cl.length - 5} more` : "");
       if (opts.interactiveFilter) {
         clubStateFilter = clubStateFilter === st ? "ALL" : st;
         const stSel = document.getElementById("clubStateSel");
@@ -514,14 +537,14 @@
     const selectCity = (pt) => {
       const sortedC = pt.clubs.slice().sort((a, b) => b.runners_count - a.runners_count);
       const primary = sortedC[0];
-      const cTxt = sortedC.map((c) => `<b>${esc(c.org)}</b> (${c.runners_count})`).join(" · ");
+      const cTxt = sortedC.map((c) => `<b>${esc(fmtClub(c.org, c.state))}</b> · ${c.runners_count}`).join(" · ");
       stObj.selected = {
         title: esc(pt.city),
         subtitle: `· ${pt.runners} runners`,
         html: cTxt,
         accent: pt.hasDop ? "is-dop" : pt.hasCyo ? "is-cyo" : "",
         actionHtml: opts.interactiveFilter
-          ? `<button class="pill" onclick="window.selectClub('${esc(primary.org)}')" style="white-space:nowrap">Inspect ${esc(primary.org)} &#8594;</button>`
+          ? `<button class="pill" onclick="window.selectClub('${esc(primary.org)}')" style="white-space:nowrap">Inspect ${esc(fmtClub(primary.org, primary.state))} &#8594;</button>`
           : `<a class="pill" href="clubs.html?org=${encodeURIComponent(primary.org)}" style="white-space:nowrap">Club Dossier &#8594;</a>`,
       };
       renderTapCard();
@@ -536,9 +559,9 @@
       if (bBtn) {
         bBtn.addEventListener("click", () => {
           stObj.selected = {
-            title: "Hamilton, Bermuda (INTL)",
+            title: "Hamilton, Bermuda (BM)",
             subtitle: `· ${bermudaClub.runners_count} runners`,
-            html: `<b>${esc(bermudaClub.org)}</b> (${bermudaClub.runners_count})`,
+            html: `<b>${esc(fmtClub(bermudaClub.org, bermudaClub.state))}</b> · ${bermudaClub.runners_count}`,
             actionHtml: `<a class="pill" href="clubs.html?org=${encodeURIComponent(bermudaClub.org)}" style="white-space:nowrap">Club Dossier &#8594;</a>`,
           };
           renderTapCard();
@@ -565,7 +588,7 @@
         const st = d.properties.code;
         const cnt = stateTotals[st] || 0;
         const cl = (stateClubs[st] || []).slice().sort((a, b) => b.runners_count - a.runners_count);
-        const topList = cl.slice(0, 4).map((c) => `${esc(c.org)} (${c.runners_count})`).join("<br>");
+        const topList = cl.slice(0, 4).map((c) => `${esc(fmtClub(c.org, c.state))} · ${c.runners_count}`).join("<br>");
         showTip(evt,
           `<b>${esc(d.properties.name)} (${st})</b><br>` +
           (cnt > 0
@@ -643,7 +666,7 @@
           const cLines = pt.clubs
             .slice()
             .sort((a, b) => b.runners_count - a.runners_count)
-            .map((c) => `• ${esc(c.org)}: <b class="mono">${c.runners_count}</b>`)
+            .map((c) => `• ${esc(fmtClub(c.org, c.state))}: <b class="mono">${c.runners_count}</b>`)
             .join("<br>");
           showTip(evt,
             `<b>${esc(pt.city)}</b><br>` +
@@ -952,14 +975,14 @@
         <div class="s">${scoringTeams.length} complete 5+ scoring teams</div>
       </div>
       <div class="kpi kpi-up">
-        <div class="v" style="font-size:17px">${favTeam ? esc(favTeam.team) : "Individual Only"}</div>
+        <div class="v" style="font-size:17px">${favTeam ? esc(fmtClub(favTeam.team, favTeam.state)) : "Individual Only"}</div>
         <div class="l">Projected ${scoringLens === "cyo" ? "CYO" : "National"} Team Favorite</div>
         <div class="s">${favTeam ? `${favTeam[scoringLens].exp_score} pts · ${favTeam[scoringLens].win_prob}% WinProb` : "Fewer than 5 team scorers"}</div>
       </div>
       <div class="kpi kpi-accent">
         <div class="v" style="font-size:17px">${favAth ? esc(favAth.display_name) : "—"}</div>
         <div class="l">Individual Favorite (${favAth ? favAth.proj_time_str : "—"})</div>
-        <div class="s">${favAth ? `${esc(favAth.team)} · ${favAth.win_prob}% Win` : ""}</div>
+        <div class="s">${favAth ? `${esc(fmtClub(favAth.team, favAth.club_state))} · ${favAth.win_prob}% Win` : ""}</div>
       </div>
       <div class="kpi kpi-dop">
         <div class="v" style="font-size:17px">${dopTeams.length ? (dopTeams[0].scores_official_team ? `#${dopTeams[0][scoringLens].exp_rank.toFixed(1)} (${dopTeams[0][scoringLens].podium_prob}% Pod)` : `${dopTeams[0].roster_count} Rnrs (<5)`) : "No DoP Squad"}</div>
@@ -973,7 +996,7 @@
     if (sbSel) {
       const prev = sbSel.value;
       const sbOpts = evTeamsAll.slice().sort((a, b) => (b.is_dop - a.is_dop) || (b.roster_count - a.roster_count));
-      sbSel.innerHTML = sbOpts.map((t) => `<option value="${esc(t.team)}">${esc(t.team)} (${t.roster_count} rnrs)</option>`).join("");
+      sbSel.innerHTML = sbOpts.map((t) => `<option value="${esc(t.team)}">${esc(fmtClub(t.team, t.state))} · ${t.roster_count} rnrs</option>`).join("");
       if (sbOpts.some((t) => t.team === prev)) sbSel.value = prev;
     }
 
@@ -1032,7 +1055,7 @@
         .attr("text-anchor", "end").attr("font-size", 12)
         .attr("font-weight", t.is_dop || idx < 3 ? 600 : 400)
         .attr("fill", t.is_dop ? "var(--dop)" : "var(--fg)")
-        .text(`${idx + 1}. ${t.team.length > 22 ? t.team.slice(0, 21) + "…" : t.team}`);
+        .text(`${idx + 1}. ${fmtClubTrunc(t.team, t.state, 24)}`);
 
       // P10-P90 bar
       svg.append("rect")
@@ -1041,7 +1064,7 @@
         .attr("height", y.bandwidth()).attr("rx", 4)
         .attr("fill", col).attr("opacity", 0.28)
         .on("mousemove", (evt) => showTip(evt,
-          `<b>${esc(t.team)}</b> (${t.state})<br>Expected Score: <b class="mono">${st.exp_score} pts</b> (P10–P90: ${st.p10_score}–${st.p90_score})<br>Win Prob: <b class="mono">${st.win_prob}%</b> · Top-3 Podium: <b class="mono">${st.podium_prob}%</b><br>Top-5 Avg: <span class="mono">${st.top5_avg_str}</span> · 1–5 Spread: <span class="mono">${st.spread_1_5_sec}s</span>`
+          `<b>${esc(fmtClub(t.team, t.state))}</b><br>Expected Score: <b class="mono">${st.exp_score} pts</b> (P10–P90: ${st.p10_score}–${st.p90_score})<br>Win Prob: <b class="mono">${st.win_prob}%</b> · Top-3 Podium: <b class="mono">${st.podium_prob}%</b><br>Top-5 Avg: <span class="mono">${st.top5_avg_str}</span> · 1–5 Spread: <span class="mono">${st.spread_1_5_sec}s</span>`
         ))
         .on("mouseleave", hideTip);
 
@@ -1056,7 +1079,7 @@
     });
 
     const top = rows[0][scoringLens];
-    so.innerHTML = `<b>Key Takeaway:</b> <b>${esc(rows[0].team)}</b> leads with an expected <b>${top.exp_score} pts</b> (${top.win_prob}% win, ${top.spread_1_5_sec}s 1–5 pack spread). Exact team-score ties occur in <b>${top.tiebreak_rate_race}%</b> of simulated races—making 6th-runner displacement decisive.`;
+    so.innerHTML = `<b>Key Takeaway:</b> <b>${esc(fmtClub(rows[0].team, rows[0].state))}</b> leads with an expected <b>${top.exp_score} pts</b> (${top.win_prob}% win, ${top.spread_1_5_sec}s 1–5 pack spread). Exact team-score ties occur in <b>${top.tiebreak_rate_race}%</b> of simulated races—making 6th-runner displacement decisive.`;
   }
 
   function renderRaceRidgeChart(ev, scoringTeams) {
@@ -1117,11 +1140,11 @@
         .attr("text-anchor", "end").attr("font-size", 11.5)
         .attr("font-weight", tp.team.is_dop ? 600 : 400)
         .attr("fill", tp.team.is_dop ? "var(--dop)" : "var(--fg)")
-        .text(tp.team.team.length > 20 ? tp.team.team.slice(0, 19) + "…" : tp.team.team);
+        .text(fmtClubTrunc(tp.team.team, tp.team.state, 22));
     });
 
     const tightest = rows.slice().sort((a, b) => a[scoringLens].spread_1_5_sec - b[scoringLens].spread_1_5_sec)[0];
-    so.innerHTML = `<b>Pack Compression Leader:</b> <b>${esc(tightest.team)}</b> projects the tightest 1–5 scoring window at <b>${tightest[scoringLens].spread_1_5_sec}s</b> (vertical ticks mark each squad's projected Top 5 scorers).`;
+    so.innerHTML = `<b>Pack Compression Leader:</b> <b>${esc(fmtClub(tightest.team, tightest.state))}</b> projects the tightest 1–5 scoring window at <b>${tightest[scoringLens].spread_1_5_sec}s</b> (vertical ticks mark each squad's projected Top 5 scorers).`;
   }
 
   function renderRaceScurveChart(ev, evAths) {
@@ -1160,7 +1183,7 @@
       .attr("opacity", (d) => (d.is_dop ? 1 : 0.72))
       .style("cursor", "pointer")
       .on("mousemove", (evt, d) => showTip(evt,
-        `<b>${esc(d.display_name)}</b> (Age ${d.age})<br>${esc(d.team)}${d.home_school ? ` · ${esc(d.home_school)}` : ""}<br>Proj: <b class="mono">${d.proj_time_str}</b> (${d.proj_pace_mi}/mi)<br>Exp Place: <b class="mono">#${d.exp_place}</b> · Age-${d.award_group} AA: <b class="mono">${d.aa_age_prob}%</b><br>-${d.leverage_sec}s Passing Gain: <b>+${d.leverage_gain} spots</b>`
+        `<b>${esc(d.display_name)}</b> (Age ${d.age})<br>${esc(fmtClub(d.team, d.club_state))}${d.home_school ? ` · ${esc(d.home_school)}` : ""}<br>Proj: <b class="mono">${d.proj_time_str}</b> (${d.proj_pace_mi}/mi)<br>Exp Place: <b class="mono">#${d.exp_place}</b> · Age-${d.award_group} AA: <b class="mono">${d.aa_age_prob}%</b><br>-${d.leverage_sec}s Passing Gain: <b>+${d.leverage_gain} spots</b>`
       ))
       .on("mouseleave", hideTip)
       .on("click", (_, d) => { window.location.href = `runners.html?id=${d.id}`; });
@@ -1182,10 +1205,10 @@
     }
     const teams = mat.map((r) => r.team);
     let html = `<div style="overflow-x:auto"><table style="font-size:12px"><thead><tr><th>Row beats Col %</th>` +
-      teams.map((t, i) => `<th class="num" title="${esc(t)}">#${i + 1}</th>`).join("") + `</tr></thead><tbody>`;
+      teams.map((t, i) => `<th class="num" title="${esc(fmtClub(t))}">#${i + 1}</th>`).join("") + `</tr></thead><tbody>`;
     mat.forEach((r, i) => {
       const cls = (r.team.includes("Pittsburgh CYO") || r.team.includes("Diocese of Pittsburgh")) ? "dop-txt" : "";
-      html += `<tr><td class="${cls}" style="white-space:nowrap"><b>#${i + 1}</b> ${esc(r.team.length > 20 ? r.team.slice(0, 19) + "…" : r.team)}</td>`;
+      html += `<tr><td class="${cls}" style="white-space:nowrap"><b>#${i + 1}</b> ${esc(fmtClubTrunc(r.team, null, 22))}</td>`;
       teams.forEach((colT) => {
         const v = r.vs[colT];
         if (v == null) {
@@ -1212,7 +1235,7 @@
       });
     });
     so.innerHTML = bestPair
-      ? `<b>Closest Toss-Up Duel:</b> <b>${esc(bestPair[0])}</b> vs. <b>${esc(bestPair[1])}</b> splits <b>${bestPair[2].toFixed(1)}% – ${(100 - bestPair[2]).toFixed(1)}%</b> across 10,000 trials.`
+      ? `<b>Closest Toss-Up Duel:</b> <b>${esc(fmtClub(bestPair[0]))}</b> vs. <b>${esc(fmtClub(bestPair[1]))}</b> splits <b>${bestPair[2].toFixed(1)}% – ${(100 - bestPair[2]).toFixed(1)}%</b> across 10,000 trials.`
       : "";
   }
 
@@ -1291,7 +1314,7 @@
         : `<span class="muted mono">—</span>`;
       return `<tr class="${s.is_dop ? "row-dop" : ""}" style="${s.is_target ? "outline:1.5px solid var(--accent)" : ""}">
         <td class="num"><b>#${rk}</b></td>
-        <td><b>${esc(s.team)}</b></td>
+        <td><b>${esc(fmtClub(s.team))}</b></td>
         <td class="num"><b>${s.score}</b></td>
         <td class="mono muted">${s.splits}</td>
         <td class="num">${s.sixth < 9999 ? `#${s.sixth}` : "—"}</td>
@@ -1309,7 +1332,7 @@
     if (curRaceSearch) {
       list = list.filter((a) =>
         a.display_name.toLowerCase().includes(curRaceSearch) ||
-        a.team.toLowerCase().includes(curRaceSearch) ||
+        fmtClub(a.team, a.club_state).toLowerCase().includes(curRaceSearch) ||
         (a.home_school || "").toLowerCase().includes(curRaceSearch)
       );
     }
@@ -1319,7 +1342,7 @@
       <tr class="row-click ${a.is_dop ? "row-dop" : ""}" onclick="window.location.href='runners.html?id=${a.id}'">
         <td class="num"><b>${a.exp_place.toFixed(1)}</b></td>
         <td><b>${esc(a.display_name)}</b></td>
-        <td>${a.is_dop ? `<span class="dop-txt">${esc(a.team)}</span>` : a.is_cyo ? `<span class="cyo-txt">${esc(a.team)}</span>` : esc(a.team)}</td>
+        <td>${a.is_dop ? `<span class="dop-txt">${esc(fmtClub(a.team, a.club_state))}</span>` : a.is_cyo ? `<span class="cyo-txt">${esc(fmtClub(a.team, a.club_state))}</span>` : esc(fmtClub(a.team, a.club_state))}</td>
         <td class="num">${a.age}</td>
         <td class="muted">${esc(a.home_school || "—")}</td>
         <td>${tierBadge(a.seed_tier)}</td>
@@ -1638,7 +1661,7 @@
       return `
         <tr class="row-click" onclick="window.location.href='runners.html?id=${a.id}'">
           <td><b>${esc(a.display_name)}</b></td>
-          <td class="mono">${esc(a.team.replace("Pittsburgh CYO", "Pgh CYO").replace("Diocese of Pittsburgh", "DoP"))}</td>
+          <td class="mono">${esc(fmtClub(a.team.replace("Pittsburgh CYO", "Pgh CYO").replace("Diocese of Pittsburgh", "DoP"), a.club_state))}</td>
           <td>${esc(EV_MAP[a.event_num].short)}</td>
           <td class="num">${a.age}</td>
           <td>${esc(a.home_school || "—")}</td>
@@ -1739,7 +1762,7 @@
       .attr("opacity", 0.78).attr("stroke", "var(--surface)").attr("stroke-width", 1.2)
       .style("cursor", "pointer")
       .on("mousemove", (evt, d) => showTip(evt,
-        `<b>${esc(d.org)}</b> (${d.state})<br>2026 Delegation: <b>${d.runners_count} runners</b> (${d.scoring_squads} scoring squads)<br>Exp Team Podiums: <b class="mono">${d.exp_national_podiums.toFixed(2)}</b><br>Exp Age All-Americans: <b class="mono">${d.exp_age_all_americans.toFixed(1)}</b>`
+        `<b>${esc(fmtClub(d.org, d.state))}</b><br>2026 Delegation: <b>${d.runners_count} runners</b> (${d.scoring_squads} scoring squads)<br>Exp Team Podiums: <b class="mono">${d.exp_national_podiums.toFixed(2)}</b><br>Exp Age All-Americans: <b class="mono">${d.exp_age_all_americans.toFixed(1)}</b>`
       ))
       .on("mouseleave", hideTip)
       .on("click", (_, d) => { selectedClubOrg = d.org; renderClubInspector(d.org); document.getElementById("clubDetailSection").scrollIntoView({ behavior: "smooth" }); });
@@ -1751,13 +1774,13 @@
         .attr("y", y(d.exp_age_all_americans) - r(d.exp_national_podiums) - 4)
         .attr("text-anchor", "middle").attr("font-size", 10.5).attr("font-weight", d.is_dop ? 700 : 500)
         .attr("fill", d.is_dop ? "var(--dop)" : "var(--fg)")
-        .text(d.org.length > 18 ? d.org.slice(0, 17) + "…" : d.org);
+        .text(fmtClubTrunc(d.org, d.state, 22));
     });
 
     const top4 = realClubs.slice(0, 4);
     document.getElementById("clubBubbleSo").innerHTML =
-      `<b>Delegation Giants:</b> ` + top4.map((c) => `<b>${esc(c.org)} (${c.runners_count})</b>`).join(", ") +
-      ` headline the ${realClubs.length}-organization national field, with <b>Pittsburgh CYO (${DATA.meta.dop_runners})</b> anchoring the Western PA Catholic delegation.`;
+      `<b>Delegation Giants:</b> ` + top4.map((c) => `<b>${esc(fmtClub(c.org, c.state))} · ${c.runners_count}</b>`).join(", ") +
+      ` headline the ${realClubs.length}-organization national field, with <b>Pittsburgh CYO (PA) · ${DATA.meta.dop_runners}</b> anchoring the Western PA Catholic delegation.`;
   }
 
   function renderCyoOmnium(realClubs) {
@@ -1772,14 +1795,14 @@
       <th>CYO / Catholic Program</th><th>State</th><th class="num">Runners</th><th class="num">Squads</th><th class="num">Proj CYO Titles</th><th class="num">Exp Age AAs</th>
     </tr></thead><tbody>` + cyoWithTitles.map((c) => `
       <tr class="row-click ${c.is_dop ? "row-dop" : ""}" onclick="window.selectClub('${esc(c.org)}')">
-        <td><b>${esc(c.org)}</b></td>
+        <td><b>${esc(fmtClub(c.org, c.state))}</b></td>
         <td>${c.state}</td>
         <td class="num"><b>${c.runners_count}</b></td>
         <td class="num">${c.scoring_squads}</td>
         <td class="num"><b>${c.cyoWins.toFixed(2)}</b></td>
         <td class="num">${c.exp_age_all_americans.toFixed(1)}</td>
       </tr>`).join("") + `</tbody></table></div>
-    <p class="so"><b>CYO National Cup Showdown:</b> <b>${cyoOrgs.length} Catholic dioceses &amp; parishes</b> bring <b>${fmtInt(cyoOrgs.reduce((s, c) => s + c.runners_count, 0))} runners</b>, led by ${cyoWithTitles.slice(0, 3).map((c) => `<b>${esc(c.org)} (${c.cyoWins.toFixed(2)} exp titles · ${c.runners_count} rnrs)</b>`).join(", ")}.</p>`;
+    <p class="so"><b>CYO National Cup Showdown:</b> <b>${cyoOrgs.length} Catholic dioceses &amp; parishes</b> bring <b>${fmtInt(cyoOrgs.reduce((s, c) => s + c.runners_count, 0))} runners</b>, led by ${cyoWithTitles.slice(0, 3).map((c) => `<b>${esc(fmtClub(c.org, c.state))}</b> (${c.cyoWins.toFixed(2)} exp titles · ${c.runners_count} rnrs)`).join(", ")}.</p>`;
   }
 
   function renderClubHeatmap(realClubs) {
@@ -1793,7 +1816,7 @@
 
     topClubs.forEach((c) => {
       html += `<tr class="row-click ${c.is_dop ? "row-dop" : ""}" onclick="window.selectClub('${esc(c.org)}')">
-        <td><b>${esc(c.org)}</b> <span class="muted">(${c.state})</span></td>
+        <td><b>${esc(fmtClub(c.org, c.state))}</b></td>
         <td class="num">${c.runners_count}</td>`;
       cols.forEach((evNum) => {
         const squads = TEAMS.filter((t) => t.base_org === c.org && t.event_num === evNum);
@@ -1804,7 +1827,7 @@
           if (scored.length) {
             const rk = scored[0].nat.exp_rank;
             const bg = rk < 1.6 ? "var(--gold-soft)" : rk <= 3.5 ? "var(--up-soft)" : "var(--accent-soft)";
-            html += `<td class="num" style="background:${bg};font-weight:600" title="${esc(scored[0].team)}: Exp Rank #${rk.toFixed(1)} (${scored[0].nat.podium_prob}% Podium)">#${Math.round(rk)}${scored.length > 1 ? "+" : ""}</td>`;
+            html += `<td class="num" style="background:${bg};font-weight:600" title="${esc(fmtClub(scored[0].team, scored[0].state))}: Exp Rank #${rk.toFixed(1)} (${scored[0].nat.podium_prob}% Podium)">#${Math.round(rk)}${scored.length > 1 ? "+" : ""}</td>`;
           } else {
             const cnt = d3.sum(squads, (s) => s.roster_count);
             html += `<td class="num muted" title="${cnt} individual entries (&lt;5)">${cnt}i</td>`;
@@ -1836,7 +1859,7 @@
           <div class="avatar-circle ${c.is_dop ? "is-dop" : c.is_cyo ? "is-cyo" : ""}">${esc(c.org.slice(0, 2).toUpperCase())}</div>
           <div>
             <div class="eyebrow">${esc(c.category)} · ${esc(c.region || c.state)}</div>
-            <h2 style="margin:2px 0">${esc(c.org)}</h2>
+            <h2 style="margin:2px 0">${esc(fmtClub(c.org, c.state))}</h2>
             <div class="muted" style="font-size:13px">${c.runners_count} runners across ${c.events_entered.length} events · ${c.scoring_squads} official scoring squads · ${c.seeded_runners} empirically seeded · ${c.cccnyc_vets} returning CCCNYC veterans</div>
           </div>
         </div>
@@ -1851,7 +1874,7 @@
         ${squads.map((s) => `
           <div class="card" style="padding:10px 12px;cursor:pointer" onclick="window.location.href='races.html?event=${s.event_num}'">
             <div style="display:flex;justify-content:space-between"><b>${esc(s.event_short)}</b><span class="mono muted">${s.roster_count} rnrs</span></div>
-            <div style="font-size:12.5px;color:var(--fg2);margin-top:3px">${esc(s.team)}</div>
+            <div style="font-size:12.5px;color:var(--fg2);margin-top:3px">${esc(fmtClub(s.team, s.state))}</div>
             <div style="margin-top:5px;font-size:12px">
               ${s.scores_official_team
                 ? `<span class="badge b-accent">Nat #${s.nat.exp_rank.toFixed(1)} (${s.nat.podium_prob}% Pod)</span> ${s.cyo ? `<span class="badge b-cyo">CYO #${s.cyo.exp_rank.toFixed(1)}</span>` : ""}`
@@ -1861,7 +1884,7 @@
         `).join("")}
       </div>
       <details>
-        <summary style="cursor:pointer;font-weight:600;font-size:13.5px;color:var(--accent)">View all ${aths.length} entered athletes for ${esc(c.org)}</summary>
+        <summary style="cursor:pointer;font-weight:600;font-size:13.5px;color:var(--accent)">View all ${aths.length} entered athletes for ${esc(fmtClub(c.org, c.state))}</summary>
         <div class="tablewrap" style="margin-top:8px;max-height:320px;overflow-y:auto">
           <table><thead><tr><th>Athlete</th><th>Event</th><th class="num">Age</th><th>School</th><th class="num">Proj Time</th><th class="num">Ov Exp Pl</th><th class="num">Age AA%</th></tr></thead>
           <tbody>${aths.map((a) => `<tr class="row-click" onclick="window.location.href='runners.html?id=${a.id}'">
@@ -1879,11 +1902,11 @@
     if (clubCatFilter === "CYO") list = list.filter((c) => c.is_cyo);
     else if (clubCatFilter !== "ALL") list = list.filter((c) => c.category.includes(clubCatFilter));
     if (clubStateFilter !== "ALL") list = list.filter((c) => c.state === clubStateFilter);
-    if (clubQuery) list = list.filter((c) => c.org.toLowerCase().includes(clubQuery) || (c.region || "").toLowerCase().includes(clubQuery));
+    if (clubQuery) list = list.filter((c) => fmtClub(c.org, c.state).toLowerCase().includes(clubQuery) || (c.region || "").toLowerCase().includes(clubQuery));
 
     tbody.innerHTML = list.map((c) => `
       <tr class="row-click ${c.is_dop ? "row-dop" : ""}" onclick="window.selectClub('${esc(c.org)}')">
-        <td><b>${esc(c.org)}</b></td>
+        <td><b>${esc(fmtClub(c.org, c.state))}</b></td>
         <td class="mono">${c.state}</td>
         <td class="muted">${esc(c.region || "—")}</td>
         <td>${c.is_cyo ? `<span class="badge b-cyo">${esc(c.category)}</span>` : `<span class="badge b-muted">${esc(c.category)}</span>`}</td>
@@ -1936,7 +1959,7 @@
       const rList = ATHLETES.filter((a) => a.event_num === en).sort((a, b) => a.exp_place - b.exp_place);
       const selA = document.getElementById("duelRunnerASel");
       const selB = document.getElementById("duelRunnerBSel");
-      const opts = rList.map((a) => `<option value="${a.id}">#${Math.round(a.exp_place)} ${esc(a.display_name)} (${esc(a.team)})</option>`).join("");
+      const opts = rList.map((a) => `<option value="${a.id}">#${Math.round(a.exp_place)} ${esc(a.display_name)} · ${esc(fmtClub(a.team, a.club_state))}</option>`).join("");
       selA.innerHTML = opts;
       selB.innerHTML = opts;
       const dopInEv = rList.find((a) => a.id === selectedRunnerId) || rList.find((a) => a.is_dop) || rList[0];
@@ -2042,7 +2065,7 @@
             <div class="eyebrow">Athlete Scouting Dossier · Event ${ev.num} (${esc(ev.name)}) · Gun ${ev.time_est}</div>
             <h2 style="margin:2px 0">${esc(a.display_name)} <span class="muted" style="font-weight:400;font-size:16px">· Age ${a.age}</span></h2>
             <div style="font-size:13.5px;color:var(--fg2)">
-              <b>${esc(a.team)}</b> (${a.club_state}) ${a.home_school ? `· Home School: <b>${esc(a.home_school)}</b>` : ""} · ${tierBadge(a.seed_tier)}
+              <b>${esc(fmtClub(a.team, a.club_state))}</b> ${a.home_school ? `· Home School: <b>${esc(a.home_school)}</b>` : ""} · ${tierBadge(a.seed_tier)}
             </div>
           </div>
         </div>
@@ -2162,7 +2185,7 @@
       svg.append("circle").attr("cx", cx).attr("cy", y(a.proj_time_sec)).attr("r", a.is_dop ? 5 : 3.4)
         .attr("fill", col).style("cursor", "pointer")
         .on("mousemove", (evt) => showTip(evt,
-          `<b>#${i + 1} Age-${ag}: ${esc(a.display_name)}</b><br>${esc(a.team)}${a.home_school ? ` · ${esc(a.home_school)}` : ""}<br>Proj: <b class="mono">${a.proj_time_str}</b> (P10–P90: ${a.p10_time_str}–${a.p90_time_str})<br>Age-${ag} All-American Odds: <b class="mono">${a.aa_age_prob}%</b>`
+          `<b>#${i + 1} Age-${ag}: ${esc(a.display_name)}</b><br>${esc(fmtClub(a.team, a.club_state))}${a.home_school ? ` · ${esc(a.home_school)}` : ""}<br>Proj: <b class="mono">${a.proj_time_str}</b> (P10–P90: ${a.p10_time_str}–${a.p90_time_str})<br>Age-${ag} All-American Odds: <b class="mono">${a.aa_age_prob}%</b>`
         ))
         .on("mouseleave", hideTip)
         .on("click", () => window.openDossier(a.id));
@@ -2247,7 +2270,7 @@
       if (trV === "VET" && !a.cccnyc_history.length) return false;
       if (q && !(
         a.display_name.toLowerCase().includes(q) ||
-        a.team.toLowerCase().includes(q) ||
+        fmtClub(a.team, a.club_state).toLowerCase().includes(q) ||
         (a.home_school || "").toLowerCase().includes(q)
       )) return false;
       return true;
@@ -2263,7 +2286,7 @@
         <td><b>${esc(a.display_name)}</b></td>
         <td>${esc(EV_MAP[a.event_num].short)}</td>
         <td class="num">${a.age}</td>
-        <td>${a.is_dop ? `<span class="dop-txt">${esc(a.team)}</span>` : a.is_cyo ? `<span class="cyo-txt">${esc(a.team)}</span>` : esc(a.team)}</td>
+        <td>${a.is_dop ? `<span class="dop-txt">${esc(fmtClub(a.team, a.club_state))}</span>` : a.is_cyo ? `<span class="cyo-txt">${esc(fmtClub(a.team, a.club_state))}</span>` : esc(fmtClub(a.team, a.club_state))}</td>
         <td class="muted">${esc(a.home_school || a.club_region || "—")}</td>
         <td>${tierBadge(a.seed_tier)}</td>
         <td class="num">${a.races_2026.length || "—"}</td>

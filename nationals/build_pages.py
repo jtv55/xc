@@ -10,7 +10,7 @@ NAV_TEMPLATE = """<!doctype html>
 <title>2026 CCCNYC &amp; CYO Nationals · __PAGE_TITLE__</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261120-v6">
+<link rel="stylesheet" href="styles.css?v=20261120-v7">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body data-page="__PAGE_KEY__">
@@ -46,9 +46,9 @@ __BODY__
 </div>
 
 <div id="d3Tooltip" class="d3-tip"></div>
-<script src="data/data.js?v=20261120-v6"></script>
-<script src="data/us_states_geo.js?v=20261120-v6"></script>
-<script src="app.js?v=20261120-v6"></script>
+<script src="data/data.js?v=20261120-v7"></script>
+<script src="data/us_states_geo.js?v=20261120-v7"></script>
+<script src="app.js?v=20261120-v7"></script>
 </body>
 </html>
 """
