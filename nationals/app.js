@@ -22,6 +22,7 @@
   const urlParams = new URLSearchParams(window.location.search);
 
   // Helpers
+  const fmtInt = (n) => (n == null || isNaN(n) ? "—" : Number(n).toLocaleString());
   const fmtTime = (sec) => {
     if (sec == null || isNaN(sec)) return "—";
     const m = Math.floor(sec / 60);
@@ -138,9 +139,9 @@
         <div class="s">${META.states_represented.length} US states + Bermuda</div>
       </div>
       <div class="kpi kpi-up">
-        <div class="v">${META.seeded_individual_count} <span style="font-size:14px;font-weight:500">(${((100 * META.seeded_individual_count) / META.unique_runners).toFixed(0)}%)</span></div>
+        <div class="v">${META.seeded_individual_count.toLocaleString()} <span style="font-size:14px;font-weight:500">(${((100 * META.seeded_individual_count) / META.unique_runners).toFixed(1)}%)</span></div>
         <div class="l">Direct Empirical Athlete Seeds</div>
-        <div class="s">${META.verified_2026_runners} '26 logs · ${META.cccnyc_veterans} CCCNYC vets</div>
+        <div class="s">${META.verified_2026_runners.toLocaleString()} '26 logs · ${META.cccnyc_veterans.toLocaleString()} CCCNYC vets</div>
       </div>
       <div class="kpi kpi-dop">
         <div class="v">${META.dop_runners} / ${META.dop_runners}</div>
@@ -294,7 +295,7 @@
       <h3>Race-day tactical keys (${(distM / 1000).toFixed(0)}K layout)</h3>
       <div style="margin-bottom:8px"><span class="badge b-accent">${evsAtDist || "Championship Layout"}</span></div>
       <ul style="padding-left:18px;margin:8px 0;font-size:13.5px;color:var(--fg2);display:flex;flex-direction:column;gap:7px">
-        <li><b>First 400m Positioning:</b> Fields of 100–175 runners launch across a wide grass plain that gradually funnels at 420m. Getting trapped behind mid-pack congestion costs 8–12 seconds immediately.</li>
+        <li><b>First 400m Positioning:</b> Fields of up to 389 runners launch across a wide grass plain that gradually funnels at 420m. Getting trapped behind mid-pack congestion costs 8–12 seconds immediately.</li>
         <li><b>Spectator &amp; Coach Engagement Rule:</b> Unique among national meets, CCCNYC explicitly permits coaches on the course to give splits and encouragement—key at the 1K and 2K loop junctions.</li>
         <li><b>Wind &amp; Footing Factor:</b> Late-November SW Ohio open prairie winds across SR-72 reward <b>pack drafting</b>; running tucked on a teammate's shoulder through the middle kilometer saves ~2.5% aerobic cost.</li>
         <li><b>350m Downhill-to-Flat Kick:</b> The final crest drops ~15 ft into a wide, fast finishing chute—passing leverage peaks here, where 10 seconds often separates 12–18 places!</li>

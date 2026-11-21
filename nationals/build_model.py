@@ -333,15 +333,69 @@ for idx, e in enumerate(uni_data["entries"]):
         "grade": None,
         "races_2026": [],
         "cccnyc_history": [],
+        "prior_season_marks": [],
     })
 
 ath_lookup = {}
+ath_init_lookup = {}
 for i, a in enumerate(athletes):
     for fk, lk in name_keys(a["first_name"], a["last_name"]):
         ath_lookup.setdefault((a["gender"], fk, lk), []).append(i)
+    fn_c, ln_c = clean_person_name(a["first_name"], a["last_name"])
+    if fn_c and ln_c:
+        ath_init_lookup.setdefault((a["gender"], fn_c[0], ln_c), []).append(i)
 
-def match_athlete(gender, first, last, grade=None, age=None, state_hint=None):
+def match_athlete(gender, first, last, grade=None, age=None, state_hint=None, team_hint=None):
     matched = set()
+    border = {
+        "KY": {"IN", "OH", "TN"}, "IN": {"KY", "OH", "IL", "MI"},
+        "OH": {"KY", "IN", "MI", "PA"}, "PA": {"OH", "MD", "DE", "NJ"},
+        "IL": {"IN", "WI", "MO"}, "MI": {"OH", "IN"},
+        "KS": {"MO", "OK"}, "MO": {"KS", "IL", "OK"},
+        "OK": {"KS", "MO"}, "CO": {"CO"},
+        "DE": {"PA", "MD", "NJ", "VA"}, "MD": {"PA", "DE", "VA", "NJ"},
+        "VA": {"MD", "DE", "PA"}, "NJ": {"PA", "DE", "NY", "MD"},
+    }
+    fn_raw = re.sub(r"[^a-zA-Z]", "", (first or "").strip())
+    ln_raw = (last or "").strip().lower()
+    # Special strict zero-false-positive rule for RunSignup minor privacy-masked names ("L." + "Senese")
+    if len(fn_raw) == 1 and ln_raw and gender in ("M", "F"):
+        cands = []
+        exact_age_cands = []
+        for idx in ath_init_lookup.get((gender, fn_raw.lower(), ln_raw), []):
+            a = athletes[idx]
+            if a["is_duplicate_ghost"]: continue
+            # Must have age or grade confirmation!
+            age_ok = False
+            exact_ag = False
+            if age is not None and str(age).isdigit():
+                av = int(age)
+                if av >= 4 and abs(av - a["age"]) <= 1:
+                    age_ok = True
+                    exact_ag = (av == a["age"])
+            elif grade is not None and str(grade).isdigit():
+                gv = int(grade)
+                if 0 <= gv <= 12 and (gv + 4 <= a["age"] <= gv + 8):
+                    age_ok = True
+            if not age_ok:
+                continue
+            # Must match EXACT state (or border if club name matches team_hint)
+            team_ok = False
+            if team_hint:
+                tl = team_hint.lower()
+                bo_toks = [w for w in a["base_org"].lower().split() if len(w) >= 4 and w not in ("club", "team", "youth", "track", "cross", "country", "running")]
+                if any(tok in tl for tok in bo_toks):
+                    team_ok = True
+            if state_hint and a["club_state"] != state_hint and not team_ok:
+                continue
+            if not state_hint and not team_ok:
+                continue
+            cands.append(idx)
+            if exact_ag:
+                exact_age_cands.append(idx)
+        use = exact_age_cands if len(exact_age_cands) == 1 else (cands if len(cands) == 1 else [])
+        return use
+
     for fk, lk in name_keys(first, last):
         for idx in ath_lookup.get((gender, fk, lk), []):
             a = athletes[idx]
@@ -354,21 +408,12 @@ def match_athlete(gender, first, last, grade=None, age=None, state_hint=None):
                 if 0 <= gv <= 12:
                     if not (gv + 4 <= a["age"] <= gv + 8): continue
             if state_hint and a["club_state"] not in ("USA", "INTL", state_hint):
-                # Allow border states (e.g. KY/IN/OH or MD/PA) only if exact club region fits
-                border = {
-                    "KY": {"IN", "OH", "TN"}, "IN": {"KY", "OH", "IL", "MI"},
-                    "OH": {"KY", "IN", "MI", "PA"}, "PA": {"OH", "MD", "DE", "NJ"},
-                    "IL": {"IN", "WI", "MO"}, "MI": {"OH", "IN"},
-                    "KS": {"MO", "OK"}, "MO": {"KS", "IL", "OK"},
-                    "DE": {"PA", "MD", "NJ", "VA"}, "MD": {"PA", "DE", "VA", "NJ"},
-                    "VA": {"MD", "DE", "PA"}, "NJ": {"PA", "DE", "NY", "MD"},
-                }
                 if a["club_state"] not in border.get(state_hint, set()):
                     continue
             matched.add(idx)
     return sorted(matched)
 
-# --- 1. Ingest RunSignup JSONs ---
+# --- 1. Ingest RunSignup JSONs (2026 -> races_2026, 2025 -> prior_season_marks) ---
 def ingest_rsu(fp, meet_label, meet_date, state_code):
     if not os.path.exists(fp): return 0
     with open(fp, encoding="utf-8") as f: d = json.load(f)
@@ -376,20 +421,36 @@ def ingest_rsu(fp, meet_label, meet_date, state_code):
     for ev in d.get("events", []):
         ev_name = ev.get("event_name", "")
         if "Combined" in ev_name: continue
+        # Determine event-level year (some RSU JSONs hold both 2025 and 2026 events!)
+        estart = str(ev.get("start_time") or "")
+        ev_dt = meet_date
+        if "2026" in estart:
+            ev_dt = meet_date if meet_date.startswith("2026") else "2026-10-01"
+        elif "2025" in estart:
+            ev_dt = meet_date if meet_date.startswith("2025") else "2025-10-01"
+        ev_year = 2026 if ev_dt.startswith("2026") else (2025 if ev_dt.startswith("2025") else 2024)
+        if ev_year < 2025: continue
+        yr_shift = 2026 - ev_year
         dist_str = str(ev.get("distance") or "") + " " + ev_name
         dm_fixed = None
         if "5K" in dist_str.upper() or "5000" in dist_str: dm_fixed = 5000
         elif "4K" in dist_str.upper() or "4000" in dist_str: dm_fixed = 4000
-        elif "2 Mile" in dist_str or "3200" in dist_str: dm_fixed = 3219
+        elif "2 Mile" in dist_str or "3200" in dist_str or "2M" in dist_str.upper(): dm_fixed = 3219
         elif "3K" in dist_str.upper() or "3000" in dist_str or ("Middle School" in meet_label and state_code == "IN"): dm_fixed = 3000
         elif "2K" in dist_str.upper() or "2000" in dist_str: dm_fixed = 2000
         elif "1.5" in dist_str: dm_fixed = 2414
         elif "0.75" in dist_str: dm_fixed = 1207
         elif "1 Mile" in dist_str and "193936" not in fp: dm_fixed = 1609
         headers_map = ev.get("headers", {})
-        school_fields = [k for k, v in headers_map.items() if v in ("School", "Team Name")]
+        school_fields = [
+            k for k, v in headers_map.items()
+            if any(w in str(v) for w in ("School", "Team Name", "Club", "Affiliation"))
+            and not any(bad in str(v).lower() for bad in ("place", "score", "point", "rank", "time", "pace", "avg", "order", "bib", "split"))
+        ]
+        if not school_fields:
+            school_fields = [k for k, v in headers_map.items() if str(v).strip().lower() in ("team", "school", "club")]
         year_fields = [k for k, v in headers_map.items() if v in ("Year", "Grade")]
-        split_fields = [k for k, v in headers_map.items() if "1 Mile" in v and "Pace" not in v]
+        split_fields = [k for k, v in headers_map.items() if "1 Mile" in str(v) and "Pace" not in str(v)]
         res_list = ev.get("results", [])
         nf = len(res_list)
         for r in res_list:
@@ -400,6 +461,10 @@ def ingest_rsu(fp, meet_label, meet_date, state_code):
             if dm is None and pace_sec and pace_sec > 180:
                 dm = round((t_sec / pace_sec) * 1609.344)
             if not dm: dm = 3000
+            if dm < 800 or dm > 5500: continue
+            # Sanity pace filter (4:15/mi to 20:00/mi) so 10K or bad chip times never pollute
+            pace_mi_chk = t_sec / (dm / 1609.344)
+            if not (255 <= pace_mi_chk <= 1250): continue
             # Empirical course distance correction for Pittsburgh Diocesan Dev (actual 1.50 mi = 2414m vs timer 1.35 mi) & Pumpkins Dev (2220m)
             if "193936" in fp and "Dev" in ev_name:
                 dm = 2414
@@ -410,22 +475,42 @@ def ingest_rsu(fp, meet_label, meet_date, state_code):
                 gend = "F" if "Girl" in ev_name else ("M" if "Boy" in ev_name else "")
             yr_val = next((str(r.get(yf)).strip() for yf in year_fields if r.get(yf)), None)
             sch_vals = [str(r.get(sf)).strip() for sf in school_fields if r.get(sf) and str(r.get(sf)) != "None"]
+            # Also scan custom-field-* string values for club/school hint if school_fields empty
+            if not sch_vals:
+                for ck, cv in r.items():
+                    if ck.startswith("custom-field-") and isinstance(cv, str) and len(cv.strip()) >= 3 and cv.strip() != "*":
+                        sch_vals.append(cv.strip())
             sch = sch_vals[-1] if sch_vals else None
+            if sch and (sch.isdigit() or len(sch) < 3 or re.match(r"^\d+[:.]\d+", sch)):
+                sch = None
             split_1m = next((str(r.get(sf)).strip() for sf in split_fields if r.get(sf)), None)
-            for idx in match_athlete(gend, r.get("first_name"), r.get("last_name"), grade=yr_val, age=r.get("age"), state_hint=state_code):
+            r_age = r.get("age")
+            if r_age is not None and str(r_age).isdigit():
+                r_age = int(r_age) + yr_shift
+            r_gr = int(yr_val) + yr_shift if (yr_val and yr_val.isdigit()) else yr_val
+            st_use = state_code or (r.get("state") if len(str(r.get("state") or "")) == 2 else None)
+            for idx in match_athlete(gend, r.get("first_name"), r.get("last_name"), grade=r_gr, age=r_age, state_hint=st_use, team_hint=sch):
                 a = athletes[idx]
                 if "193936" in fp and not a["is_dop"] and a["club_state"] != "PA": continue
                 if sch and (not a["home_school"] or "193936" in fp):
                     a["home_school"] = sch
-                if yr_val and not a["grade"]:
+                if yr_val and not a["grade"] and ev_year == 2026:
                     a["grade"] = yr_val
-                a["races_2026"].append({
-                    "meet": meet_label, "date": meet_date, "division": ev_name,
-                    "place": int(r["place"]) if str(r.get("place", "")).isdigit() else None,
-                    "field_size": nf, "dist_m": dm, "time_sec": round(t_sec, 2),
-                    "time_str": fmt_time(t_sec), "pace_mi": fmt_pace_mi(t_sec, dm),
-                    "split_1m": split_1m, "school_team": sch,
-                })
+                if ev_year == 2026:
+                    a["races_2026"].append({
+                        "meet": meet_label, "date": ev_dt, "division": ev_name,
+                        "place": int(r["place"]) if str(r.get("place", "")).isdigit() else None,
+                        "field_size": nf, "dist_m": dm, "time_sec": round(t_sec, 2),
+                        "time_str": fmt_time(t_sec), "pace_mi": fmt_pace_mi(t_sec, dm),
+                        "split_1m": split_1m, "school_team": sch,
+                    })
+                else:
+                    a["prior_season_marks"].append({
+                        "year": ev_year, "meet": meet_label, "event_code": f"{dm}m",
+                        "dist_m": dm, "time_sec": round(t_sec, 2),
+                        "time_str": fmt_time(t_sec), "pace_mi": fmt_pace_mi(t_sec, dm),
+                        "surface": "xc",
+                    })
                 hits += 1
     return hits
 
@@ -434,11 +519,13 @@ ingest_rsu(r"c:\Users\j_t_v\XC\data\extra\rsu_191674_oakland_catholic.json", "Oa
 ingest_rsu(r"c:\Users\j_t_v\XC\data\extra\rsu_193469_run_for_pumpkins.json", "Run for the Pumpkins XC", "2026-10-10", "PA")
 ingest_rsu(os.path.join(ms_dir, "rsu_217626_oh_state.json"), "Ohio Elementary & MS State Championship", "2026-10-24", "OH")
 
-# Ingest all newly scraped regional RunSignup Youth/CYO/Qualifier JSONs across 18 states!
+# Ingest all scraped regional RunSignup Youth/CYO/Qualifier JSONs across 20+ states (2026 & 2025)!
+close_dir = os.path.join(web_dir, "closure_2026")
 for rsu_fp in (
     sorted(glob.glob(os.path.join(ms_dir, "rsu_*.json")))
     + sorted(glob.glob(os.path.join(web_dir, "extra_2026", "rsu_*.json")))
     + sorted(glob.glob(os.path.join(web_dir, "nov20_2026", "rsu_*.json")))
+    + sorted(glob.glob(os.path.join(close_dir, "rsu_2026", "rsu_*.json")))
 ):
     if "217626" in rsu_fp:
         continue
@@ -450,7 +537,7 @@ for rsu_fp in (
         if "/" in r_dt_raw:
             mm_d, dd_d, yy_d = r_dt_raw.split("/")
             r_dt_raw = f"{yy_d}-{int(mm_d):02d}-{int(dd_d):02d}"
-        if r_dt_raw.startswith("2026"):
+        if r_dt_raw.startswith("2026") or r_dt_raw.startswith("2025"):
             ingest_rsu(rsu_fp, r_nm, r_dt_raw, r_st)
     except Exception:
         pass
@@ -502,15 +589,18 @@ for slug, dt_la, lbl_la in [
                 rows_la.append((int(pl), nm.strip(), tm.strip(), t_sec, int(gr)))
     flush_la()
 
-# --- 1C. Ingest Brocaw Blazers 2026 Official Meet PDFs (Baldwin, KC Metro, KS State MS XC) ---
+# --- 1C. Ingest Brocaw Blazers 2024-2026 Official Meet PDFs (Baldwin, KC Metro, KS State MS XC, MV CCCNYC, Wichita, Warriors) ---
 import pymupdf
-for pdf_fp in sorted(glob.glob(os.path.join(nov20_dir, "brocaw_rec_*2026*.pdf"))):
+for pdf_fp in sorted(glob.glob(os.path.join(nov20_dir, "brocaw_rec_*.pdf"))):
     bn = os.path.basename(pdf_fp)
     if "Emporia" in bn: continue # Emporia is identical duplicate file of KS-State-MS-XC!
+    myr = re.search(r"(202[456])", bn)
+    if not myr: continue
+    yr_b = int(myr.group(1))
+    yr_shift_b = 2026 - yr_b
     doc = pymupdf.open(pdf_fp)
     full_txt = "\n".join(pg.get_text("text") for pg in doc)
     if "KS-State-MS-XC" in bn:
-        # Hy-Tek standard format: " 1 Boydston, Shayden  Kansas Flyers  11:59.50"
         cur_g, cur_d, cur_dv = None, None, ""
         hy_re = re.compile(r"^\s*(\d+)\s+([A-Za-z'\-\s]+),\s*([A-Za-z'\-\.\s]+?)\s{2,}(.+?)\s+(\d+:\d+\.\d+)")
         for line in full_txt.splitlines():
@@ -525,16 +615,27 @@ for pdf_fp in sorted(glob.glob(os.path.join(nov20_dir, "brocaw_rec_*2026*.pdf"))
                 t_sec = parse_time_sec(ts)
                 if t_sec:
                     for idx in match_athlete(cur_g, fn.strip(), ln.strip(), state_hint="KS"):
-                        athletes[idx]["races_2026"].append({
-                            "meet": "Kansas MS Championships & Emporia Youth Open", "date": "2026-10-25",
-                            "division": cur_dv, "place": int(pl), "field_size": 120, "dist_m": cur_d,
-                            "time_sec": round(t_sec, 2), "time_str": fmt_time(t_sec),
-                            "pace_mi": fmt_pace_mi(t_sec, cur_d), "school_team": tm.strip(),
-                        })
+                        if yr_b == 2026:
+                            athletes[idx]["races_2026"].append({
+                                "meet": "Kansas MS Championships & Emporia Youth Open", "date": "2026-10-25",
+                                "division": cur_dv, "place": int(pl), "field_size": 120, "dist_m": cur_d,
+                                "time_sec": round(t_sec, 2), "time_str": fmt_time(t_sec),
+                                "pace_mi": fmt_pace_mi(t_sec, cur_d), "school_team": tm.strip(),
+                            })
+                        else:
+                            athletes[idx]["prior_season_marks"].append({
+                                "year": yr_b, "meet": f"{yr_b} Kansas MS Championships (KS)",
+                                "event_code": f"{cur_d}m", "dist_m": cur_d,
+                                "time_sec": round(t_sec, 2), "time_str": fmt_time(t_sec),
+                                "pace_mi": fmt_pace_mi(t_sec, cur_d), "surface": "xc",
+                            })
     else:
-        # Columnar vertical table PDF (Baldwin / KC Metro): PLACE, RACE#, FIRST, LAST, AGE, GENDER, TEAM, TIME
-        meet_nm = "Baldwin Youth Invitational (KS)" if "Baldwin" in bn else "KC Metro Youth Invitational (MO)"
-        meet_dt = "2026-10-18" if "Baldwin" in bn else "2026-10-03"
+        # Columnar vertical table PDF: PLACE, RACE#, FIRST, LAST, AGE, GENDER, TEAM, TIME (handle fused "TEAM TIME" too!)
+        if "Baldwin" in bn: meet_nm, meet_dt = f"Baldwin Youth Invitational (KS)", f"{yr_b}-10-18"
+        elif "KCMetro" in bn: meet_nm, meet_dt = f"KC Metro Youth Invitational (MO)", f"{yr_b}-10-03"
+        elif "MV-CCCNYC" in bn: meet_nm, meet_dt = f"Missouri Valley CCCNYC Regional (MO)", f"{yr_b}-11-09"
+        elif "Wichita" in bn: meet_nm, meet_dt = f"Wichita Youth Invitational (KS)", f"{yr_b}-09-20"
+        else: meet_nm, meet_dt = f"Warriors Youth Invitational (KS)", f"{yr_b}-09-27"
         lines_v = [l.strip() for l in full_txt.splitlines() if l.strip()]
         cur_d = 2000
         i_v = 0
@@ -548,21 +649,193 @@ for pdf_fp in sorted(glob.glob(os.path.join(nov20_dir, "brocaw_rec_*2026*.pdf"))
                 elif "4K" in lv: cur_d = 4000
                 elif "5K" in lv: cur_d = 5000
                 i_v += 1; continue
-            if i_v + 7 < len(lines_v) and lines_v[i_v].isdigit() and lines_v[i_v+4].isdigit() and lines_v[i_v+5] in ("M", "F") and ":" in lines_v[i_v+7]:
+            if i_v + 6 < len(lines_v) and lines_v[i_v].isdigit() and lines_v[i_v+4].isdigit() and lines_v[i_v+5] in ("M", "F"):
+                # Check standard 8-line row vs fused 7-line row ("CMAC 10:36.0")
                 pl = int(lines_v[i_v])
                 fn_b, ln_b = lines_v[i_v+2], lines_v[i_v+3]
-                ag_b, g_b, tm_b, ts_b = int(lines_v[i_v+4]), lines_v[i_v+5], lines_v[i_v+6], lines_v[i_v+7]
-                t_sec = parse_time_sec(ts_b)
-                if t_sec and cur_d >= 800:
-                    for idx in match_athlete(g_b, fn_b, ln_b, age=ag_b, state_hint="KS"):
-                        athletes[idx]["races_2026"].append({
-                            "meet": meet_nm, "date": meet_dt, "division": f"{cur_d}m Youth",
-                            "place": pl, "field_size": 80, "dist_m": cur_d,
-                            "time_sec": round(t_sec, 2), "time_str": fmt_time(t_sec),
-                            "pace_mi": fmt_pace_mi(t_sec, cur_d), "school_team": tm_b,
-                        })
-                i_v += 8; continue
+                ag_b, g_b = int(lines_v[i_v+4]) + yr_shift_b, lines_v[i_v+5]
+                tm_b, ts_b, step_v = None, None, 1
+                mfused = re.match(r"^(.+?)\s+(\d{1,2}:\d{2}(?:\.\d+)?)$", lines_v[i_v+6])
+                if mfused:
+                    tm_b, ts_b, step_v = mfused.group(1), mfused.group(2), 7
+                elif i_v + 7 < len(lines_v) and ":" in lines_v[i_v+7]:
+                    tm_b, ts_b, step_v = lines_v[i_v+6], lines_v[i_v+7], 8
+                if ts_b:
+                    t_sec = parse_time_sec(ts_b)
+                    if t_sec and cur_d >= 800:
+                        for idx in match_athlete(g_b, fn_b, ln_b, age=ag_b, state_hint="KS"):
+                            if yr_b == 2026:
+                                athletes[idx]["races_2026"].append({
+                                    "meet": meet_nm, "date": meet_dt, "division": f"{cur_d}m Youth",
+                                    "place": pl, "field_size": 80, "dist_m": cur_d,
+                                    "time_sec": round(t_sec, 2), "time_str": fmt_time(t_sec),
+                                    "pace_mi": fmt_pace_mi(t_sec, cur_d), "school_team": tm_b,
+                                })
+                            else:
+                                athletes[idx]["prior_season_marks"].append({
+                                    "year": yr_b, "meet": f"{yr_b} {meet_nm}", "event_code": f"{cur_d}m",
+                                    "dist_m": cur_d, "time_sec": round(t_sec, 2),
+                                    "time_str": fmt_time(t_sec), "pace_mi": fmt_pace_mi(t_sec, cur_d),
+                                    "surface": "xc",
+                                })
+                    i_v += step_v; continue
             i_v += 1
+
+# --- 1D. Ingest Midwest Championship & Mudsock Invitational 2026 PDFs (Indiana Youth: Body in Training, Fishers Fire, HP Distance) ---
+for pdf_fp in sorted(glob.glob(os.path.join(close_dir, "midwest_pdfs", "*.pdf"))):
+    bn = os.path.basename(pdf_fp)
+    doc = pymupdf.open(pdf_fp)
+    full = "\n".join(pg.get_text("text") for pg in doc)
+    lines = [l.strip() for l in full.splitlines() if l.strip()]
+    first_hdr = lines[0] if lines else bn
+    if "Mudsock" in first_hdr:
+        meet_nm, meet_dt = "Mudsock Youth XC Invitational (IN)", "2026-10-18"
+    else:
+        meet_nm, meet_dt = "Midwest Championship Youth XC Meet (IN)", "2026-11-08"
+    low = (bn + " " + first_hdr).lower()
+    if "2k" in low or "8u" in low: dm = 2000
+    elif "4k" in low or "13_14" in low or "13-14" in low: dm = 4000
+    elif "5k" in low or "15_18" in low or "open" in low or "overall" in low: dm = 5000
+    else: dm = 3000
+    for i_l, l in enumerate(lines):
+        mg = re.match(r"^([MF]):\s*\d+$", l)
+        if not mg: continue
+        gend = mg.group(1)
+        name_parts, pl = [], None
+        for back in range(1, 5):
+            if i_l - back < 0: break
+            prev = lines[i_l - back]
+            if prev.isdigit() and int(prev) <= 600:
+                pl = int(prev); break
+            if prev in ("Division Rank", "Speed", "Pace", "Time", "Bib #", "Class", "Gender", "Hometown", ":") or prev.endswith("mph"):
+                break
+            name_parts.insert(0, prev)
+        raw_nt = " ".join(name_parts).strip()
+        tm = ""
+        mtm = re.search(r"\(([^)]+)\)", raw_nt)
+        if mtm:
+            tm = mtm.group(1).strip()
+            raw_nt = re.sub(r"\([^)]*\)", "", raw_nt).strip()
+        t_str, cls_v = None, None
+        for fwd in range(1, 7):
+            if i_l + fwd >= len(lines): break
+            nxt = lines[i_l + fwd]
+            if re.match(r"^\d{2}:\d{2}:\d{2}\.\d{2}$", nxt):
+                t_str = nxt; break
+            if re.match(r"^(?:\d+(?:st|nd|rd|th)|FR|SO|JR|SR)$", nxt, re.I):
+                cls_v = nxt
+        if raw_nt and t_str:
+            t_sec = parse_time_sec(t_str)
+            if t_sec and 300 <= t_sec <= 3000:
+                parts = raw_nt.split()
+                if len(parts) >= 2:
+                    gr_h = None
+                    if cls_v:
+                        gm = re.match(r"^(\d+)", cls_v)
+                        if gm: gr_h = int(gm.group(1))
+                        elif cls_v.upper() in ("FR", "SO", "JR", "SR"):
+                            gr_h = {"FR": 9, "SO": 10, "JR": 11, "SR": 12}[cls_v.upper()]
+                    for idx in match_athlete(gend, parts[0], " ".join(parts[1:]), grade=gr_h, state_hint="IN"):
+                        athletes[idx]["races_2026"].append({
+                            "meet": meet_nm, "date": meet_dt, "division": f"{dm}m Youth",
+                            "place": pl, "field_size": 70, "dist_m": dm,
+                            "time_sec": round(t_sec, 2), "time_str": fmt_time(t_sec),
+                            "pace_mi": fmt_pace_mi(t_sec, dm), "school_team": tm or None,
+                        })
+
+# --- 1E. Ingest OHSTrack 2026 Oklahoma State & Regional PDFs (strict page-by-page gender & distance!) ---
+for pdf_fp in sorted(glob.glob(os.path.join(close_dir, "ohstrack_2026", "*.pdf"))):
+    bn = os.path.basename(pdf_fp)
+    doc = pymupdf.open(pdf_fp)
+    is_small_cls = any(k in bn.lower() for k in ("1a", "2a", "3a", "4a"))
+    meet_nm = "OSSAA Oklahoma State XC Championships (OK)" if "state" in bn.lower() else "OSSAA Oklahoma Regional XC (OK)"
+    meet_dt = "2026-10-31" if "103126" in bn else "2026-10-24"
+    cur_g, cur_d = None, 5000
+    for pg in doc:
+        lines = [l.strip() for l in pg.get_text("text").splitlines() if l.strip()]
+        for l in lines[:8]:
+            ll = l.lower()
+            if "girls" in ll:
+                cur_g = "F"
+                cur_d = 3219 if ("3200" in ll or "2 mile" in ll or is_small_cls) else 5000
+            elif "boys" in ll:
+                cur_g = "M"
+                cur_d = 5000
+        if not cur_g: continue
+        for i_l, l in enumerate(lines):
+            m = re.match(r"^(\d+)\s+([A-Z][A-Z'\-\s]+),\s*([A-Za-z'\-\.\s]+)$", l)
+            if not m: continue
+            pl, ln_o, fn_o = int(m.group(1)), m.group(2).strip().title(), m.group(3).strip()
+            t_sec, tm_o = None, ""
+            for fwd in range(1, 7):
+                if i_l + fwd >= len(lines): break
+                nxt = lines[i_l + fwd]
+                mt = re.match(r"^(\d{1,2}):(\d{2}\.\d+)$", nxt)
+                if mt and int(mt.group(1)) >= 9:
+                    t_sec = int(mt.group(1))*60 + float(mt.group(2))
+                    break
+                if fwd == 2 and not nxt.isdigit():
+                    tm_o = nxt
+            if t_sec:
+                pace_chk = t_sec / (cur_d / 1609.344)
+                if 265 <= pace_chk <= 720:
+                    for idx in match_athlete(cur_g, fn_o, ln_o, state_hint="OK"):
+                        athletes[idx]["races_2026"].append({
+                            "meet": meet_nm, "date": meet_dt, "division": f"OSSAA {cur_d}m",
+                            "place": pl, "field_size": 140, "dist_m": cur_d,
+                            "time_sec": round(t_sec, 2), "time_str": fmt_time(t_sec),
+                            "pace_mi": fmt_pace_mi(t_sec, cur_d), "school_team": tm_o or None,
+                        })
+
+# --- 1F. Ingest Verified 2025-2026 TRXC Missouri & KHSAA 2026 Kentucky Regional Race Pages ---
+trxc_row_re = re.compile(r"^\s*(\d+)\s+(?:#\d+\s+)?([A-Za-z'\-\s]+),\s*([A-Za-z'\-\.\s]+?)\s+(\d{1,2}|SR|JR|SO|FR)?\s+([A-Za-z0-9'\-\.\&\s\/\(\)]+?)\s+(\d+:\d+\.\d+)")
+for fp_t in sorted(glob.glob(os.path.join(close_dir, "trxc_2026_clean", "*.htm*"))) + sorted(glob.glob(os.path.join(close_dir, "khsaa_2026", "*.htm*"))):
+    is_khsaa = "khsaa_2026" in fp_t
+    txt_t = BeautifulSoup(open(fp_t, encoding="utf-8", errors="ignore").read(), "html.parser").get_text()
+    hdr_t = txt_t[:900]
+    my_t = re.search(r"(\d{1,2})/(\d{1,2})/(202[56])", hdr_t)
+    if not my_t: continue
+    yr_t = int(my_t.group(3))
+    dt_t = f"{yr_t}-{int(my_t.group(1)):02d}-{int(my_t.group(2)):02d}"
+    yr_shift_t = 2026 - yr_t
+    st_t = "KY" if is_khsaa else "MO"
+    mtitle_t = "KHSAA Kentucky Regional XC (KY)" if is_khsaa else "TRXC Missouri XC Meet"
+    for hl in hdr_t.splitlines():
+        if my_t.group(0) in hl:
+            mtitle_t = hl.split(" - ")[0].strip()[:65]
+            break
+    cur_g, cur_d, cur_dv = None, None, ""
+    for line in txt_t.splitlines():
+        ls = line.strip()
+        if ls.startswith("Event "):
+            gn, dn = infer_dist_and_gender(ls)
+            if gn and dn: cur_g, cur_d, cur_dv = gn, dn, ls[:70]
+            continue
+        mt = trxc_row_re.match(line)
+        if mt and cur_g and cur_d:
+            pl, ln_t, fn_t, yr_s, tm_t, ts_t = mt.groups()
+            t_sec = parse_time_sec(ts_t)
+            if not t_sec: continue
+            gr_t = None
+            if yr_s:
+                if yr_s.isdigit(): gr_t = int(yr_s) + yr_shift_t
+                elif yr_s.upper() in ("FR", "SO", "JR", "SR"):
+                    gr_t = {"FR": 9, "SO": 10, "JR": 11, "SR": 12}[yr_s.upper()] + yr_shift_t
+            for idx in match_athlete(cur_g, fn_t.strip(), ln_t.strip(), grade=gr_t, state_hint=st_t):
+                if yr_t == 2026:
+                    athletes[idx]["races_2026"].append({
+                        "meet": mtitle_t, "date": dt_t, "division": cur_dv,
+                        "place": int(pl), "field_size": 100, "dist_m": cur_d,
+                        "time_sec": round(t_sec, 2), "time_str": fmt_time(t_sec),
+                        "pace_mi": fmt_pace_mi(t_sec, cur_d), "school_team": tm_t.strip(),
+                    })
+                else:
+                    athletes[idx]["prior_season_marks"].append({
+                        "year": yr_t, "meet": f"{yr_t} {mtitle_t}", "event_code": f"{cur_d}m",
+                        "dist_m": cur_d, "time_sec": round(t_sec, 2),
+                        "time_str": fmt_time(t_sec), "pace_mi": fmt_pace_mi(t_sec, cur_d),
+                        "surface": "xc",
+                    })
 
 # --- 2. Ingest Smiley Miles 2026 ---
 sm_line_re = re.compile(r"^\s*(\d+)\s+([A-Za-z'\-\.\s]+?)\s{2,}([A-Za-z0-9'\-\.\&\s]+?)\s+(\d+)\s+(\d{1,2})\s+([MF])\s+(?:[\d:]+\s+)?(\d+:\d+\.\d+)\s+(\d+:\d+)/[MK]")
@@ -783,8 +1056,6 @@ if os.path.exists(curated_fp):
                 })
 
 ms_ident_fp = os.path.join(base_scratch, "ms_athlete_verified_by_identity.json")
-for a in athletes:
-    a["prior_season_marks"] = []
 
 def _norm_ident(s):
     return re.sub(r"[^a-z]", "", re.sub(r"\(.*?\)", "", s or "").lower())
@@ -844,6 +1115,14 @@ for a in athletes:
             seen.add(k)
             dedup.append(rc)
     a["races_2026"] = sorted(dedup, key=lambda x: x["date"])
+    seen_p = set()
+    dedup_p = []
+    for pm in sorted(a["prior_season_marks"], key=lambda x: -x["year"]):
+        kp = (pm["year"], round(pm["time_sec"], 1), pm["dist_m"])
+        if kp not in seen_p:
+            seen_p.add(kp)
+            dedup_p.append(pm)
+    a["prior_season_marks"] = dedup_p
     a["cccnyc_history"] = sorted(a["cccnyc_history"], key=lambda x: -x["year"])
 
 dop_check = [a for a in athletes if a["is_dop"]]
