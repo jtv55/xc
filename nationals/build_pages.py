@@ -10,7 +10,7 @@ NAV_TEMPLATE = """<!doctype html>
 <title>2026 CCCNYC &amp; CYO Nationals · __PAGE_TITLE__</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261120-v7">
+<link rel="stylesheet" href="styles.css?v=20261121-raceday">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body data-page="__PAGE_KEY__">
@@ -19,9 +19,9 @@ NAV_TEMPLATE = """<!doctype html>
   <span class="nav-brand">&#9670; CCCNYC / CYO '26</span>
   <a href="index.html" __CUR_HUB__>Meet Hub &amp; Course</a>
   <a href="races.html" __CUR_RACES__>Race Simulator (11)</a>
-  <a href="diocese.html" __CUR_DIOCESE__>Pittsburgh CYO (63)</a>
+  <a href="diocese.html" __CUR_DIOCESE__>Pittsburgh CYO (64)</a>
   <a href="clubs.html" __CUR_CLUBS__>Schools &amp; Clubs (91)</a>
-  <a href="runners.html" __CUR_RUNNERS__>Runners &amp; Dossiers (2,616)</a>
+  <a href="runners.html" __CUR_RUNNERS__>Runners &amp; Dossiers (2,617)</a>
   <span class="nav-right">
     <button id="globalScoringBtn" class="pill pill-cyo" aria-pressed="false" title="Toggle between Full National Open scoring and CYO Catholic/Diocesan scoring">Lens: National Open</button>
     <button id="themeBtn" class="pill" style="font-size:11.5px;padding:3px 9px">Theme: auto</button>
@@ -35,7 +35,7 @@ __BODY__
   <footer class="foot">
     <div>
       <b>2026 Cross Country Coaches National Youth Championships (20th Edition) &amp; CYO Nationals</b> · Saturday, Nov 21, 2026 · Elvin R. King XC Course, Cedarville University, OH.<br>
-      Updated from the official <a href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">Final Entry List PDF (Nov 20 · 2,617 entries)</a>, cross-referenced against 2,226 empirical race histories (85.1% overall · 90.2% ages 9–14) across 20 states + Bermuda (10,000 Monte Carlo trials per race).
+      Updated from the official <a href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">Final Entry List PDF (Nov 20 + Nov 21 late add · 2,618 entries)</a>, cross-referenced against 2,227 empirical race histories (85.1% overall · 90.2% ages 9–14) across 20 states + Bermuda (10,000 Monte Carlo trials per race).
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
       <a class="pill" href="data/cccnyc_2026_runner_predictions.csv" download>Runner Predictions CSV</a>
@@ -46,22 +46,22 @@ __BODY__
 </div>
 
 <div id="d3Tooltip" class="d3-tip"></div>
-<script src="data/data.js?v=20261120-v7"></script>
-<script src="data/us_states_geo.js?v=20261120-v7"></script>
-<script src="app.js?v=20261120-v7"></script>
+<script src="data/data.js?v=20261121-raceday"></script>
+<script src="data/us_states_geo.js?v=20261121-raceday"></script>
+<script src="app.js?v=20261121-raceday"></script>
 </body>
 </html>
 """
 
 HUB_BODY = """
   <div class="hero">
-    <div class="eyebrow">20th Annual National Youth XC &amp; CYO Championships · Final Entry List (Nov 20) · Race Day Nov 21, 2026 · Cedarville, OH</div>
+    <div class="eyebrow">20th Annual National Youth XC &amp; CYO Championships · Pre-Race Final Forecast (Nov 21, 2026) · Cedarville, OH</div>
     <h1>2026 CCCNYC &amp; CYO National Championship Intelligence</h1>
-    <p class="lede">Final race-eve analytical preview, 10,000-trial Monte Carlo simulation engine, and scouting database for tomorrow's 2,616-runner national championship at Cedarville University's Elvin R. King Cross Country Course. Switch anytime between <b>National Open Scoring</b> (all 91 organizations) and <b>CYO National Championship Scoring</b> (10 Catholic diocesan &amp; parish programs).</p>
+    <p class="lede">Pre-race analytical forecast, 10,000-trial Monte Carlo simulation engine, and scouting database for today's 2,617-runner national championship at Cedarville University's Elvin R. King Cross Country Course. Switch anytime between <b>National Open Scoring</b> (all 91 organizations) and <b>CYO National Championship Scoring</b> (10 Catholic diocesan &amp; parish programs).</p>
     <div class="ctl" style="margin-bottom:0">
-      <a class="pill pill-dop" aria-pressed="true" href="diocese.html">Explore Pittsburgh CYO / Diocese Command Center (63 Runners) &#8594;</a>
+      <a class="pill pill-dop" aria-pressed="true" href="diocese.html">Explore Pittsburgh CYO / Diocese Command Center (64 Runners) &#8594;</a>
       <a class="pill" href="races.html">Interactive 11-Race Simulator &amp; Coach's Sandbox &#8594;</a>
-      <a class="pill" href="runners.html">Search All 2,616 Athlete Scouting Dossiers &#8594;</a>
+      <a class="pill" href="runners.html">Search All 2,617 Athlete Scouting Dossiers &#8594;</a>
       <a class="pill" href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">View Final Entry List PDF (31 Pages)</a>
       <a class="pill pill-dop" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Download Pittsburgh CYO Race-Day Packet PDF (15 Pages)</a>
     </div>
@@ -129,7 +129,7 @@ HUB_BODY = """
       </div>
       <div class="card">
         <h2>Entry list forensic audit &amp; registration anomalies</h2>
-        <p class="sub">Automated forensic cross-checks of the initial Drive draft (1,058 rows) vs the Final Nov 20 <code class="mono">Entry List.pdf</code> (2,617 entries across 31 pages) uncovered critical roster expansions and scoring impacts cleaned in our simulation:</p>
+        <p class="sub">Automated forensic cross-checks of the initial Drive draft (1,058 rows) vs the Final Nov 20 <code class="mono">Entry List.pdf</code> (+ Nov 21 late add · 2,618 entries) uncovered critical roster expansions and scoring impacts cleaned in our simulation:</p>
         <div id="anomalyAuditList"></div>
       </div>
     </div>
@@ -201,7 +201,7 @@ RACES_BODY = """
         </div>
         <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
           <input type="checkbox" id="sandboxAdd5thChk">
-          <span>Simulate 5th scorer if roster has 4 runners (e.g. DoP Boys 6–8)</span>
+          <span>Simulate 5th scorer if roster has 4 runners</span>
         </label>
         <button class="pill" id="sandboxResetBtn">Reset Sandbox</button>
       </div>
@@ -248,9 +248,9 @@ RACES_BODY = """
 
 DIOCESE_BODY = """
   <div class="hero">
-    <div class="eyebrow">Pittsburgh CYO (Diocese of Pittsburgh) · 63 Qualifiers · 13 Catholic Feeder Schools · 100% 2026 Season Matched</div>
+    <div class="eyebrow">Pittsburgh CYO (Diocese of Pittsburgh) · 64 Qualifiers · 13 Catholic Feeder Schools · 10 Complete Scoring Squads · 100% 2026 Season Matched</div>
     <h1>Pittsburgh CYO (Diocese of Pittsburgh) Command Center</h1>
-    <p class="lede">Every single one of the <b>63 Diocese of Pittsburgh athletes</b> (officially listed as <b>Pittsburgh CYO</b> in the Final Nov 20 Entry List) was matched to their complete 2026 Western PA Cross Country season resume (averaging 6.2 races per athlete) and Oct 17 Diocesan Championship split—unlocking exact parish feeder pipelines, A/B squad compression ladders, CYO title odds against Philadelphia, Toledo, LA &amp; Columbus CYO, and single-year birth-age All-American projections.</p>
+    <p class="lede">Every single one of the <b>64 Diocese of Pittsburgh athletes</b> (officially listed as <b>Pittsburgh CYO</b>, including late race-day Boys 6–8 addition <b>Diego Victor</b>) was matched to their complete 2026 Western PA Cross Country season resume (averaging 6.2 races per athlete) and Oct 17 Diocesan Championship split—unlocking exact parish feeder pipelines, 10 complete scoring squads across all 8 youth divisions, CYO title odds against Philadelphia, Toledo, LA &amp; Columbus CYO, and single-year birth-age All-American projections.</p>
     <div class="ctl" style="margin-bottom:0">
       <a class="pill pill-dop" aria-pressed="true" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Download Print-Ready 15-Page Coaches' Race-Day Packet PDF &#8599;</a>
     </div>
@@ -265,14 +265,14 @@ DIOCESE_BODY = """
   <section>
     <div class="two">
       <div class="card">
-        <h2>Feeder Catholic school pipeline (all 63 qualifiers)</h2>
-        <p class="sub">13 Pittsburgh Diocesan elementary/middle schools comprise the 2026 national squad, led by <b>St. Louise de Marillac (11)</b>, <b>Aquinas Academy (10)</b>, <b>Blessed Francis Seelos (8)</b>, and <b>St. Kilian (6)</b>. Click any bar or school pill below to filter.</p>
+        <h2>Feeder Catholic school pipeline (all 64 qualifiers)</h2>
+        <p class="sub">13 Pittsburgh Diocesan elementary/middle schools comprise the 2026 national squad, co-led by <b>St. Louise de Marillac (11)</b> and <b>Aquinas Academy (11)</b>, followed by <b>Blessed Francis Seelos (8)</b> and <b>St. Kilian (6)</b>. Click any bar or school pill below to filter.</p>
         <div id="dopSchoolsChart"></div>
         <p class="so" id="dopSchoolsSo"></p>
       </div>
       <div class="card">
         <h2>Dual-crown squad outlook: National Podium % vs. CYO Title %</h2>
-        <p class="sub">Comparison of all 9 scoring Diocese of Pittsburgh rosters (plus the 4-runner Boys 6–8 contingent) in both the Open National Field and CYO National Championship scoring.</p>
+        <p class="sub">Comparison of all 10 complete scoring Pittsburgh CYO rosters across all 8 youth divisions in both the Open National Field and CYO National Championship scoring.</p>
         <div id="dopSquadDualChart"></div>
         <p class="so" id="dopSquadDualSo"></p>
       </div>
@@ -404,7 +404,7 @@ CLUBS_BODY = """
 """
 
 RUNNERS_BODY = """
-  <div class="eyebrow">2,616 Unique Entrants · Individual Scouting Dossiers, Age-Group Cutlines &amp; Rivalry Duels</div>
+  <div class="eyebrow">2,617 Unique Entrants · Individual Scouting Dossiers, Age-Group Cutlines &amp; Rivalry Duels</div>
   <h1>Runner Scouting Database &amp; All-American Cutlines</h1>
   <p class="lede">Inspect individual Monte Carlo projections, scraped 2026 season race logs, 2022–2025 CCCNYC veteran resumes, single-year birth-age All-American medal cutlines, and head-to-head probability duels for every athlete in the meet.</p>
 
@@ -442,7 +442,7 @@ RUNNERS_BODY = """
   </section>
 
   <section>
-    <h2>Search &amp; filter all 2,616 national entrants</h2>
+    <h2>Search &amp; filter all 2,617 national entrants</h2>
     <div class="ctl-bar">
       <input type="search" id="globalRunnerSearch" class="search" placeholder="Search name, club, or feeder school..." style="min-width:230px">
       <select id="fltEventSel" class="sel"><option value="ALL">All 11 Events</option></select>
@@ -453,9 +453,9 @@ RUNNERS_BODY = """
         <option value="2026">2026 Race Log Verified</option>
         <option value="VET">CCCNYC Returning Veteran</option>
       </select>
-      <button class="pill pill-dop" id="fltDopBtn" aria-pressed="false">Pittsburgh CYO (63)</button>
-      <button class="pill" id="fltAquinasBtn" aria-pressed="false">Aquinas Academy (10)</button>
-      <button class="pill pill-cyo" id="fltCyoBtn" aria-pressed="false">All CYO (489)</button>
+      <button class="pill pill-dop" id="fltDopBtn" aria-pressed="false">Pittsburgh CYO (64)</button>
+      <button class="pill" id="fltAquinasBtn" aria-pressed="false">Aquinas Academy (11)</button>
+      <button class="pill pill-cyo" id="fltCyoBtn" aria-pressed="false">All CYO (490)</button>
     </div>
     <p class="sub" id="runnerCountSummary"></p>
     <div class="tablewrap">

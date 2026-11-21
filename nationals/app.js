@@ -883,7 +883,7 @@
           <b>1. Final Nov 20 Entry List Update (${fmtInt(DATA.meta.raw_pdf_entries)} Entries · 31 Pages):</b> Expanded by <b>+${fmtInt(DATA.meta.raw_pdf_entries - DATA.meta.drive_pdf_entries)} late entries</b> over the initial Drive draft—adding national dynasties (<b>Brocaw Blazers</b>, <b>Louisville TigerSharks</b>, <b>Body in Training</b>, <b>HP Distance</b>, <b>Belvidere Tornados</b>) and major CYO delegations (<b>Phila. CYO</b>, <b>Toledo CYO</b>, <b>LA-CYO</b>). Meet Manager also resolved all prior Delta Hawks swapped-name duplicates!
         </div>
         <div class="callout callout-dop" style="margin:0;padding:9px 12px">
-          <b>2. Pittsburgh CYO (Diocese of Pittsburgh) Boys 6–8 Roster Alert (${ev4Dop.length} Runners):</b> Officially listed as <b>Pittsburgh CYO</b> (${DATA.meta.dop_runners}/63 intact across 13 feeder schools). Event 4 still lists <b>${ev4Dop.length} boys</b> (<span class="mono">${ev4Dop.map((a) => esc(a.display_name)).join(", ")}</span>)—1 short of Rule B.5's 5-runner team minimum. Test adding a 5th runner in the <a href="races.html?event=4">Event 4 Sandbox</a>!
+          <b>2. Pittsburgh CYO (Diocese of Pittsburgh) Boys 6–8 Complete Scoring Team (${ev4Dop.length} Runners):</b> Officially listed as <b>Pittsburgh CYO</b> (${DATA.meta.dop_runners}/${DATA.meta.dop_runners} season-verified across ${DATA.meta.dop_feeder_schools} feeder schools). With late race-day addition <b>Diego Victor</b> (Age 6, Aquinas Academy), Event 4 now fields a complete <b>${ev4Dop.length}-boy official scoring squad</b> (<span class="mono">${ev4Dop.map((a) => esc(a.display_name)).join(", ")}</span>)—giving Pittsburgh CYO <b>10 complete scoring squads across all 8 youth divisions</b>!
         </div>
         <div class="callout callout-warn" style="margin:0;padding:9px 12px">
           <b>3. Final-PDF Dual-Entry Audit (${dupList.length} Neutralized) &amp; CYO Expansion:</b> ${dupList.length ? dupList.map((d) => `<span class="mono">${esc(d.display_name)}</span> (Ev ${d.event_num}, ${esc(d.anomaly_note || "duplicate")})`).join("; ") : "Zero duplicate registrations remain"}. The CYO National Cup now features <b>${cyoOrgs.length} Catholic dioceses/parishes</b> totaling <b>${fmtInt(cyoOrgs.reduce((s, c) => s + c.runners_count, 0))} runners</b>!
@@ -1373,39 +1373,6 @@
     const total2026Races = dopAths.reduce((s, a) => s + a.races_2026.length, 0);
     const dioChamps = dopAths.filter((a) => a.races_2026.some((r) => r.meet.includes("Pittsburgh Diocesan") && r.place === 1)).length;
 
-    document.getElementById("dopKpis").innerHTML = `
-      <div class="kpi kpi-dop">
-        <div class="v">63</div>
-        <div class="l">Pittsburgh Qualifiers</div>
-        <div class="s">10 squads across 8 youth divisions</div>
-      </div>
-      <div class="kpi kpi-accent">
-        <div class="v">13</div>
-        <div class="l">Catholic Feeder Schools</div>
-        <div class="s">St. Louise (11), Aquinas (10), Seelos (8)</div>
-      </div>
-      <div class="kpi kpi-up">
-        <div class="v">${total2026Races}</div>
-        <div class="l">Verified 2026 Season Finishes</div>
-        <div class="s">6.2 avg races/athlete · ${dioChamps} Oct 17 Champs</div>
-      </div>
-      <div class="kpi kpi-gold">
-        <div class="v">${expNatPod.toFixed(2)}</div>
-        <div class="l">Expected National Team Trophies</div>
-        <div class="s">Led by 6–8G (100%) &amp; 13–14B (72%)</div>
-      </div>
-      <div class="kpi kpi-cyo">
-        <div class="v">${expCyoWins.toFixed(2)}</div>
-        <div class="l">Expected CYO National Team Titles</div>
-        <div class="s">Favored in 6 of 7 scored CYO divisions</div>
-      </div>
-      <div class="kpi kpi-dop">
-        <div class="v">${expAA.toFixed(1)}</div>
-        <div class="l">Expected Birth-Age All-Americans</div>
-        <div class="s">${dopAths.filter((a) => a.aa_age_prob >= 50).length} athletes project &ge;50% Top-25</div>
-      </div>
-    `;
-
     // Feeder Schools Breakdown
     const schMap = {};
     dopAths.forEach((a) => {
@@ -1416,11 +1383,50 @@
       if (a.gender === "M") obj.boys += 1; else obj.girls += 1;
     });
     const schRows = Object.values(schMap).sort((a, b) => b.count - a.count || b.expAA - a.expAA);
+    const shortSch = (s) => s.replace(" Catholic School", "").replace(" Elementary School", "").replace(" Parish School", "").replace("Blessed Francis ", "").replace(" de Marillac", "");
+    const top3SchTxt = schRows.slice(0, 3).map((r) => `${shortSch(r.school)} (${r.count})`).join(", ");
+    const cyoFavCount = scoringDop.filter((t) => t.cyo && t.cyo.win_prob >= 50).length;
+    const cyoDivCount = new Set(scoringDop.filter((t) => t.cyo).map((t) => t.event_num)).size;
+    const topNatSquads = scoringDop.slice().sort((a, b) => b.nat.podium_prob - a.nat.podium_prob).slice(0, 2);
+    const topNatTxt = topNatSquads.map((t) => `${t.event_short.replace(" Girls", "G").replace(" Boys", "B")} (${t.nat.podium_prob.toFixed(0)}%)`).join(" &amp; ");
+
+    document.getElementById("dopKpis").innerHTML = `
+      <div class="kpi kpi-dop">
+        <div class="v">${dopAths.length}</div>
+        <div class="l">Pittsburgh Qualifiers</div>
+        <div class="s">${scoringDop.length} complete scoring squads across 8 divisions</div>
+      </div>
+      <div class="kpi kpi-accent">
+        <div class="v">${schRows.length}</div>
+        <div class="l">Catholic Feeder Schools</div>
+        <div class="s">${top3SchTxt}</div>
+      </div>
+      <div class="kpi kpi-up">
+        <div class="v">${total2026Races}</div>
+        <div class="l">Verified 2026 Season Finishes</div>
+        <div class="s">${(total2026Races / dopAths.length).toFixed(1)} avg races/athlete · ${dioChamps} Oct 17 Champs</div>
+      </div>
+      <div class="kpi kpi-gold">
+        <div class="v">${expNatPod.toFixed(2)}</div>
+        <div class="l">Expected National Team Trophies</div>
+        <div class="s">Led by ${topNatTxt}</div>
+      </div>
+      <div class="kpi kpi-cyo">
+        <div class="v">${expCyoWins.toFixed(2)}</div>
+        <div class="l">Expected CYO National Team Titles</div>
+        <div class="s">Favored in ${cyoFavCount} of ${cyoDivCount} scored CYO divisions</div>
+      </div>
+      <div class="kpi kpi-dop">
+        <div class="v">${expAA.toFixed(1)}</div>
+        <div class="l">Expected Birth-Age All-Americans</div>
+        <div class="s">${dopAths.filter((a) => a.aa_age_prob >= 50).length} athletes project &ge;50% Top-25</div>
+      </div>
+    `;
 
     // School filter bar
     const fbar = document.getElementById("dopSchoolFilterBar");
     fbar.innerHTML = `<span class="ctl-label">Filter Feeder School</span>` +
-      `<button class="pill pill-dop" data-sch="ALL" aria-pressed="true">All 13 Schools (63)</button>` +
+      `<button class="pill pill-dop" data-sch="ALL" aria-pressed="true">All ${schRows.length} Schools (${dopAths.length})</button>` +
       schRows.map((r) => `<button class="pill" data-sch="${esc(r.school)}" aria-pressed="false">${esc(r.school.replace(" Catholic School", "").replace(" Elementary School", "").replace(" Parish School", ""))} (${r.count})</button>`).join("");
 
     const setSchFilter = (val) => {
@@ -1482,8 +1488,12 @@
         .text(`${r.count} (${r.expAA.toFixed(1)} AA)`);
     });
 
+    const totDop = schRows.reduce((s, r) => s + r.count, 0);
+    const top4 = schRows.slice(0, 4);
+    const top4Sum = top4.reduce((s, r) => s + r.count, 0);
+    const top4Txt = top4.map((r) => `${r.school.replace(" Catholic School", "").replace(" Parish School", "").replace("Blessed Francis ", "")} (${r.count})`).join(", ");
     document.getElementById("dopSchoolsSo").innerHTML =
-      `<b>Top 4 Feeder Schools Supply 56% of Delegation:</b> St. Louise de Marillac (11), Aquinas Academy (10), Seelos Academy (8), and St. Kilian (6) account for 35 of the 63 qualifiers (red = Girls, blue = Boys).`;
+      `<b>Top 4 Feeder Schools Supply ${Math.round((100 * top4Sum) / totDop)}% of Delegation:</b> ${top4Txt} account for ${top4Sum} of the ${totDop} qualifiers (red = Girls, blue = Boys).`;
   }
 
   function renderDopSquadDualChart(dopTeams) {
@@ -2261,7 +2271,7 @@
 
     let list = ATHLETES.filter((a) => {
       if (onlyDop && !a.is_dop) return false;
-      if (onlyAq && !(a.home_school || "").includes("Aquinas")) return false;
+      if (onlyAq && !(a.is_dop && (a.home_school || "").includes("Aquinas"))) return false;
       if (onlyCyo && !a.is_cyo) return false;
       if (evV !== "ALL" && a.event_num !== Number(evV)) return false;
       if (agV !== "ALL" && a.age !== Number(agV)) return false;

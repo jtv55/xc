@@ -1402,7 +1402,7 @@ tr.row-mile td {{ background: #f3f1ea; color: #4a515c; font-weight: 600; }}
     <div>
       <div class="mh-eyebrow">20th Annual CCCNYC &amp; CYO National Championships · Coaches' Intelligence Dossier</div>
       <h1>Pittsburgh CYO · 2026 Cedarville Race-Day Briefing</h1>
-      <div class="mh-sub">Final Nov 20 Entry List · <b>2,616</b> Unique Runners · <b>91</b> Clubs · <b>10</b> CYO Programs · <b>2,226 (85.1%)</b> Empirical Seeds · 10,000 Monte Carlo Trials</div>
+      <div class="mh-sub">Final Nov 20 Entry List + Late Race-Day Update · <b>{META["unique_runners"]:,}</b> Unique Runners · <b>{META["clubs_count"]}</b> Clubs · <b>10</b> CYO Programs · <b>{META["seeded_individual_count"]:,} ({100.0 * META["seeded_individual_count"] / META["unique_runners"]:.1f}%)</b> Empirical Seeds · 10,000 Monte Carlo Trials</div>
     </div>
     <div class="mh-date">
       <div class="big">Sat, Nov 21, 2026</div>
@@ -1411,9 +1411,9 @@ tr.row-mile td {{ background: #f3f1ea; color: #4a515c; font-weight: 600; }}
   </div>
 
   <div class="kpi-strip">
-    <div class="kpi-cell dop"><div class="v">63 / 63</div><div class="l">Pgh CYO Matched</div></div>
-    <div class="kpi-cell dop"><div class="v">13</div><div class="l">Feeder Schools</div></div>
-    <div class="kpi-cell"><div class="v">9 (+1)</div><div class="l">Scoring Squads</div></div>
+    <div class="kpi-cell dop"><div class="v">{len(dop_all)} / {len(dop_all)}</div><div class="l">Pgh CYO Matched</div></div>
+    <div class="kpi-cell dop"><div class="v">{len(sch_counts)}</div><div class="l">Feeder Schools</div></div>
+    <div class="kpi-cell"><div class="v">{sum(1 for t in dop_teams_all if t["scores_official_team"])} / {len(dop_teams_all)}</div><div class="l">Scoring Squads</div></div>
     <div class="kpi-cell cyo"><div class="v">{exp_cyo_titles:.2f}</div><div class="l">Proj CYO Titles</div></div>
     <div class="kpi-cell up"><div class="v">{exp_aa_tot:.1f}</div><div class="l">Proj Age AAs</div></div>
     <div class="kpi-cell"><div class="v">20 + BM</div><div class="l">States + Intl</div></div>
@@ -1494,7 +1494,7 @@ tr.row-mile td {{ background: #f3f1ea; color: #4a515c; font-weight: 600; }}
   </div>
 
   <div class="ed-sec">
-    <div class="sec-bar subtle"><span>13 Catholic Feeder Schools Comprising Pittsburgh CYO (63 / 63 Season Verified)</span></div>
+    <div class="sec-bar subtle"><span>{len(sch_counts)} Catholic Feeder Schools Comprising Pittsburgh CYO ({len(dop_all)} / {len(dop_all)} Season Verified)</span></div>
     <div style="margin-top:2px">{sch_badges}</div>
   </div>
 

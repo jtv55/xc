@@ -272,6 +272,20 @@ with open(os.path.join(base_scratch, "parsed_entries.json"), encoding="utf-8") a
 with open(os.path.join(base_scratch, "final_nov20_entries.json"), encoding="utf-8") as f:
     uni_data = json.load(f)
 
+# Late race-day official addition (Nov 21): Diego Victor (Age 6, Aquinas Academy) -> Pittsburgh CYO Boys 6-8 2K (completes 5-runner scoring team!)
+if not any(e["raw_name"].strip() == "Victor, Diego" for e in uni_data["entries"]):
+    uni_data["entries"].append({
+        "page": 31,
+        "event_num": 4,
+        "event_title": "Boys 6-8 2000 Meter Run CC",
+        "team": "Pittsburgh CYO",
+        "team_index": 5,
+        "raw_name": "Victor, Diego",
+        "age": "6",
+        "school_short": "Pittsburgh CYO",
+        "late_addition_note": "Late race-day addition (Nov 21) — completes Pittsburgh CYO 5-runner Boys 6–8 scoring team",
+    })
+
 drive_set = {(e["event_num"], re.sub(r"^\d+\s+", "", e["raw_name"].strip()), e["age"]) for e in drive_raw}
 
 athletes = []
@@ -293,7 +307,7 @@ for idx, e in enumerate(uni_data["entries"]):
     team = e["team"]
     st, cat, reg = get_club_geo(team)
     is_ghost = False
-    anomaly_note = None
+    anomaly_note = e.get("late_addition_note")
     if ev_num == 2 and raw_nm == "Potthast, Will" and team == "Unattached":
         is_ghost = True
         anomaly_note = "Dual-listed on both Shelby County Pacers and Unattached in Event 2"
@@ -1558,7 +1572,7 @@ for a in sorted([x for x in athletes if x["is_dop"]], key=lambda x: -x["aa_age_p
     print(f"  {a['display_name']:22s} ({a['team']}, Age {a['age']}, {a['home_school']}) | Ev {a['event_num']} | Proj {a['proj_time_str']} | Ov #{a['exp_place']} | Age-{a['award_group']} AA Top-25: {a['aa_age_prob']}% (Age Rk #{a['aa_age_exp_rank']})")
 
 for a in [x for x in athletes if "Victor" in x["last_name"]]:
-    print("  FOCUS CHECK:", a["display_name"], a["team"], "School:", a["home_school"], "2026 races:", len(a["races_2026"]), "Proj:", a["proj_time_str"], "Age-9 AA%:", a["aa_age_prob"], "Age Rk:", a["aa_age_exp_rank"])
+    print(f"  FOCUS CHECK: {a['display_name']} | Ev {a['event_num']} | {a['team']} | School: {a['home_school']} | 2026 races: {len(a['races_2026'])} | Proj: {a['proj_time_str']} ({a['proj_pace_mi']}/mi) | Ov #{a['exp_place']} | CYO #{a['cyo_exp_rank']} | Age-{a['award_group']} AA%: {a['aa_age_prob']}% (Age Rk #{a['aa_age_exp_rank']})")
 
 # Build Historical CCCNYC Champions & Course Records Summary for Venue/Meet tab
 hist_venue_summary = [
@@ -1628,7 +1642,7 @@ master_payload = {
         "venue": "Elvin R. King Cross Country Course · Cedarville University",
         "location": "Cedarville, Ohio (251 N. Main St.)",
         "simulations": N_SIMS,
-        "generated_at": "2026-11-20",
+        "generated_at": "2026-11-21",
         "raw_pdf_entries": len(athletes),
         "drive_pdf_entries": len(drive_raw),
         "unique_runners": len(unique_all),

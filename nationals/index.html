@@ -6,7 +6,7 @@
 <title>2026 CCCNYC &amp; CYO Nationals · Meet Hub & Predictions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261120-v7">
+<link rel="stylesheet" href="styles.css?v=20261121-raceday">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body data-page="hub">
@@ -15,9 +15,9 @@
   <span class="nav-brand">&#9670; CCCNYC / CYO '26</span>
   <a href="index.html" aria-current="page">Meet Hub &amp; Course</a>
   <a href="races.html" >Race Simulator (11)</a>
-  <a href="diocese.html" >Pittsburgh CYO (63)</a>
+  <a href="diocese.html" >Pittsburgh CYO (64)</a>
   <a href="clubs.html" >Schools &amp; Clubs (91)</a>
-  <a href="runners.html" >Runners &amp; Dossiers (2,616)</a>
+  <a href="runners.html" >Runners &amp; Dossiers (2,617)</a>
   <span class="nav-right">
     <button id="globalScoringBtn" class="pill pill-cyo" aria-pressed="false" title="Toggle between Full National Open scoring and CYO Catholic/Diocesan scoring">Lens: National Open</button>
     <button id="themeBtn" class="pill" style="font-size:11.5px;padding:3px 9px">Theme: auto</button>
@@ -28,13 +28,13 @@
 <div class="wrap">
 
   <div class="hero">
-    <div class="eyebrow">20th Annual National Youth XC &amp; CYO Championships · Final Entry List (Nov 20) · Race Day Nov 21, 2026 · Cedarville, OH</div>
+    <div class="eyebrow">20th Annual National Youth XC &amp; CYO Championships · Pre-Race Final Forecast (Nov 21, 2026) · Cedarville, OH</div>
     <h1>2026 CCCNYC &amp; CYO National Championship Intelligence</h1>
-    <p class="lede">Final race-eve analytical preview, 10,000-trial Monte Carlo simulation engine, and scouting database for tomorrow's 2,616-runner national championship at Cedarville University's Elvin R. King Cross Country Course. Switch anytime between <b>National Open Scoring</b> (all 91 organizations) and <b>CYO National Championship Scoring</b> (10 Catholic diocesan &amp; parish programs).</p>
+    <p class="lede">Pre-race analytical forecast, 10,000-trial Monte Carlo simulation engine, and scouting database for today's 2,617-runner national championship at Cedarville University's Elvin R. King Cross Country Course. Switch anytime between <b>National Open Scoring</b> (all 91 organizations) and <b>CYO National Championship Scoring</b> (10 Catholic diocesan &amp; parish programs).</p>
     <div class="ctl" style="margin-bottom:0">
-      <a class="pill pill-dop" aria-pressed="true" href="diocese.html">Explore Pittsburgh CYO / Diocese Command Center (63 Runners) &#8594;</a>
+      <a class="pill pill-dop" aria-pressed="true" href="diocese.html">Explore Pittsburgh CYO / Diocese Command Center (64 Runners) &#8594;</a>
       <a class="pill" href="races.html">Interactive 11-Race Simulator &amp; Coach's Sandbox &#8594;</a>
-      <a class="pill" href="runners.html">Search All 2,616 Athlete Scouting Dossiers &#8594;</a>
+      <a class="pill" href="runners.html">Search All 2,617 Athlete Scouting Dossiers &#8594;</a>
       <a class="pill" href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">View Final Entry List PDF (31 Pages)</a>
       <a class="pill pill-dop" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Download Pittsburgh CYO Race-Day Packet PDF (15 Pages)</a>
     </div>
@@ -102,7 +102,7 @@
       </div>
       <div class="card">
         <h2>Entry list forensic audit &amp; registration anomalies</h2>
-        <p class="sub">Automated forensic cross-checks of the initial Drive draft (1,058 rows) vs the Final Nov 20 <code class="mono">Entry List.pdf</code> (2,617 entries across 31 pages) uncovered critical roster expansions and scoring impacts cleaned in our simulation:</p>
+        <p class="sub">Automated forensic cross-checks of the initial Drive draft (1,058 rows) vs the Final Nov 20 <code class="mono">Entry List.pdf</code> (+ Nov 21 late add · 2,618 entries) uncovered critical roster expansions and scoring impacts cleaned in our simulation:</p>
         <div id="anomalyAuditList"></div>
       </div>
     </div>
@@ -112,7 +112,7 @@
   <footer class="foot">
     <div>
       <b>2026 Cross Country Coaches National Youth Championships (20th Edition) &amp; CYO Nationals</b> · Saturday, Nov 21, 2026 · Elvin R. King XC Course, Cedarville University, OH.<br>
-      Updated from the official <a href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">Final Entry List PDF (Nov 20 · 2,617 entries)</a>, cross-referenced against 2,226 empirical race histories (85.1% overall · 90.2% ages 9–14) across 20 states + Bermuda (10,000 Monte Carlo trials per race).
+      Updated from the official <a href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">Final Entry List PDF (Nov 20 + Nov 21 late add · 2,618 entries)</a>, cross-referenced against 2,227 empirical race histories (85.1% overall · 90.2% ages 9–14) across 20 states + Bermuda (10,000 Monte Carlo trials per race).
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
       <a class="pill" href="data/cccnyc_2026_runner_predictions.csv" download>Runner Predictions CSV</a>
@@ -123,8 +123,8 @@
 </div>
 
 <div id="d3Tooltip" class="d3-tip"></div>
-<script src="data/data.js?v=20261120-v7"></script>
-<script src="data/us_states_geo.js?v=20261120-v7"></script>
-<script src="app.js?v=20261120-v7"></script>
+<script src="data/data.js?v=20261121-raceday"></script>
+<script src="data/us_states_geo.js?v=20261121-raceday"></script>
+<script src="app.js?v=20261121-raceday"></script>
 </body>
 </html>
