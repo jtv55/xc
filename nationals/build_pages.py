@@ -63,7 +63,7 @@ HUB_BODY = """
       <a class="pill" href="races.html">Interactive 11-Race Simulator &amp; Coach's Sandbox &#8594;</a>
       <a class="pill" href="runners.html">Search All 2,616 Athlete Scouting Dossiers &#8594;</a>
       <a class="pill" href="data/pdfs/Entry_List_Final_Nov20.pdf" target="_blank">View Final Entry List PDF (31 Pages)</a>
-      <a class="pill pill-dop" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Download Pittsburgh CYO Race-Day Packet PDF (10 Pages)</a>
+      <a class="pill pill-dop" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Download Pittsburgh CYO Race-Day Packet PDF (15 Pages)</a>
     </div>
   </div>
 
@@ -252,7 +252,7 @@ DIOCESE_BODY = """
     <h1>Pittsburgh CYO (Diocese of Pittsburgh) Command Center</h1>
     <p class="lede">Every single one of the <b>63 Diocese of Pittsburgh athletes</b> (officially listed as <b>Pittsburgh CYO</b> in the Final Nov 20 Entry List) was matched to their complete 2026 Western PA Cross Country season resume (averaging 6.2 races per athlete) and Oct 17 Diocesan Championship split—unlocking exact parish feeder pipelines, A/B squad compression ladders, CYO title odds against Philadelphia, Toledo, LA &amp; Columbus CYO, and single-year birth-age All-American projections.</p>
     <div class="ctl" style="margin-bottom:0">
-      <a class="pill pill-dop" aria-pressed="true" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Download Print-Ready 10-Page Coaches' Race-Day Packet PDF &#8599;</a>
+      <a class="pill pill-dop" aria-pressed="true" href="data/pdfs/Pittsburgh_CYO_2026_CCCNYC_Race_Day_Packet.pdf" target="_blank">Download Print-Ready 15-Page Coaches' Race-Day Packet PDF &#8599;</a>
     </div>
   </div>
 

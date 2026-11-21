@@ -54,6 +54,18 @@ def fmt_club(name, state=None):
         return name
     return f"{name} ({tag})"
 
+def fmt_club_trunc(name, state=None, max_len=24):
+    full = fmt_club(name, state)
+    if len(full) <= max_len:
+        return full
+    st = state or TEAM_STATE.get(name, "")
+    tag = "BM" if st == "INTL" else st
+    suf = f" ({tag})" if (tag and tag != "USA") else ""
+    if not suf:
+        return full[:max_len - 1] + "…"
+    base_max = max(7, max_len - len(suf) - 1)
+    return f"{name[:base_max]}…{suf}"
+
 def fmt_time(sec):
     if sec is None:
         return "—"
@@ -480,8 +492,132 @@ def build_scurve_svg(ev_num, ev_aths, W=740, H=265):
     return "".join(parts)
 
 # ==============================================================================
-# 4. ASSEMBLE COMPLETE 10-PAGE PRINT-READY HTML PACKET
+# 3B. VECTOR TEAM MILE-PACE DENSITY RIDGELINE CHART (FOR ANY OF THE 11 RACES)
 # ==============================================================================
+def build_ridgeline_svg(ev_num, W=455, H=200):
+    ev = EVENTS[ev_num]
+    dist_m = ev["dist_m"]
+    scoring = sorted(
+        [t for t in TEAMS if t["event_num"] == ev_num and t["scores_official_team"]],
+        key=lambda t: t["nat"]["exp_rank"],
+    )
+    if not scoring:
+        return '<div class="muted" style="padding:18px;text-align:center">No complete 5+ scoring teams</div>'
+
+    # Select Top 5 National + Top 2 CYO + Pittsburgh CYO (deduped, up to 7 squads max!)
+    chosen = []
+    seen_t = set()
+    def add_t(t):
+        if t["team"] not in seen_t and len(chosen) < 7:
+            seen_t.add(t["team"])
+            chosen.append(t)
+    for t in scoring[:4]:
+        add_t(t)
+    cyo_s = sorted([t for t in scoring if t["is_cyo"]], key=lambda t: t["cyo"]["exp_rank"])
+    for t in cyo_s[:2]:
+        add_t(t)
+    for t in scoring:
+        if t["is_dop"]:
+            add_t(t)
+    for t in scoring[4:]:
+        add_t(t)
+    # Sort display order by national expected rank
+    chosen.sort(key=lambda t: t["nat"]["exp_rank"])
+
+    ath_map = {a["id"]: a for a in ATHLETES}
+    team_paces = []
+    all_p = []
+    for t in chosen:
+        ps = sorted([
+            ath_map[rid]["proj_time_sec"] / (dist_m / 1609.344)
+            for rid in t["runner_ids"] if rid in ath_map
+        ])
+        if ps:
+            team_paces.append((t, ps))
+            all_p.extend(ps[:7])
+
+    if not all_p:
+        return '<div class="muted">No pace data</div>'
+
+    p_min = max(240.0, min(all_p) - 22.0)
+    p_max = max(all_p) + 26.0
+    m_l, m_r, m_t, m_b = 148, 12, 16, 22
+    plot_w = W - m_l - m_r
+    n_rows = len(team_paces)
+    row_step = (H - m_t - m_b) / max(1, n_rows)
+    ridge_h = min(26.0, row_step * 1.45)
+
+    def sx(p):
+        return m_l + ((p - p_min) / max(1e-6, p_max - p_min)) * plot_w
+
+    def fmt_p_lbl(ps):
+        mn = int(ps // 60)
+        sc = int(round(ps - mn * 60))
+        if sc == 60:
+            mn += 1; sc = 0
+        return f"{mn}:{sc:02d}"
+
+    parts = [f'<svg viewBox="0 0 {W} {H}" width="100%" style="display:block;height:auto">']
+    # X-axis pace grid lines (30s or 60s steps)
+    span = p_max - p_min
+    step = 60 if span > 210 else (30 if span > 95 else 15)
+    tcur = math.ceil(p_min / step) * step
+    while tcur <= p_max:
+        xx = sx(tcur)
+        parts.append(f'<line x1="{xx:.1f}" y1="{m_t - 4}" x2="{xx:.1f}" y2="{H - m_b}" stroke="#ece9e0" stroke-width="0.7"/>')
+        parts.append(f'<text x="{xx:.1f}" y="{H - 7}" text-anchor="middle" font-family="IBM Plex Mono,Consolas,monospace" font-size="7.8" fill="#6b6962">{fmt_p_lbl(tcur)}/mi</text>')
+        tcur += step
+
+    # Evaluate Gaussian KDE per team
+    grid_n = 55
+    xs_pace = [p_min + (p_max - p_min) * (i / (grid_n - 1)) for i in range(grid_n)]
+    bw = max(9.0, (p_max - p_min) * 0.055)
+
+    for idx, (t, ps) in enumerate(team_paces):
+        y_base = m_t + (idx + 0.85) * row_step
+        col = "#c43225" if t["is_dop"] else ("#6a3ab2" if t["is_cyo"] else ("#0d7a47" if idx == 0 else "#1d5bbf"))
+        # KDE density over top 7 (scoring + displacers)
+        pts_use = ps[:7]
+        dens = []
+        for xv in xs_pace:
+            val = sum(math.exp(-0.5 * ((xv - p) / bw) ** 2) for p in pts_use)
+            dens.append(val)
+        dmax = max(dens) or 1.0
+        poly_pts = [f"{sx(xs_pace[0]):.1f},{y_base:.1f}"]
+        line_pts = []
+        for xv, dv in zip(xs_pace, dens):
+            xx = sx(xv)
+            yy = y_base - (dv / dmax) * ridge_h
+            poly_pts.append(f"{xx:.1f},{yy:.1f}")
+            line_pts.append(f"{xx:.1f},{yy:.1f}")
+        poly_pts.append(f"{sx(xs_pace[-1]):.1f},{y_base:.1f}")
+
+        # Baseline
+        parts.append(f'<line x1="{m_l}" y1="{y_base:.1f}" x2="{W - m_r}" y2="{y_base:.1f}" stroke="#dcd8ce" stroke-width="0.7"/>')
+        # Filled KDE area + stroke
+        parts.append(f'<polygon points="{" ".join(poly_pts)}" fill="{col}" fill-opacity="0.24"/>')
+        parts.append(f'<polyline points="{" ".join(line_pts)}" fill="none" stroke="{col}" stroke-width="1.35"/>')
+        # Top-5 scorer tick marks along baseline
+        for p5 in ps[:5]:
+            tx = sx(p5)
+            parts.append(f'<line x1="{tx:.1f}" y1="{y_base - 4.5:.1f}" x2="{tx:.1f}" y2="{y_base + 1.5:.1f}" stroke="{col}" stroke-width="1.4"/>')
+        # Team label left of axis
+        lbl = fmt_club_trunc(t["team"], t["state"], 22)
+        fw = "700" if (t["is_dop"] or idx == 0) else "500"
+        tcol = "#a82419" if t["is_dop"] else ("#592e9b" if t["is_cyo"] else "#151513")
+        parts.append(
+            f'<text x="{m_l - 6}" y="{y_base - 2:.1f}" text-anchor="end" font-family="IBM Plex Sans,Segoe UI,sans-serif" '
+            f'font-size="7.8" font-weight="{fw}" fill="{tcol}">{esc(lbl)}</text>'
+        )
+
+    parts.append(f'<text x="{W - m_r}" y="10" text-anchor="end" font-family="IBM Plex Sans,Segoe UI,sans-serif" font-size="7.2" fill="#6b6962">&#8592; Faster Pace  |  Ticks = Top-5 Scorers</text>')
+    parts.append("</svg>")
+    return "".join(parts)
+
+# ==============================================================================
+# 4. ASSEMBLE COMPLETE 15-PAGE PRINT-READY HTML PACKET
+# ==============================================================================
+TOTAL_PAGES = 15
 usa_svg, grad_css, max_st, n_cities, top_st_str = build_usa_map_svg()
 dop_all = [a for a in ATHLETES if a["is_dop"]]
 dop_aa_svg = build_dop_aa_chart_svg(dop_all)
@@ -541,11 +677,185 @@ for a in dop_all:
     sch_counts[s] = sch_counts.get(s, 0) + 1
 sch_badges = " ".join(f'<span class="sch-pill"><b>{esc(s)}</b> ({n})</span>' for s, n in sorted(sch_counts.items(), key=lambda x: (-x[1], x[0])))
 
-# Pages 3–10: Dedicated page for each of Pittsburgh CYO's 8 races
+# ==============================================================================
+# PAGE 3: ALL-11-RACES PROJECTED TOP 3 TEAM WINNERS (OVERALL & CYO) + CYO CUP
+# ==============================================================================
+nat_pod_rows = []
+cyo_pod_rows = []
+for en in range(1, 12):
+    ev = EVENTS[en]
+    nt = sorted([t for t in TEAMS if t["event_num"] == en and t["scores_official_team"]], key=lambda t: t["nat"]["exp_rank"])
+    ct = sorted([t for t in TEAMS if t["event_num"] == en and t["scores_official_team"] and t["is_cyo"]], key=lambda t: t["cyo"]["exp_rank"])
+
+    def fmt_pod_cell(t_list, idx, lens):
+        if idx >= len(t_list):
+            return '<span class="muted">—</span>'
+        t = t_list[idx]
+        st = t[lens]
+        cls = "dop-txt" if t["is_dop"] else ("cyo-txt" if t["is_cyo"] and lens == "nat" else "")
+        stat = f'{st["exp_score"]:.0f}p · {st["win_prob"]:.0f}%W' if idx == 0 else f'{st["exp_score"]:.0f}p · {st["podium_prob"]:.0f}%P'
+        return f'<div class="b {cls}">{esc(fmt_club_trunc(t["team"], t["state"], 25))}</div><div class="mono muted" style="font-size:6.8pt">{stat} · {st["top5_avg_str"]}</div>'
+
+    nat_pod_rows.append(
+        f'<tr><td class="mono nw">{ev["time_est"]}</td><td class="b nw">Ev {en}: {ev["short"]}</td>'
+        f'<td>{fmt_pod_cell(nt, 0, "nat")}</td><td>{fmt_pod_cell(nt, 1, "nat")}</td><td>{fmt_pod_cell(nt, 2, "nat")}</td>'
+        f'<td class="num mono">{len(nt)}</td></tr>'
+    )
+    if ct:
+        cyo_pod_rows.append(
+            f'<tr class="{"row-dop" if any(x["is_dop"] for x in ct[:3]) else ""}"><td class="mono nw">{ev["time_est"]}</td><td class="b nw">Ev {en}: {ev["short"]}</td>'
+            f'<td>{fmt_pod_cell(ct, 0, "cyo")}</td><td>{fmt_pod_cell(ct, 1, "cyo")}</td><td>{fmt_pod_cell(ct, 2, "cyo")}</td>'
+            f'<td class="num mono">{len(ct)}</td></tr>'
+        )
+    else:
+        cyo_pod_rows.append(
+            f'<tr><td class="mono nw">{ev["time_est"]}</td><td class="b nw">Ev {en}: {ev["short"]}</td>'
+            f'<td colspan="3" class="muted">No complete 5+ CYO scoring squads entered in this division</td><td class="num mono">0</td></tr>'
+        )
+
+# CYO National Cup Omnium Strip
+cyo_cup_orgs = []
+for c in [x for x in CLUBS if x["is_cyo"]]:
+    cw = sum(t["cyo"]["win_prob"] / 100.0 for t in TEAMS if t["base_org"] == c["org"] and t["scores_official_team"] and t.get("cyo"))
+    cyo_cup_orgs.append((c, cw))
+cyo_cup_orgs.sort(key=lambda x: (-x[1], -x[0]["runners_count"]))
+cyo_cup_pills = " ".join(
+    f'<span class="sch-pill" style="{"border-color:#c43225;background:rgba(196,50,37,0.08)" if c["is_dop"] else ""}"><b>{esc(fmt_club(c["org"], c["state"]))}</b>: {cw:.2f} titles · {c["runners_count"]} rnrs · {c["exp_age_all_americans"]:.1f} AA</span>'
+    for c, cw in cyo_cup_orgs[:6]
+)
+
+page3_team_podiums_html = f"""
+<div class="page">
+  <div class="race-hdr">
+    <div>
+      <div class="eyebrow">ALL 11 CHAMPIONSHIP RACES · 10,000-TRIAL MONTE CARLO TEAM DISPLACEMENT PROJECTIONS</div>
+      <h1>Projected Top 3 Team Winners — National Open &amp; CYO Championship</h1>
+    </div>
+    <div class="hdr-meta">
+      <div class="mono b">Official Rule B.5 Scoring</div>
+      <div class="muted">Top 5 score · 6–7 displace · #6 tiebreak</div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="box-title">
+      <span>Projected Top 3 National Open Team Winners (All 11 Races)</span>
+      <span class="muted" style="font-weight:400;font-size:7.2pt">Pts = Expected Score · %W = Win Prob · %P = Top-3 Podium Prob · Top-5 Avg Time</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th><th>Race</th><th>&#129351; 1st Favorite</th><th>&#129352; 2nd Contender</th><th>&#129353; 3rd Contender</th><th class="num">Tms</th>
+        </tr>
+      </thead>
+      <tbody>{"".join(nat_pod_rows)}</tbody>
+    </table>
+  </div>
+
+  <div class="box">
+    <div class="box-title">
+      <span>Projected Top 3 CYO National Championship Team Winners (All 11 Races)</span>
+      <span class="muted" style="font-weight:400;font-size:7.2pt">Red rows = Pittsburgh CYO projected Top-3 CYO podium</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th><th>Race</th><th>&#129351; 1st CYO Favorite</th><th>&#129352; 2nd CYO</th><th>&#129353; 3rd CYO</th><th class="num">CYO</th>
+        </tr>
+      </thead>
+      <tbody>{"".join(cyo_pod_rows)}</tbody>
+    </table>
+  </div>
+
+  <div class="box">
+    <div class="box-title"><span>CYO National Cup Omnium Leaders (Top 6 Catholic Programs by Expected CYO Titles)</span></div>
+    <div>{cyo_cup_pills}</div>
+  </div>
+
+  <div class="pfoot">
+    <span>2026 CCCNYC &amp; CYO Nationals · Team Mile-Pace Density Ridgelines for All 11 Races follow on Pages 4–7</span>
+    <span class="mono">Page 3 of {TOTAL_PAGES}</span>
+  </div>
+</div>
+"""
+
+# ==============================================================================
+# PAGES 4–7: TEAM MILE-PACE DENSITY RIDGELINES + TOP 3 OVERALL & CYO (ALL 11 RACES)
+# ==============================================================================
+RIDGE_GROUPS = [
+    (4, "Morning High School & 6–8 Divisions", [1, 2, 3]),
+    (5, "Developmental 6–8 Boys, Race of the Americas & 9–10 Girls", [4, 5, 6]),
+    (6, "9–10 Boys & 11–12 Championship Divisions", [7, 8, 9]),
+    (7, "13–14 Championship Finale Divisions", [10, 11]),
+]
+ridge_pages_html = []
+for p_num, grp_title, ev_list in RIDGE_GROUPS:
+    blocks = []
+    svg_h = 205 if len(ev_list) == 3 else 255
+    for en in ev_list:
+        ev = EVENTS[en]
+        nt = sorted([t for t in TEAMS if t["event_num"] == en and t["scores_official_team"]], key=lambda t: t["nat"]["exp_rank"])
+        ct = sorted([t for t in TEAMS if t["event_num"] == en and t["scores_official_team"] and t["is_cyo"]], key=lambda t: t["cyo"]["exp_rank"])
+        ridge_svg = build_ridgeline_svg(en, W=455, H=svg_h)
+
+        def pod_lines(t_list, lens, badge_cls):
+            if not t_list:
+                return '<div class="muted" style="font-size:7.3pt">No complete 5+ CYO scoring teams</div>'
+            out = []
+            for idx, t in enumerate(t_list[:3], start=1):
+                st = t[lens]
+                c_cls = "dop-txt" if t["is_dop"] else ("cyo-txt" if t["is_cyo"] and lens == "nat" else "")
+                out.append(
+                    f'<div class="pod-mini">'
+                    f'<span class="{badge_cls}">#{idx}</span> '
+                    f'<span class="b {c_cls}">{esc(fmt_club_trunc(t["team"], t["state"], 24))}</span>'
+                    f'<span class="mono muted" style="margin-left:auto;white-space:nowrap">{st["exp_score"]:.0f}p ({st["win_prob"]:.0f}%W · {st["spread_1_5_sec"]:.0f}s)</span>'
+                    f'</div>'
+                )
+            return "".join(out)
+
+        blocks.append(f"""
+  <div class="box" style="padding:6px 9px">
+    <div class="box-title" style="margin-bottom:3px">
+      <span><b>Ev {en} · {esc(ev['name'])}</b> <span class="muted">({ev['time_est']} EST · {ev['unique_runners']} rnrs · {ev['scoring_teams_count']} tms)</span></span>
+      <span class="muted" style="font-weight:400;font-size:7pt"><span class="sw" style="background:#c43225"></span>Pgh CYO &nbsp;<span class="sw" style="background:#6a3ab2"></span>CYO &nbsp;<span class="sw" style="background:#0d7a47"></span>#1 Nat</span>
+    </div>
+    <div class="ridge-grid">
+      <div>{ridge_svg}</div>
+      <div class="ridge-side">
+        <div class="pod-hdr">Overall National Top 3</div>
+        {pod_lines(nt, "nat", "rk-nat")}
+        <div class="pod-hdr" style="margin-top:6px;color:#592e9b">CYO National Top 3</div>
+        {pod_lines(ct, "cyo", "rk-cyo")}
+      </div>
+    </div>
+  </div>
+""")
+    ridge_pages_html.append(f"""
+<div class="page">
+  <div class="race-hdr">
+    <div>
+      <div class="eyebrow">TEAM MILE-PACE DENSITY RIDGELINES &amp; TOP-3 PODIUMS · ALL 11 RACES</div>
+      <h1>{grp_title}</h1>
+    </div>
+    <div class="hdr-meta">
+      <div class="mono b">Left-Shifted = Faster Pack</div>
+      <div class="muted">Narrower wave = tighter 1–5 spread</div>
+    </div>
+  </div>
+  {"".join(blocks)}
+  <div class="pfoot">
+    <span>2026 CCCNYC &amp; CYO Nationals · KDE Mile-Pace Density Ridgelines (vertical ticks mark projected Top-5 scorers; spread = 1–5 sec)</span>
+    <span class="mono">Page {p_num} of {TOTAL_PAGES}</span>
+  </div>
+</div>
+""")
+
+# Pages 8–15: Dedicated page for each of Pittsburgh CYO's 8 races
 DOP_EVENTS = [3, 4, 6, 7, 8, 9, 10, 11]
 race_pages_html = []
 
-for p_idx, ev_num in enumerate(DOP_EVENTS, start=3):
+for p_idx, ev_num in enumerate(DOP_EVENTS, start=8):
     ev = EVENTS[ev_num]
     ev_aths = sorted([a for a in ATHLETES if a["event_num"] == ev_num], key=lambda a: a["exp_place"])
     ev_dop = [a for a in ev_aths if a["is_dop"]]
@@ -665,7 +975,7 @@ for p_idx, ev_num in enumerate(DOP_EVENTS, start=3):
 
   <div class="pfoot">
     <span>2026 CCCNYC &amp; CYO Nationals · Cedarville University (Elvin R. King XC Course) · 10,000 Monte Carlo Trials</span>
-    <span class="mono">Page {p_idx} of 10</span>
+    <span class="mono">Page {p_idx} of {TOTAL_PAGES}</span>
   </div>
 </div>
 """)
@@ -865,6 +1175,63 @@ tr.row-mile td {{ background: #f3f1ea; color: #4a4944; font-weight: 600; }}
   font-size: 7.4pt;
   margin: 2px 2px 2px 0;
 }}
+.dop-txt {{ color: #a82419; }}
+.cyo-txt {{ color: #592e9b; }}
+.ridge-grid {{
+  display: grid;
+  grid-template-columns: 1.48fr 1fr;
+  gap: 8px;
+  align-items: center;
+}}
+.ridge-side {{
+  background: #faf9f5;
+  border: 1px solid #ece9e0;
+  border-radius: 5px;
+  padding: 6px 8px;
+}}
+.pod-hdr {{
+  font-size: 7pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1d5bbf;
+  border-bottom: 1px solid #e2dfd6;
+  padding-bottom: 2px;
+  margin-bottom: 3.5px;
+}}
+.pod-mini {{
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 7.2pt;
+  padding: 2px 0;
+  border-bottom: 1px dashed #ece9e0;
+}}
+.pod-mini:last-child {{ border-bottom: none; }}
+.rk-nat {{
+  display: inline-block;
+  min-width: 17px;
+  text-align: center;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-weight: 700;
+  font-size: 6.7pt;
+  background: rgba(29, 91, 191, 0.12);
+  color: #1d5bbf;
+  border-radius: 3px;
+  padding: 0.5px 3px;
+}}
+.rk-cyo {{
+  display: inline-block;
+  min-width: 17px;
+  text-align: center;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-weight: 700;
+  font-size: 6.7pt;
+  background: rgba(106, 58, 178, 0.13);
+  color: #592e9b;
+  border-radius: 3px;
+  padding: 0.5px 3px;
+}}
 .pfoot {{
   margin-top: auto;
   padding-top: 5px;
@@ -918,7 +1285,7 @@ tr.row-mile td {{ background: #f3f1ea; color: #4a4944; font-weight: 600; }}
   <div class="box">
     <div class="box-title">
       <span>Official Meet Schedule (All Times Eastern Standard Time — EST)</span>
-      <span class="muted" style="font-weight:400;font-size:7.6pt">Shaded rows = Pittsburgh CYO races (Pages 3–10)</span>
+      <span class="muted" style="font-weight:400;font-size:7.6pt">Team Podiums &amp; Ridgelines: Pages 3–7 · Pgh CYO Sheets: Pages 8–15</span>
     </div>
     <table>
       <thead><tr><th style="width:72px">Time (EST)</th><th>Event</th><th class="num" style="width:70px">Distance</th><th class="num" style="width:115px">Field / Pgh CYO</th></tr></thead>
@@ -928,7 +1295,7 @@ tr.row-mile td {{ background: #f3f1ea; color: #4a4944; font-weight: 600; }}
 
   <div class="pfoot">
     <span>2026 CCCNYC &amp; CYO Nationals · Pittsburgh CYO Coaches' Briefing Packet · Live Dashboard: jtv55.github.io/xc/nationals/</span>
-    <span class="mono">Page 1 of 10</span>
+    <span class="mono">Page 1 of {TOTAL_PAGES}</span>
   </div>
 </div>
 
@@ -973,9 +1340,13 @@ tr.row-mile td {{ background: #f3f1ea; color: #4a4944; font-weight: 600; }}
 
   <div class="pfoot">
     <span>2026 CCCNYC &amp; CYO Nationals · Single-Year Birth-Age All-American Awards: Top 25 per exact birth year (Ages 6..14)</span>
-    <span class="mono">Page 2 of 10</span>
+    <span class="mono">Page 2 of {TOTAL_PAGES}</span>
   </div>
 </div>
+
+{page3_team_podiums_html}
+
+{"".join(ridge_pages_html)}
 
 {"".join(race_pages_html)}
 
