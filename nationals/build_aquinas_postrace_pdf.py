@@ -127,15 +127,12 @@ def build_aq_diverging_svg(W=735, H=212):
         yc = mt + (i + 0.5) * rh
         bh = rh * 0.62
         err = a["time_err_sec"]
-        is_v = a["display_name"] in ("Diego Victor", "Marcela Victor")
-        col = "#b8251e" if is_v else ("#0d7a47" if err < 0 else "#8b929e")
+        col = "#0d7a47" if err < 0 else "#8b929e"
         bx = sx(min(0, err))
         bw = max(2.0, abs(sx(err) - x0))
-        if is_v:
-            parts.append(f'<rect x="2" y="{yc-rh*0.48:.1f}" width="{W-4}" height="{rh*0.96:.1f}" fill="#fdf2f1" rx="2"/>')
         parts.append(f'<rect x="{bx:.1f}" y="{yc-bh/2:.1f}" width="{bw:.1f}" height="{bh:.1f}" rx="2.5" fill="{col}" opacity="0.92"/>')
-        nm_col = "#b8251e" if is_v else "#172030"
-        fw = "700" if is_v or a["act_is_aa"] else "600"
+        nm_col = "#172030"
+        fw = "700" if a["act_is_aa"] else "600"
         star = " ★" if a["act_is_aa"] else ""
         parts.append(f'<text x="{ml-6}" y="{yc+2.6:.1f}" text-anchor="end" font-family="IBM Plex Sans,sans-serif" font-size="7.7" font-weight="{fw}" fill="{nm_col}">{esc(a["display_name"])}{star} <tspan fill="#6f7582" font-size="6.8" font-weight="400">({a["event_short"]})</tspan></text>')
         pl_txt = f"{a['place_err']:+.0f} pl" if a["place_err"] != 0 else "0 pl"
@@ -437,16 +434,15 @@ def build_aq_slope_svg(W=735, H=255):
         ac_pct = min(0.96, max(0.03, a["act_place"] / a["act_field_size"]))
         y1, y2 = sy(pl_pct), sy(ac_pct)
         improved = a["act_place"] < a["pred_place"]
-        is_v = a["display_name"] in ("Diego Victor", "Marcela Victor")
-        col = "#b8251e" if is_v else ("#0d7a47" if improved else "#94a3b8")
-        sw = "2.2" if is_v or a["act_is_aa"] else "1.4"
+        col = "#0d7a47" if improved else "#64748b"
+        sw = "2.1" if a["act_is_aa"] else "1.4"
         parts.append(f'<line x1="{x_l}" y1="{y1:.1f}" x2="{x_r}" y2="{y2:.1f}" stroke="{col}" stroke-width="{sw}" opacity="0.88"/>')
         parts.append(f'<circle cx="{x_l}" cy="{y1:.1f}" r="3.0" fill="#ffffff" stroke="{col}" stroke-width="1.3"/>')
         parts.append(f'<circle cx="{x_r}" cy="{y2:.1f}" r="3.6" fill="{col}" stroke="#ffffff" stroke-width="1.0"/>')
         ly1, ly2 = yl_lbl[a["id"]], yr_lbl[a["id"]]
         star = " ★AA" if a["act_is_aa"] else ""
-        parts.append(f'<text x="{x_l-8}" y="{ly1+2.6:.1f}" text-anchor="end" font-family="IBM Plex Sans,sans-serif" font-size="7.5" font-weight="{"700" if is_v else "500"}" fill="{"#b8251e" if is_v else "#334155"}">{esc(a["display_name"])} <tspan font-family="IBM Plex Mono,monospace" fill="#646a76">#{a["pred_place"]:.0f}</tspan></text>')
-        parts.append(f'<text x="{x_r+8}" y="{ly2+2.6:.1f}" font-family="IBM Plex Sans,sans-serif" font-size="7.5" font-weight="{"700" if is_v or a["act_is_aa"] else "600"}" fill="{col}">#{a["act_place"]}/{a["act_field_size"]} {esc(a["display_name"])}{star} <tspan font-family="IBM Plex Mono,monospace" font-size="6.8">({a["place_err"]:+.0f})</tspan></text>')
+        parts.append(f'<text x="{x_l-8}" y="{ly1+2.6:.1f}" text-anchor="end" font-family="IBM Plex Sans,sans-serif" font-size="7.5" font-weight="{"700" if a["act_is_aa"] else "500"}" fill="#334155">{esc(a["display_name"])} <tspan font-family="IBM Plex Mono,monospace" fill="#646a76">#{a["pred_place"]:.0f}</tspan></text>')
+        parts.append(f'<text x="{x_r+8}" y="{ly2+2.6:.1f}" font-family="IBM Plex Sans,sans-serif" font-size="7.5" font-weight="{"700" if a["act_is_aa"] else "600"}" fill="{col}">#{a["act_place"]}/{a["act_field_size"]} {esc(a["display_name"])}{star} <tspan font-family="IBM Plex Mono,monospace" font-size="6.8">({a["place_err"]:+.0f})</tspan></text>')
 
     parts.append("</svg>")
     return "".join(parts)
@@ -480,13 +476,8 @@ def build_national_scatter_svg(W=370, H=252):
         if a["is_dop"] and a["home_school"] == "Aquinas Academy": continue
         parts.append(f'<circle cx="{sx(a["pred_time_sec"]):.1f}" cy="{sy(a["act_time_sec"]):.1f}" r="1.15" fill="{dist_col.get(a["dist_m"], "#64748b")}" opacity="0.32"/>')
     for a in AQ:
-        is_v = a["display_name"] in ("Diego Victor", "Marcela Victor")
-        parts.append(f'<circle cx="{sx(a["pred_time_sec"]):.1f}" cy="{sy(a["act_time_sec"]):.1f}" r="{"4.1" if is_v else "2.8"}" fill="#b8251e" stroke="{"#f5b800" if is_v else "#ffffff"}" stroke-width="{"1.5" if is_v else "0.9"}"/>')
+        parts.append(f'<circle cx="{sx(a["pred_time_sec"]):.1f}" cy="{sy(a["act_time_sec"]):.1f}" r="3.2" fill="#b8251e" stroke="#ffffff" stroke-width="1.0"/>')
 
-    dx, dy = sx(diego["pred_time_sec"]), sy(diego["act_time_sec"])
-    mx, my = sx(marcela["pred_time_sec"]), sy(marcela["act_time_sec"])
-    parts.append(f'<text x="{dx+6:.1f}" y="{dy+10:.1f}" font-family="IBM Plex Sans,sans-serif" font-size="6.9" font-weight="700" fill="#b8251e">Diego (-24s)</text>')
-    parts.append(f'<text x="{mx+6:.1f}" y="{my+9:.1f}" font-family="IBM Plex Sans,sans-serif" font-size="6.9" font-weight="700" fill="#b8251e">Marcela (-24s)</text>')
     parts.append(f'<text x="{ml+pw/2:.1f}" y="{H-4}" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="7.0" fill="#475569">Pre-Race Predicted Time (min) · Overall r = 0.938 (n = 2,424)</text>')
     parts.append(f'<text x="11" y="{mt+ph/2:.1f}" text-anchor="middle" transform="rotate(-90 11 {mt+ph/2:.1f})" font-family="IBM Plex Sans,sans-serif" font-size="7.0" fill="#475569">Actual Cedarville Time (min)</text>')
     parts.append("</svg>")
@@ -792,12 +783,11 @@ def build_runner_page(a, idx_1_to_11, page_num):
         ev4_dop = sorted([x for x in ATHS if x["event_num"] == 4 and x["is_dop"]], key=lambda x: x["act_place"])
         tr_list = []
         for ti, x in enumerate(ev4_dop, 1):
-            is_d = (x["display_name"] == "Diego Victor")
             is_aq = (x["home_school"] == "Aquinas Academy")
-            cls = ' class="row-victor"' if is_d else (' class="row-aa"' if is_aq else "")
+            cls = ' class="row-aa"' if is_aq else ""
             tr_list.append(
                 f'<tr{cls}><td class="num mono b">#{ti}</td>'
-                f'<td class="b {"dop-txt" if is_d else ""}">{esc(x["display_name"])}</td>'
+                f'<td class="b">{esc(x["display_name"])}</td>'
                 f'<td>{esc(short_school(x["home_school"]))}</td>'
                 f'<td class="num mono">{x["age"]}</td>'
                 f'<td class="num mono muted">{x["pred_time_str"]}</td>'
@@ -901,20 +891,19 @@ def build_runner_page(a, idx_1_to_11, page_num):
 # ==============================================================================
 aq_table_rows = []
 for idx, a in enumerate(AQ, 1):
-    is_v = a["display_name"] in ("Diego Victor", "Marcela Victor")
-    row_cls = ' class="row-victor"' if is_v else (' class="row-aa"' if a["act_is_aa"] else "")
+    row_cls = ' class="row-aa"' if a["act_is_aa"] else ""
     dt_cls = "up-txt b" if a["time_err_sec"] < 0 else "muted"
     pl_cls = "up-txt b" if a["place_err"] < 0 else "muted"
     badge = '<span class="pill-aa">★ ALL-AMERICAN</span>' if a["act_is_aa"] else (
         '<span class="pill-cyo">CYO Champ Team</span>' if a["event_num"] == 11 else (
             '<span class="pill-surge">-50.5s Beat!</span>' if a["time_err_sec"] <= -45 else (
-                '<span class="pill-surge">+35 Pl Surge</span>' if a["display_name"] == "Marcela Victor" else f'<span class="muted">Page {idx+2}</span>'
+                f'<span class="pill-surge">+{abs(a["place_err"]):.0f} Pl Surge</span>' if a["place_err"] <= -35 else f'<span class="muted">Page {idx+2}</span>'
             )
         )
     )
     aq_table_rows.append(
         f'<tr{row_cls}>'
-        f'<td class="b {"dop-txt" if is_v else ""}">{esc(a["display_name"])} <span class="muted mono" style="font-size:6.3pt">(p.{idx+2})</span></td>'
+        f'<td class="b">{esc(a["display_name"])} <span class="muted mono" style="font-size:6.3pt">(p.{idx+2})</span></td>'
         f'<td class="nw">{a["event_short"]}</td>'
         f'<td class="num mono">{a["age"]}</td>'
         f'<td class="num mono muted">{a["pred_time_str"]}</td>'
@@ -1202,7 +1191,7 @@ tr.row-aa td {{ background: #f3faf6; }}
   <div class="ed-sec">
     <div class="sec-bar subtle">
       <span>Pre-Race Forecast Percentile &#8594; Actual Cedarville Finish Percentile (All 11 Aquinas Academy Runners)</span>
-      <span class="sec-sub">Upward-sloping lines = beat forecast percentile · Crimson = Victor siblings · Green = Beat forecast</span>
+      <span class="sec-sub">Upward-sloping lines = beat forecast percentile · Green = Beat forecast · ★AA = National All-American</span>
     </div>
     {build_aq_slope_svg()}
   </div>
@@ -1254,7 +1243,7 @@ tr.row-aa td {{ background: #f3faf6; }}
     <div>
       <div class="sec-bar subtle">
         <span>Predicted vs. Actual Finish Time (All 2,424 Runners)</span>
-        <span class="sec-sub">Crimson = Aquinas (★ Victor)</span>
+        <span class="sec-sub">Crimson = Aquinas Academy (11)</span>
       </div>
       {build_national_scatter_svg()}
     </div>
